@@ -130,14 +130,35 @@ jobs:
             # Install without scripts first to prevent RoutingServiceProvider crash
             composer install --no-dev --no-scripts --optimize-autoloader --no-interaction
             
-            # Apply double patch to vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php
-            # 1. Patch constructor
-            sed -i 's/Request $request,/Request $request = null,/' vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php
-            # 2. Patch setRequest method
-            sed -i 's/setRequest(Request $request)/setRequest(Request $request = null)/' vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php
+            # Comprehensive patch: UrlGenerator must handle null Request in CLI
+            php -r '
+            $f = "vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php";
+            $c = file_get_contents($f);
             
-            # Now run the scripts/autoload optimization
+            // 1. Patch constructor type hint
+            $c = str_replace("Request \$request,", "Request \$request = null,", $c);
+            
+            // 2. Patch setRequest method to allow null AND provide dummy
+            $c = preg_replace(
+                "/public function setRequest\(Request \\\$request\)/",
+                "public function setRequest(Request \$request = null)",
+                $c
+            );
+            
+            // 3. Ensure \$this->request is never null by patching setRequest body
+            $c = str_replace(
+                "\$this->request = \$request;",
+                "\$this->request = \$request ?? \Illuminate\Http\Request::create(\"/\");",
+                $c
+            );
+            
+            file_put_contents($f, $c);
+            echo "UrlGenerator patched successfully.\n";
+            '
+            
+            # Now run the post-install scripts
             composer dump-autoload --optimize --no-dev
+
 
   run-migrations:
     name: 🗄️ Run Database Migrations

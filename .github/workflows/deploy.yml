@@ -130,8 +130,11 @@ jobs:
             # Install without scripts first to prevent RoutingServiceProvider crash
             composer install --no-dev --no-scripts --optimize-autoloader --no-interaction
             
-            # Apply patch to vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php
+            # Apply double patch to vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php
+            # 1. Patch constructor
             sed -i 's/Request $request,/Request $request = null,/' vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php
+            # 2. Patch setRequest method
+            sed -i 's/setRequest(Request $request)/setRequest(Request $request = null)/' vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php
             
             # Now run the scripts/autoload optimization
             composer dump-autoload --optimize --no-dev

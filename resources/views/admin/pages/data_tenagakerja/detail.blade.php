@@ -238,7 +238,7 @@
                 <div style="position:absolute; top:-20px; padding:0 10px; background:rgba(50,50,50,0.7); color:#FFFFFF; border-radius:5px; right:10px; font-size:21px; cursor:pointer;" onclick="$('#f_upload').click();">
                     <i class="fas fa-camera"></i>
                 </div>
-                <a id="single_image" href="<?php echo url('public/karyawan/'.$rows->foto_profile); ?>"><img src="<?php echo url('public/karyawan/'.$rows->foto_profile); ?>" id="logo_img_icon" class="img-fluid" /></a> <p></p>
+                <a id="single_image" href="<?php echo url('storage/karyawan/'.$rows->foto_profile); ?>"><img src="<?php echo url('storage/karyawan/'.$rows->foto_profile); ?>" id="logo_img_icon" class="img-fluid" /></a> <p></p>
                 </div>
                 <div class="col-md-12">
                 <center>
@@ -312,7 +312,7 @@
                             <div class="col-md-12" style="margin-top:40px;">
                                     <div class="row">
                                         Download Ijazah & CV :  &nbsp;  &nbsp; 
-                                        <button class="btn btn-success" onclick="window.open('<?php echo url('public/karyawan/'.$rows->foto_ijazah); ?>');"> &nbsp; <i class="fa fa-download"></i> Download CV & Ijazah</button>
+                                        <button class="btn btn-success" onclick="window.open('<?php echo url('storage/karyawan/'.$rows->foto_ijazah); ?>');"> &nbsp; <i class="fa fa-download"></i> Download CV & Ijazah</button>
                                     </div>
                                 </div>
                             </div>
@@ -619,7 +619,7 @@
                     //jQuery("#judul_berita").html('<a onclick="openViewdetail()" style="cursor:pointer;"> <i class="fas fa-undo"></i> </a> &nbsp;'+" "+data.judul_berita);
                     //jQuery("#isi_berita").html(data.isi_berita);
 
-                    jQuery("#img_berita").prop("src" , "<?php echo url('public/GambarSlides/'); ?>"+"/"+data.image_name);
+                    jQuery("#img_berita").prop("src" , "<?php echo url('storage/GambarSlides/'); ?>"+"/"+data.image_name);
 
                     
 
@@ -741,9 +741,9 @@
 
                     CKEDITOR.instances['DSC'].setData(data.isi_berita);
 
-                    $("#img_foto_berita").prop("src" , "<?php echo url('public/berita/foto/'); ?>"+"/"+data.foto);
+                    $("#img_foto_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
 
-                    //jQuery("#img_berita").prop("src" , "<?php echo url('public/berita/foto/'); ?>"+"/"+data.foto);
+                    //jQuery("#img_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
 
                     
 

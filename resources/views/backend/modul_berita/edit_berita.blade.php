@@ -81,7 +81,7 @@
                                                     <div class="row form-group">
                                                         <div class="col col-md-3"><label for="text-input" class=" form-control-label">Gambar</label></div>
                                                         <div class="col-12 col-md-9">
-                                                            <img src="<?php echo url('public/berita/'.$data->foto); ?>" width="300" />
+                                                            <img src="<?php echo url('storage/berita/'.$data->foto); ?>" width="300" />
                                                         </div>
                                                     </div>
 

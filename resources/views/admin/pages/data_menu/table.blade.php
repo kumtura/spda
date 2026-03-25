@@ -232,7 +232,7 @@
                                                     ?>
                                                     <tr>
                                                         <td><?php echo $no; ?></td>
-                                                        <td><img src="<?php echo url('public/menu/icon/thumbnail/'.$values->foto); ?>" width="64" /></td>
+                                                        <td><img src="<?php echo url('storage/menu/icon/thumbnail/'.$values->foto); ?>" width="64" /></td>
                                                         <td><?php echo $values->menu; ?></td>
                                                         <td><?php echo $values->url; ?></td>
                                                         <td><?php echo $values->urutan; ?></td>

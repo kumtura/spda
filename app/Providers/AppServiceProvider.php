@@ -13,9 +13,8 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton('url', function ($app) {
             $routes = $app['router']->getRoutes();
-            $app->instance('routes', $routes);
 
-            // Ensure we have a request instance, even if it's a dummy for CLI
+            // Create a dummy request if running in CLI to prevent crash
             $request = $app->bound('request') ? $app['request'] : \Illuminate\Http\Request::create('/');
 
             return new \Illuminate\Routing\UrlGenerator(
@@ -29,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if (app()->environment('production')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
     }
 }

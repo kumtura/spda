@@ -81,42 +81,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [deploy-backend]
     steps:
-      - name: Initialize Server Environment
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOSTINGER_HOST }}
-          username: ${{ secrets.HOSTINGER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 65002
-          command_timeout: 10m
-          script: |
-            # Ensure directories exist
-            mkdir -p domains/spda.kumtura.com/laravel_app
-            mkdir -p domains/spda.kumtura.com/public_html
-            
-            cd domains/spda.kumtura.com/laravel_app || exit
-            
-            # Create .env if it doesn't exist
-            if [ ! -f .env ]; then
-                if [ -f .env.example ]; then
-                    cp .env.example .env
-                else
-                    touch .env
-                fi
-                
-                # Update DB credentials from secrets or provided values
-                sed -i 's/DB_DATABASE=.*/DB_DATABASE=u450002411_spda/' .env
-                sed -i 's/DB_USERNAME=.*/DB_USERNAME=u450002411_spda/' .env
-                sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=Tohjaya2025/' .env
-                sed -i 's/APP_URL=.*/APP_URL=https:\/\/spda.kumtura.com/' .env
-                
-                echo "APP_NAME=SPDA" >> .env
-                echo "APP_ENV=production" >> .env
-                echo "APP_DEBUG=false" >> .env
-                
-                php artisan key:generate
-            fi
-
       - name: Install Composer Packages
         uses: appleboy/ssh-action@master
         with:
@@ -127,38 +91,7 @@ jobs:
           command_timeout: 10m
           script: |
             cd domains/spda.kumtura.com/laravel_app || exit
-            # Install without scripts first to prevent RoutingServiceProvider crash
-            composer install --no-dev --no-scripts --optimize-autoloader --no-interaction
-            
-            # Comprehensive patch: UrlGenerator must handle null Request in CLI
-            php -r '
-            $f = "vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php";
-            $c = file_get_contents($f);
-            
-            // 1. Patch constructor type hint
-            $c = str_replace("Request \$request,", "Request \$request = null,", $c);
-            
-            // 2. Patch setRequest method to allow null AND provide dummy
-            $c = preg_replace(
-                "/public function setRequest\(Request \\\$request\)/",
-                "public function setRequest(Request \$request = null)",
-                $c
-            );
-            
-            // 3. Ensure \$this->request is never null by patching setRequest body
-            $c = str_replace(
-                "\$this->request = \$request;",
-                "\$this->request = \$request ?? \Illuminate\Http\Request::create(\"/\");",
-                $c
-            );
-            
-            file_put_contents($f, $c);
-            echo "UrlGenerator patched successfully.\n";
-            '
-            
-            # Now run the post-install scripts
-            composer dump-autoload --optimize --no-dev
-
+            composer install --no-dev --optimize-autoloader --no-interaction
 
   run-migrations:
     name: 🗄️ Run Database Migrations

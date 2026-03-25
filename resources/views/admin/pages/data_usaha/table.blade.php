@@ -755,7 +755,7 @@
                     //jQuery("#judul_berita").html('<a onclick="openViewdetail()" style="cursor:pointer;"> <i class="fas fa-undo"></i> </a> &nbsp;'+" "+data.judul_berita);
                     //jQuery("#isi_berita").html(data.isi_berita);
 
-                    jQuery("#img_berita").prop("src" , "<?php echo url('public/GambarSlides/'); ?>"+"/"+data.image_name);
+                    jQuery("#img_berita").prop("src" , "<?php echo url('storage/GambarSlides/'); ?>"+"/"+data.image_name);
 
                     
 
@@ -795,7 +795,7 @@
                         sudah_update = "<i class='fa fa-check' style='color:green;'></i> Di Setujui";
                 }
 
-                var url_gambar = "<?php echo url('public/GambarSlides/'); ?>"+"/"+element.image_name;
+                var url_gambar = "<?php echo url('storage/GambarSlides/'); ?>"+"/"+element.image_name;
 
                 var is_aktif = "<div style='float:right; background:blue; color:#FFFFFF; cursor:pointer; padding:5px 10px 5px 10px; border-radius:10px; font-size:14px;' onclick='active_slides("+element.id_gambar_home+")'> Non Slide </div>";
 
@@ -937,9 +937,9 @@
 
                     CKEDITOR.instances['DSC'].setData(data.isi_berita);
 
-                    $("#img_foto_berita").prop("src" , "<?php echo url('public/berita/foto/'); ?>"+"/"+data.foto);
+                    $("#img_foto_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
 
-                    //jQuery("#img_berita").prop("src" , "<?php echo url('public/berita/foto/'); ?>"+"/"+data.foto);
+                    //jQuery("#img_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
 
                     
 

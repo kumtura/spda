@@ -687,7 +687,7 @@
                 <div style="position:absolute; top:-20px; padding:0 10px; background:rgba(50,50,50,0.7); color:#FFFFFF; border-radius:5px; right:10px; font-size:21px; cursor:pointer;" onclick="$('#f_upload').click();">
                     <i class="fas fa-camera"></i>
                 </div>
-                <a id="single_image" href="<?php echo url('public/usaha/icon/'.$rows->logo); ?>"><img src="<?php echo url('public/usaha/icon/'.$rows->logo); ?>" id="logo_img_icon" class="img-fluid" /></a> <p></p>
+                <a id="single_image" href="<?php echo url('storage/usaha/icon/'.$rows->logo); ?>"><img src="<?php echo url('storage/usaha/icon/'.$rows->logo); ?>" id="logo_img_icon" class="img-fluid" /></a> <p></p>
                 </div>
                 <div class="col-md-12">
                 <center>
@@ -828,7 +828,7 @@
                                                     }
                                                     else{
                                                         ?>
-                                                            <img src="<?php echo url('public/karyawan/'.$rowspr->foto_profile); ?>" class="img-fluid" style="height:115px; object-fit:cover;  width:100%;  border-radius:50%;" />
+                                                            <img src="<?php echo url('storage/karyawan/'.$rowspr->foto_profile); ?>" class="img-fluid" style="height:115px; object-fit:cover;  width:100%;  border-radius:50%;" />
                                                         <?php
                                                     }
                                                 ?>
@@ -1381,7 +1381,7 @@
                     //jQuery("#judul_berita").html('<a onclick="openViewdetail()" style="cursor:pointer;"> <i class="fas fa-undo"></i> </a> &nbsp;'+" "+data.judul_berita);
                     //jQuery("#isi_berita").html(data.isi_berita);
 
-                    jQuery("#img_berita").prop("src" , "<?php echo url('public/GambarSlides/'); ?>"+"/"+data.image_name);
+                    jQuery("#img_berita").prop("src" , "<?php echo url('storage/GambarSlides/'); ?>"+"/"+data.image_name);
 
                     
 
@@ -1503,9 +1503,9 @@
 
                     CKEDITOR.instances['DSC'].setData(data.isi_berita);
 
-                    $("#img_foto_berita").prop("src" , "<?php echo url('public/berita/foto/'); ?>"+"/"+data.foto);
+                    $("#img_foto_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
 
-                    //jQuery("#img_berita").prop("src" , "<?php echo url('public/berita/foto/'); ?>"+"/"+data.foto);
+                    //jQuery("#img_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
 
                     
 

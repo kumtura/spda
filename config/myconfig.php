@@ -2,7 +2,7 @@
 
 return [
     'devUrl' => env('DEV_URL', url('administrator')), 
-    'assetsUrl' => env('ASSETS_URL', url('public')),
+    'assetsUrl' => env('ASSETS_URL', url('storage')),
     'jk_tenaga' => array("Perempuan","Laki - Laki"), 
     'status_tenaga' => array("Belum Bekerja","Interview","Aktif Bekerja"),
     

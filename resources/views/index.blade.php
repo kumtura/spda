@@ -15,15 +15,15 @@
     <!-- <title>Admin Template - The Ultimate Multipurpose admin template</title> -->
     <title>Admin Template - Dana Punia Dashboard Admin</title>
     <!-- Custom CSS -->
-    <link href="<?php echo url('assets/src/'); ?>/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
-    <link href="<?php echo url('assets/src/'); ?>/assets/extra-libs/jvector/jquery-jvectormap-2.0.2.css" rel="stylesheet" />
+    <link href="<?php echo url('storage/assets/src/'); ?>/assets/extra-libs/c3/c3.min.css" rel="stylesheet">
+    <link href="<?php echo url('storage/assets/src/'); ?>/assets/extra-libs/jvector/jquery-jvectormap-2.0.2.css" rel="stylesheet" />
     <!-- Custom CSS -->
-    <link href="<?php echo url('assets/src/'); ?>/dist/css/style.min.css" rel="stylesheet">
+    <link href="<?php echo url('storage/assets/src/'); ?>/dist/css/style.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 
-    <link href="<?php echo url('assets/src/'); ?>/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link href="<?php echo url('storage/assets/src/'); ?>/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
 
-    <link rel="stylesheet" href="<?php echo url('assets'); ?>/dist/css/jq-prompt.min.css"></head>
+    <link rel="stylesheet" href="<?php echo url('storage/assets'); ?>/dist/css/jq-prompt.min.css"></head>
     <!-- <button typr="button" class="ptest pt-Btn">prompt string</button>
     <button typr="button" class="ptestQ pt-Btn">prompt boolean</button> -->
     <!-- <br><div id="test"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script> -->
@@ -138,7 +138,7 @@
                         <!-- Logo icon -->
                         <a href="index.html">
                                 
-                                <img src="<?php echo url('login_bg/donasi.png'); ?>" alt="homepage" id="logo_img" width="70" style="float:left; margin-top:5px;" />
+                                <img src="<?php echo url('storage/login_bg/donasi.png'); ?>" alt="homepage" id="logo_img" width="70" style="float:left; margin-top:5px;" />
                                 &nbsp; <span style="color:gold;"> DANA PUNIA </span>
                         </a>
                     </div>

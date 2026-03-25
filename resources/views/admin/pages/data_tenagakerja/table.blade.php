@@ -801,7 +801,7 @@
                         sudah_update = "<i class='fa fa-check' style='color:green;'></i> Di Setujui";
                 }
 
-                var url_gambar = "<?php echo url('GambarSlides/'); ?>"+"/"+element.image_name;
+                var url_gambar = "<?php echo url('storage/GambarSlides/'); ?>"+"/"+element.image_name;
 
                 var is_aktif = "<div style='float:right; background:blue; color:#FFFFFF; cursor:pointer; padding:5px 10px 5px 10px; border-radius:10px; font-size:14px;' onclick='active_slides("+element.id_gambar_home+")'> Non Slide </div>";
 

@@ -5,36 +5,36 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->	
-	<link rel="icon" type="image/png" href="<?php echo url('assets/login/'); ?>/images/icons/favicon.ico"/>
+	<link rel="icon" type="image/png" href="<?php echo url('storage/assets/login/'); ?>/images/icons/favicon.ico"/>
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('assets/login/'); ?>/vendor/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/bootstrap/css/bootstrap.min.css">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('assets/login/'); ?>/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('assets/login/'); ?>/fonts/Linearicons-Free-v1.0.0/icon-font.min.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/fonts/Linearicons-Free-v1.0.0/icon-font.min.css">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('assets/login/'); ?>/vendor/animate/animate.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/animate/animate.css">
 <!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="<?php echo url('assets/login/'); ?>/vendor/css-hamburgers/hamburgers.min.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/css-hamburgers/hamburgers.min.css">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('assets/login/'); ?>/vendor/animsition/css/animsition.min.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/animsition/css/animsition.min.css">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('assets/login/'); ?>/vendor/select2/select2.min.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/select2/select2.min.css">
 <!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="<?php echo url('assets/login/'); ?>/vendor/daterangepicker/daterangepicker.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/daterangepicker/daterangepicker.css">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('assets/login/'); ?>/css/util.css">
-	<link rel="stylesheet" type="text/css" href="<?php echo url('assets/login/'); ?>/css/main.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/css/util.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/css/main.css">
 <!--===============================================================================================-->
 </head>
 <body>
 	
 	<div class="limiter">
-		<div class="container-login100" style="background:url('<?php echo url('login_bg/donasibg.jpg'); ?>')!important;">
+		<div class="container-login100" style="background:url('<?php echo url('storage/login_bg/donasibg.jpg'); ?>')!important;">
 			<div class="wrap-login100">
-				<div class="login100-form-title" style="background-image: url(<?php echo url('assets/login/'); ?>/images/bg-01.jpg);">
+				<div class="login100-form-title" style="background-image: url(<?php echo url('storage/assets/login/'); ?>/images/bg-01.jpg);">
 					
-					<img src="<?php echo url('login_bg/donasi.png'); ?>"  alt="homepage" style="width:200px; margin:auto;" />
+					<img src="<?php echo url('storage/login_bg/donasi.png'); ?>"  alt="homepage" style="width:200px; margin:auto;" />
 
 					<p>&nbsp;</p>
 
@@ -84,21 +84,21 @@
 	</div>
 	
 <!--===============================================================================================-->
-	<script src="<?php echo url('assets/login/'); ?>/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/jquery/jquery-3.2.1.min.js"></script>
 <!--===============================================================================================-->
-	<script src="<?php echo url('assets/login/'); ?>/vendor/animsition/js/animsition.min.js"></script>
+	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/animsition/js/animsition.min.js"></script>
 <!--===============================================================================================-->
-	<script src="<?php echo url('assets/login/'); ?>/vendor/bootstrap/js/popper.js"></script>
-	<script src="<?php echo url('assets/login/'); ?>/vendor/bootstrap/js/bootstrap.min.js"></script>
+	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/bootstrap/js/popper.js"></script>
+	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/bootstrap/js/bootstrap.min.js"></script>
 <!--===============================================================================================-->
-	<script src="<?php echo url('assets/login/'); ?>/vendor/select2/select2.min.js"></script>
+	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/select2/select2.min.js"></script>
 <!--===============================================================================================-->
-	<script src="<?php echo url('assets/login/'); ?>/vendor/daterangepicker/moment.min.js"></script>
-	<script src="<?php echo url('assets/login/'); ?>/vendor/daterangepicker/daterangepicker.js"></script>
+	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/daterangepicker/moment.min.js"></script>
+	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/daterangepicker/daterangepicker.js"></script>
 <!--===============================================================================================-->
-	<script src="<?php echo url('assets/login/'); ?>/vendor/countdowntime/countdowntime.js"></script>
+	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/countdowntime/countdowntime.js"></script>
 <!--===============================================================================================-->
-	<script src="<?php echo url('assets/login/'); ?>/js/main.js"></script>
+	<script src="<?php echo url('storage/assets/login/'); ?>/js/main.js"></script>
 
 	<script type="text/javascript">
 

@@ -474,7 +474,7 @@
                         <?php
                             if($rows->foto_profile == ""){
                                 ?>
-                                    <img src="<?php echo url('assets/noprofile.png'); ?>" class="img-fluid" style="height:225px; object-fit:cover; width:100%; border-radius:50%;" />
+                                    <img src="<?php echo url('storage/assets/noprofile.png'); ?>" class="img-fluid" style="height:225px; object-fit:cover; width:100%; border-radius:50%;" />
                                 <?php
                             }
                             else{

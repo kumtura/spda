@@ -1,6 +1,6 @@
 <div class="col-sm-3"  data-uk-scrollspy="{cls:'uk-animation-slide-left', repeat: true}">
                     
-                    	 <a  href="index.html"><img class="wpm_logo" src="<?php echo url('assets/'); ?>/images/logo/logo.png" alt=""></a>
+                    	 <a  href="index.html"><img class="wpm_logo" src="<?php echo url('storage/assets/'); ?>/images/logo/logo.png" alt=""></a>
                     
                     </div>
             

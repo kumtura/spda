@@ -823,7 +823,7 @@
                                             <?php
                                                     if($rowspr->foto_profile == ""){
                                                         ?>
-                                                            <img src="<?php echo url('assets/noprofile.png'); ?>" class="img-fluid" style="object-fit:cover; border-radius:50%;" />
+                                                            <img src="<?php echo url('storage/assets/noprofile.png'); ?>" class="img-fluid" style="object-fit:cover; border-radius:50%;" />
                                                         <?php
                                                     }
                                                     else{

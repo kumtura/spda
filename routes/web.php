@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -11,21 +14,17 @@
 |
 */
 
-Route::middleware(['admin.guest'])->group(function () {
+Route::middleware(['guest'])->group(function () {
     Route::get('/', function () {
         return view('auth.login');
     });
 });
 
-Route::get('administrator/', function () {
-    return view('auth.login');
-});
-	
-Route::get('administrator/login', function () {
-	return view('auth.login');
-});
+Route::get('/dashboard', function () {
+    return redirect()->route('administrator.home');
+})->middleware(['auth'])->name('dashboard');
 
-Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'administrator'], function () {
+Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'administrator.'], function () {
 
 		Route::get('/', [
 			'as'   => 'dashboard',
@@ -150,15 +149,14 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::get('kategorial_index/{index}','Api\ApiKategorial@get_kategorial_by_id');
 			Route::get('get_users_all','Api\ApiUser@get_users_all');
 		});
+    });
 
-	});
+Route::prefix('administrator')->group(function () {
+    require __DIR__.'/auth.php';
+});
 
-	
-	Route::post('runlogin','LoginController@runlogin');
-
-	Route::get('logoutadmin','LoginController@logout');
-
-	
-
-
-Auth::routes();
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});

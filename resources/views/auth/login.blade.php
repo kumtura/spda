@@ -1,133 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<title>Login V15</title>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-<!--===============================================================================================-->	
-	<link rel="icon" type="image/png" href="<?php echo url('storage/assets/login/'); ?>/images/icons/favicon.ico"/>
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/bootstrap/css/bootstrap.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/fonts/Linearicons-Free-v1.0.0/icon-font.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/animate/animate.css">
-<!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/css-hamburgers/hamburgers.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/animsition/css/animsition.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/select2/select2.min.css">
-<!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/vendor/daterangepicker/daterangepicker.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/css/util.css">
-	<link rel="stylesheet" type="text/css" href="<?php echo url('storage/assets/login/'); ?>/css/main.css">
-<!--===============================================================================================-->
-</head>
-<body>
-	
-	<div class="limiter">
-		<div class="container-login100" style="background:url('<?php echo url('storage/login_bg/donasibg.jpg'); ?>')!important;">
-			<div class="wrap-login100">
-				<div class="login100-form-title" style="background-image: url(<?php echo url('storage/assets/login/'); ?>/images/bg-01.jpg);">
-					
-					<img src="<?php echo url('storage/login_bg/donasi.png'); ?>"  alt="homepage" style="width:200px; margin:auto;" />
+<x-guest-layout>
+    <!-- Session Status -->
+    <x-auth-session-status class="mb-4" :status="session('status')" />
 
-					<p>&nbsp;</p>
+    <form method="POST" action="{{ route('login') }}">
+        @csrf
 
-					<span class="login100-form-title-1">
-						Sign In
-					</span>
-				</div>
+        <!-- Email Address -->
+        <div>
+            <x-input-label for="email" :value="__('Email')" />
+            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        </div>
 
-				<form class="login100-form validate-form" method="post" onsubmit="checklogin(this); return false;">
-					<div class="wrap-input100 validate-input m-b-26" data-validate="Username is required">
-						<span class="label-input100">Username</span>
-						<input class="input100" type="text" name="username" placeholder="Enter username">
-						<span class="focus-input100"></span>
-					</div>
+        <!-- Password -->
+        <div class="mt-4">
+            <x-input-label for="password" :value="__('Password')" />
 
-					{{ csrf_field() }}
+            <x-text-input id="password" class="block mt-1 w-full"
+                            type="password"
+                            name="password"
+                            required autocomplete="current-password" />
 
-					<div class="wrap-input100 validate-input m-b-18" data-validate = "Password is required">
-						<span class="label-input100">Password</span>
-						<input class="input100" type="password" name="password" placeholder="Enter password">
-						<span class="focus-input100"></span>
-					</div>
+            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        </div>
 
-					<div class="flex-sb-m w-full p-b-30">
-						<div class="contact100-form-checkbox">
-							<input class="input-checkbox100" id="ckb1" type="checkbox" name="remember-me">
-							<label class="label-checkbox100" for="ckb1">
-								Remember me
-							</label>
-						</div>
+        <!-- Remember Me -->
+        <div class="block mt-4">
+            <label for="remember_me" class="inline-flex items-center">
+                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
+                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+            </label>
+        </div>
 
-						<div>
-							<a href="#" class="txt1">
-								Forgot Password?
-							</a>
-						</div>
-					</div>
+        <div class="flex items-center justify-end mt-4">
+            @if (Route::has('password.request'))
+                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
+                    {{ __('Forgot your password?') }}
+                </a>
+            @endif
 
-					<div class="container-login100-form-btn">
-						<button class="login100-form-btn" type="submit" style="background:linear-gradient(45deg, #044c92 0 50%, #04488b 50% 100%);">
-							Login
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-	
-<!--===============================================================================================-->
-	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/jquery/jquery-3.2.1.min.js"></script>
-<!--===============================================================================================-->
-	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/animsition/js/animsition.min.js"></script>
-<!--===============================================================================================-->
-	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/bootstrap/js/popper.js"></script>
-	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/bootstrap/js/bootstrap.min.js"></script>
-<!--===============================================================================================-->
-	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/select2/select2.min.js"></script>
-<!--===============================================================================================-->
-	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/daterangepicker/moment.min.js"></script>
-	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/daterangepicker/daterangepicker.js"></script>
-<!--===============================================================================================-->
-	<script src="<?php echo url('storage/assets/login/'); ?>/vendor/countdowntime/countdowntime.js"></script>
-<!--===============================================================================================-->
-	<script src="<?php echo url('storage/assets/login/'); ?>/js/main.js"></script>
-
-	<script type="text/javascript">
-
-	function checklogin(form){
-
-			$.ajax({
-				type:"post",
-				url:"<?php echo url('runlogin'); ?>",
-				data:$(form).serialize(),
-				dataType:"json",
-				success:function(data){
-
-				  if(data.status == "success"){
-				  	 window.location="<?php echo url('administrator/home'); ?>";
-				  }
-				  else{
-				  	alert("Username Atau Password Salah");
-				  }
-
-				}
-			})
-			
-	}
-
-	$(document).ready(function(){
-
-
-	});
-	</script>
-
-</body>
-</html>
+            <x-primary-button class="ms-3">
+                {{ __('Log in') }}
+            </x-primary-button>
+        </div>
+    </form>
+</x-guest-layout>

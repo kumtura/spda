@@ -22,8 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
         $middleware->alias([
-            'admin' => \App\Http\Middleware\RedirectIfNotAdmin::class,
-            'admin.guest' => \App\Http\Middleware\RedirectIfAdmin::class,
+            'admin' => \Illuminate\Auth\Middleware\Authenticate::class,
+            'admin.guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'wartawan' => \App\Http\Middleware\RedirectIfNotWartawan::class,
             'wartawan.guest' => \App\Http\Middleware\RedirectIfWartawan::class,

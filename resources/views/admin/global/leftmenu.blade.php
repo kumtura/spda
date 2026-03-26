@@ -1,24 +1,26 @@
 <aside id="sidebar" 
     x-data="{ 
         openSettings: false, 
-        openGambar: false, 
-        openGbrHome: false,
         openBlog: false,
         openTenaga: false
     }"
-    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20'"
-    class="fixed top-0 left-0 z-40 w-64 h-screen transition-all duration-300 sidebar-gradient border-r border-white/10 sm:translate-x-0 overflow-y-auto no-scrollbar shadow-2xl" 
+    :class="mobileSidebarOpen ? 'translate-x-0' : (sidebarOpen ? 'max-lg:-translate-x-full translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20')"
+    class="fixed top-0 left-0 z-40 w-64 h-screen transition-all duration-300 sidebar-gradient border-r border-white/10 overflow-y-auto no-scrollbar shadow-2xl" 
     aria-label="Sidebar">
    
     <!-- Sidebar Header / Branding -->
-    <div class="h-20 flex items-center justify-between px-6 mb-2 border-b border-white/10 shrink-0">
+    <div class="h-24 flex items-center justify-between px-6 mb-2 border-b border-white/10 shrink-0">
         <div class="flex items-center gap-3 overflow-hidden">
-            <div class="h-10 w-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0 border border-white/10 shadow-lg">
-                <i class="bi bi-grid-1x2-fill text-yellow-400 text-xl"></i>
+            <div class="h-12 w-12 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-lg p-2">
+                @if(file_exists(public_path('storage/logos/logo.png')))
+                    <img src="{{ asset('storage/logos/logo.png') }}" class="h-full w-full object-contain" alt="Logo">
+                @else
+                    <i class="bi bi-grid-1x2-fill text-yellow-400 text-xl"></i>
+                @endif
             </div>
             <div class="transition-all duration-300" x-show="sidebarOpen" x-transition:enter="delay-150 duration-300" x-transition:enter-start="opacity-0 -translate-x-4">
-                <h1 class="text-white font-bold text-sm tracking-tighter leading-none mb-1">DANA PUNIA</h1>
-                <p class="text-white/40 font-bold text-[9px] uppercase tracking-widest leading-none">Manajemen v2</p>
+                <h1 class="text-white font-black text-sm tracking-tighter leading-none mb-1 uppercase">{{ $village['name'] ?? 'SPDA' }}</h1>
+                <p class="text-white/40 font-bold text-[9px] uppercase tracking-widest leading-none">Desa Adat Terpadu</p>
             </div>
         </div>
        
@@ -74,25 +76,6 @@
                   <li><a href="{{ url('administrator/settings') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/settings*') ? 'text-white bg-white/5' : '' }}">Pengaturan Website</a></li>
                   @endif
                   
-                  <!-- Data Gambar Nest -->
-                  <li>
-                    <button type="button" @click.stop="openGambar = !openGambar" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5">
-                        <span class="flex-1 text-left">Data Gambar</span>
-                        <i class="bi bi-chevron-down w-2 h-2 transition-transform duration-300" :class="openGambar ? 'rotate-180' : ''"></i>
-                    </button>
-                    <ul x-show="openGambar" x-transition x-cloak class="py-1 space-y-1 ml-4 border-l border-white/10 pl-2">
-                        <li>
-                            <button type="button" @click.stop="openGbrHome = !openGbrHome" class="flex items-center w-full p-2 text-blue-200/70 hover:text-blue-200 transition duration-75 rounded-lg text-[10px] font-semibold hover:bg-white/5">
-                                <span class="flex-1 text-left uppercase tracking-wider">Slide Beranda</span>
-                                <i class="bi bi-chevron-down w-2 h-2 transition-transform duration-300" :class="openGbrHome ? 'rotate-180' : ''"></i>
-                            </button>
-                            <ul x-show="openGbrHome" x-transition x-cloak class="py-1 space-y-1">
-                                <li><a href="{{ url('administrator/datakategori_slides') }}" class="flex items-center w-full p-2 text-white/60 hover:text-white rounded-lg text-[10px] font-bold hover:bg-white/5">Kategori</a></li>
-                                <li><a href="{{ url('administrator/datagambar_slides') }}" class="flex items-center w-full p-2 text-white/60 hover:text-white rounded-lg text-[10px] font-bold hover:bg-white/5">Data Gambar</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                  </li>
             </ul>
          </li>
 

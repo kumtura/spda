@@ -57,10 +57,10 @@ class LaporanController extends BaseController
 
     		$img_berita = url('public/laporan/'.$row->foto);
 
-    		$rows["id_warta_berita"] = $row->id_warta_berita;
+    		$rows["id_laporan"] = $row->id_laporan;
             $rows["title"] = $row->judul;
     		$rows["tahun"] = $row->tahun;
-    		$rows["foto"] = $row->foto;
+    		$rows["file"] = $row->file;
     		$rows["aktif"] = $row->aktif;
 
     		$dt[] = $rows;

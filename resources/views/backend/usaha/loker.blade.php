@@ -1,70 +1,109 @@
 @extends('mobile_layout')
 
-@section('content')
-<div class="px-6 py-8">
-    <!-- Header -->
-    <div class="flex items-center gap-4 mb-8">
-        <a href="{{ url('administrator/') }}" class="w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400">
-            <i class="bi bi-chevron-left text-lg"></i>
-        </a>
-        <h1 class="text-xl font-black tracking-tight text-slate-800">Post Lowongan Kerja</h1>
+@section('isi_menu')
+<div class="px-6 py-4 space-y-6" x-data="{ showForm: false }">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-black text-slate-800 tracking-tight">Lowongan Kerja</h1>
+            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Cari karyawan lokal banjar</p>
+        </div>
+        <button @click="showForm = !showForm" class="h-10 w-10 bg-[#00a6eb] text-white rounded-xl flex items-center justify-center shadow-lg shadow-[#00a6eb]/20">
+            <i class="bi text-lg" :class="showForm ? 'bi-x-lg' : 'bi-plus-lg'"></i>
+        </button>
     </div>
 
-    <!-- Info Box -->
-    <div class="bg-emerald-50 border border-emerald-100 rounded-3xl p-5 mb-8">
-        <div class="flex items-start gap-3">
-            <div class="w-8 h-8 bg-emerald-500 text-white rounded-lg flex items-center justify-center shrink-0">
-                <i class="bi bi-person-plus text-md"></i>
+    @php
+        $myUsaha = App\Models\Usaha::join('tb_detail_usaha','tb_detail_usaha.id_detail_usaha','tb_usaha.id_detail_usaha')
+            ->where('tb_usaha.username', Auth::user()->email)->first();
+        $tenagaKerja = collect();
+        if($myUsaha) {
+            $tenagaKerja = App\Models\Jadwal_Interview::join('tb_tenaga_kerja','tb_tenaga_kerja.id_tenaga_kerja','tb_jadwal_interview.id_karyawan')
+                ->where('tb_jadwal_interview.id_usaha', $myUsaha->id_usaha)
+                ->where('tb_jadwal_interview.aktif','1')
+                ->orderBy('tb_jadwal_interview.id_jadwal_interview','desc')
+                ->get();
+        }
+        $allCandidates = App\Models\Karyawan::where('aktif','1')->where('status','0')->orderBy('id_tenaga_kerja','desc')->get();
+    @endphp
+
+    <!-- Post New Job / Hire Form -->
+    <div x-show="showForm" x-transition class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm space-y-4">
+        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+            <i class="bi bi-megaphone text-[#00a6eb]"></i> Rekrut Tenaga Kerja
+        </h3>
+        @if($myUsaha)
+        <form action="{{ url('administrator/submit_hire_tenaga') }}" method="POST" class="space-y-4">
+            @csrf
+            <input type="hidden" name="text_index_usaha_pilihan" value="{{ $myUsaha->id_usaha }}">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilih Kandidat</label>
+                <select name="text_index_karyawan_pilihan" required
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-[#00a6eb]/20 focus:border-[#00a6eb] outline-none transition-all">
+                    <option value="">-- Pilih Tenaga Kerja --</option>
+                    @foreach($allCandidates as $c)
+                    <option value="{{ $c->id_tenaga_kerja }}">{{ $c->nama }} ({{ $c->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}, {{ $c->umur }} thn)</option>
+                    @endforeach
+                </select>
             </div>
             <div>
-                <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1">Cari Karyawan</p>
-                <p class="text-[11px] text-slate-600 font-medium leading-relaxed">
-                    Posting lowongan kerja Anda di sini. Lowongan akan muncul di database tenaga kerja desa dan membantu warga menemukan pekerjaan.
-                </p>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Tanggal Interview</label>
+                <input type="date" name="text_tanggal_interview" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-[#00a6eb]/20 focus:border-[#00a6eb] outline-none transition-all">
             </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Jam Interview</label>
+                <input type="time" name="text_jam_interview" value="09:00" required
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-[#00a6eb]/20 focus:border-[#00a6eb] outline-none transition-all">
+            </div>
+            <button type="submit" class="w-full bg-[#00a6eb] hover:bg-[#0090cc] text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-[#00a6eb]/20 transition-all text-sm uppercase tracking-widest">
+                <i class="bi bi-send-fill mr-2"></i> Jadwalkan Interview
+            </button>
+        </form>
+        @else
+        <div class="bg-amber-50 rounded-2xl p-4 text-center">
+            <p class="text-xs text-amber-600 font-bold">Akun usaha belum terdaftar.</p>
         </div>
+        @endif
     </div>
 
-    <!-- Form -->
-    <form action="{{ url('administrator/submit_post_add_tenagakerja') }}" method="POST" class="space-y-6">
-        @csrf
-        <div>
-            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Posisi / Nama Pekerjaan</label>
-            <input type="text" name="posisi" placeholder="Contoh: Staff Gudang" required
-                class="w-full bg-slate-50 border-b-2 border-slate-100 focus:border-emerald-500 transition-colors py-4 px-1 text-lg font-black text-slate-800 focus:outline-none placeholder-slate-300">
+    <!-- Active Recruitment List -->
+    <div>
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 px-1">Rekrutmen Aktif</h3>
+        <div class="space-y-3">
+            @forelse($tenagaKerja as $tk)
+            <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-xl bg-blue-50 text-[#00a6eb] flex items-center justify-center font-black text-sm uppercase">
+                            {{ substr($tk->nama, 0, 1) }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">{{ $tk->nama }}</p>
+                            <p class="text-[10px] text-slate-400 font-medium">{{ $tk->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }} · {{ $tk->umur }} thn</p>
+                        </div>
+                    </div>
+                    @if($tk->status_diterima == '1')
+                    <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md uppercase tracking-widest border border-emerald-100">Diterima</span>
+                    @else
+                    <span class="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-md uppercase tracking-widest border border-amber-100">Interview</span>
+                    @endif
+                </div>
+                <div class="flex items-center gap-4 text-[10px] text-slate-400 font-medium">
+                    <span><i class="bi bi-calendar-event mr-1"></i>{{ $tk->tanggal_interview }}</span>
+                    <span><i class="bi bi-clock mr-1"></i>{{ $tk->jam }}</span>
+                    @if($tk->jabatan)
+                    <span><i class="bi bi-briefcase mr-1"></i>{{ $tk->jabatan }}</span>
+                    @endif
+                </div>
+            </div>
+            @empty
+            <div class="bg-slate-50 rounded-2xl p-6 text-center">
+                <i class="bi bi-person-plus text-3xl text-slate-300 mb-2"></i>
+                <p class="text-xs text-slate-400 font-medium">Belum ada rekrutmen aktif</p>
+                <p class="text-[10px] text-slate-300 mt-1">Tap + untuk mulai merekrut</p>
+            </div>
+            @endforelse
         </div>
-
-        <div>
-            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Kategori Keahlian</label>
-            <select name="kategori" required
-                class="w-full bg-slate-50 border-b-2 border-slate-100 focus:border-emerald-500 transition-colors py-4 px-1 text-sm font-bold text-slate-800 focus:outline-none appearance-none">
-                <option value="">Pilih Kategori</option>
-                <option value="Administrasi">Administrasi</option>
-                <option value="Produksi">Produksi</option>
-                <option value="Pemasaran">Pemasaran</option>
-                <option value="Lainnya">Lainnya</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Deskripsi Pekerjaan</label>
-            <textarea name="deskripsi" rows="4" placeholder="Jelaskan tanggung jawab dan syarat..." required
-                class="w-full bg-slate-50 border-b-2 border-slate-100 focus:border-emerald-500 transition-colors py-4 px-1 text-sm font-medium text-slate-800 focus:outline-none placeholder-slate-300 resize-none"></textarea>
-        </div>
-
-        <div>
-            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Gaji / Range (Opsional)</label>
-            <input type="text" name="gaji" placeholder="Contoh: 3jt - 4jt" 
-                class="w-full bg-slate-50 border-b-2 border-slate-100 focus:border-emerald-500 transition-colors py-4 px-1 text-sm font-bold text-slate-800 focus:outline-none placeholder-slate-300">
-        </div>
-
-        <div class="pt-4">
-            <button type="submit" 
-                class="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-3xl text-white font-black tracking-tight shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2">
-                Posting Sekarang
-                <i class="bi bi-send-fill text-sm"></i>
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
 @endsection

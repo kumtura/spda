@@ -1,22 +1,11 @@
 @extends('mobile_layout')
 
-@section('content')
-<div class="px-6 py-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-        <div>
-            <h1 class="text-2xl font-black tracking-tight text-slate-800">Halo,</h1>
-            <p class="text-slate-500 text-sm font-medium">{{ Session::get('namapt') }}</p>
-        </div>
-        <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center border border-slate-200 shadow-sm overflow-hidden">
-             @php
-                $logoPath = 'storage/logos/logo.png';
-                if (!file_exists(public_path($logoPath))) {
-                    $logoPath = 'storage/login_bg/donasi.png';
-                }
-            @endphp
-            <img src="{{ asset($logoPath) }}" class="w-8 h-8 object-contain" alt="Logo">
-        </div>
+@section('isi_menu')
+<div class="px-6 py-4 space-y-8">
+    <!-- Welcome Header -->
+    <div>
+        <h1 class="text-2xl font-black tracking-tight text-slate-800 leading-none mb-1">Halo,</h1>
+        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{{ Auth::user()->name }} <span class="text-[#00a6eb]">| Unit Usaha</span></p>
     </div>
 
     <!-- Stats Card (Minimalist) -->

@@ -1,4 +1,4 @@
-@extends('index')
+@extends($base_layout)
 
 @section('isi_menu')
 

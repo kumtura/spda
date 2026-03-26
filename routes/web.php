@@ -14,15 +14,47 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/', function () {
+    return view('front.pages.home');
+})->name('public.home');
+
+Route::get('/berita', 'LandingController@berita')->name('public.berita');
+Route::get('/berita/{id}', 'LandingController@berita_detail')->name('public.berita.detail');
+Route::get('/punia', 'LandingController@punia')->name('public.punia');
+Route::get('/donasi', 'LandingController@donasi')->name('public.donasi');
+Route::post('/donasi/submit', 'LandingController@donasi_post')->name('public.donasi.submit');
+
 Route::middleware(['guest'])->group(function () {
-    Route::get('/', function () {
-        return view('front.pages.home');
-    });
-    
     Route::get('/login', function () {
         return view('auth.login');
     })->name('public.login');
+
+    Route::get('/register_usaha', function () {
+        $banjar = App\Models\Banjar::where('aktif', '1')->get();
+        $kategori = App\Models\Kategori_Usaha::where('aktif', '1')->get();
+        $village = ['name' => 'SPDA']; // Fallback for layouts
+        return view('front.pages.register_usaha', compact('banjar', 'kategori', 'village'));
+    })->name('public.register_usaha');
+
+    Route::post('/register_usaha/submit', function (\Illuminate\Http\Request $request) {
+        \App\Models\Usaha::post_data_usaha($request);
+        return redirect('/')->with('success', 'Pendaftaran usaha berhasil dikirim. Kami akan memproses permohonan Anda segera.');
+    })->name('public.register_usaha.submit');
 });
+
+Route::match(['get', 'post'], '/logoutadmin', function (\Illuminate\Http\Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/');
+})->name('logoutadmin');
+
+Route::match(['get', 'post'], '/logout', function (\Illuminate\Http\Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/');
+})->name('logout_general');
 
 Route::get('/dashboard', function () {
     return redirect()->route('administrator.home');
@@ -46,7 +78,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 
 		// Profile & General
 		Route::get('/userprofile', 'UserController@indexuser')->middleware('role:1,2,3');
-        Route::post('update_user', 'UserController@update_user'); // For profile update
+        Route::post('update_user', 'UserController@updatepost_profile'); // For profile update
 
 		// Usaha Management
 		Route::get('/download_usaha_pdf', 'Administrator\UsahaController@download_usaha_pdf');
@@ -89,8 +121,8 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::post('hapusbanjar','Administrator\BanjarController@hapusbanjar');
 		});
 
-		// Bendesa Adat & Admin Sistem (Level 1 & 4)
-		Route::group(['middleware' => 'role:1,4'], function() {
+		// Bendesa Adat, Kelian Adat & Admin Sistem (Level 1, 2 & 4)
+		Route::group(['middleware' => 'role:1,2,4'], function() {
 			Route::get('/datauser', function () {
                 $banjar = App\Models\Banjar::where('aktif', '1')->get();
 				return view('admin.pages.data_user.table', compact('banjar'));
@@ -111,20 +143,13 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::post('updatekategori','KategoriController@updatekategori');
 			Route::get('hapuskategori','KategoriController@hapuskategori');
 			Route::get('/databerita', function () {
-				return view('admin.pages.data_berita.table');
+                $kategori = App\Models\Kategori_Berita::where('aktif', '1')->get();
+				return view('admin.pages.data_berita.table', compact('kategori'));
 			});
 			Route::get('/datamenu','Administrator\MenuController@index');
 			Route::get('ambil_listmenu','Administrator\MenuController@ambil_listmenu');
 			Route::post('post_data_menu','Administrator\MenuController@post_data_menu');
 
-			Route::get('/datakategori_slides','Administrator\GambarSlidesController@index');
-			Route::get('ambil_listkategori_slides','Administrator\GambarSlidesController@ambil_listkategori_slides');
-			Route::get('/datagambar_slides','Administrator\GambarSlidesController@index_gambar');
-			Route::get('/get_gambar_slide','Administrator\GambarSlidesController@get_gambar_slide');
-			Route::post('post_gambar_baru','Administrator\GambarSlidesController@post_data_slides');
-			Route::post('post_gambar_baru_edit','Administrator\GambarSlidesController@post_gambar_baru_edit');
-			Route::get('ambil_listslides/{kategori}','Administrator\GambarSlidesController@ambil_listslides');
-			Route::post('post_active_slides','Administrator\GambarSlidesController@post_active_slides');
 
 			Route::get('datasumbangan','Administrator\SumbanganController@index');
 			Route::post('submit_post_add_sumbangan','Administrator\SumbanganController@submit_post_add_sumbangan');
@@ -142,13 +167,21 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::post('tambahlaporan', 'LaporanController@tambahlaporan');
 			Route::post('updatelaporan', 'LaporanController@updatelaporan');
 			Route::get('hapuswarta', 'LaporanController@hapus_laporan'); 
+
+            // Tenaga Kerja Sub-pages
+            Route::get('/data_tenagakerja_interview', 'Administrator\KaryawanController@indexInterview');
+            Route::get('/data_tenagakerja_approve', 'Administrator\KaryawanController@indexApprove');
+            Route::get('/data_tenagakerja_skill', 'Administrator\KaryawanController@index_skill');
+            Route::post('/post_data_skill', 'Administrator\KaryawanController@post_data_skill');
 		});
         
         // Admin Settings
         Route::group(['middleware' => 'role:1,4'], function() {
             Route::get('/settings', 'Administrator\SettingController@index');
             Route::post('/settings/update_logo', 'Administrator\SettingController@update_logo');
-            Route::post('/settings/update_gallery', 'Administrator\SettingController@update_gallery');
+            Route::post('/settings/upload_hero_slide', 'Administrator\SettingController@upload_hero_slide');
+            Route::post('/settings/delete_hero_slide', 'Administrator\SettingController@delete_hero_slide');
+            Route::post('/settings/update_village', 'Administrator\SettingController@update_village');
         });
 
 		// Misc / Legacy

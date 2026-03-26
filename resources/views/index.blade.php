@@ -19,6 +19,7 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- Standard CDNs for charts and extras used in pages -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -42,7 +43,7 @@
                 <div class="flex items-center gap-4">
                     <div class="hidden sm:block text-left">
                         <h2 class="text-[10px] font-bold text-primary-light/60 uppercase tracking-[0.2em] mb-0.5">Panel Administrasi</h2>
-                        <h1 class="text-lg font-bold text-slate-800 tracking-tight">Ringkasan Sistem</h1>
+                        <h1 class="text-lg font-black text-slate-800 tracking-tight uppercase">{{ $village['name'] ?? 'SPDA' }}</h1>
                     </div>
                 </div>
 
@@ -58,7 +59,7 @@
 
             <footer class="mt-auto px-8 py-6 border-t bg-white/50 text-center">
                 <p class="text-sm text-slate-400 font-bold tracking-wide">
-                    &copy; {{ date('Y') }} <span class="text-slate-600">Dana Punia Kumtura</span>. 
+                    &copy; {{ date('Y') }} <span class="text-slate-600">{{ $village['name'] ?? 'SPDA' }}</span>. 
                     <span class="hidden sm:inline">Dikelola dengan presisi untuk keunggulan.</span>
                 </p>
             </footer>

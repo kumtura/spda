@@ -1,4 +1,4 @@
-@extends('index')
+@extends($base_layout)
 
 @section('isi_menu')
 
@@ -189,11 +189,18 @@
                         </div>
                     </div>
 
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Jabatan / Posisi Kerja</label>
-                        <input type="text" x-model="jabatan" required placeholder="Contoh: Staff Operasional"
-                               class="w-full bg-slate-100/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-emerald-500/10 transition-all placeholder:text-slate-300">
-                        <p class="text-[11px] font-medium text-slate-400 italic px-1 mt-1">Jabatan ini akan ditampilkan pada profil publik karyawan.</p>
+                    <div class="space-y-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Jabatan / Posisi Kerja</label>
+                            <input type="text" x-model="jabatan" required placeholder="Contoh: Staff Operasional"
+                                   class="w-full bg-slate-100/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-emerald-500/10 transition-all placeholder:text-slate-300">
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Catatan/Alasan (Opsional)</label>
+                            <textarea name="alasan" placeholder="Berikan catatan singkat jika perlu..."
+                                      class="w-full bg-slate-100/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-emerald-500/10 transition-all placeholder:text-slate-300 resize-none" rows="3"></textarea>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">

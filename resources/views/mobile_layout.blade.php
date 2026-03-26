@@ -23,8 +23,31 @@
     </style>
 </head>
 <body class="antialiased font-sans text-gray-900 bg-white">
-    <div class="mobile-container overflow-x-hidden">
-        @yield('content')
+    <div class="mobile-container overflow-x-hidden pt-16">
+        <!-- Branded Header Mobile -->
+        <header class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] h-16 bg-[#00a6eb] flex items-center justify-between px-6 z-50 shadow-md">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 bg-white rounded-xl flex items-center justify-center p-1.5 shadow-sm shrink-0">
+                    @if(file_exists(public_path('storage/logos/logo.png')))
+                        <img src="{{ asset('storage/logos/logo.png') }}" class="h-full w-full object-contain" alt="Logo">
+                    @else
+                        <i class="bi bi-grid-1x2-fill text-[#00a6eb] text-xl"></i>
+                    @endif
+                </div>
+                <div class="flex flex-col">
+                    <h1 class="text-white font-black text-sm tracking-tight leading-none uppercase">{{ $village['name'] ?? 'SPDA' }}</h1>
+                    <p class="text-white/70 font-bold text-[9px] uppercase tracking-widest leading-none mt-1">Desa Adat Terpadu</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                @php
+                    $roleLabel = Session::get('level') == '2' ? 'Kelian' : (Session::get('level') == '3' ? 'Usaha' : 'Admin');
+                @endphp
+                <span class="bg-white/20 backdrop-blur-md text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">{{ $roleLabel }}</span>
+            </div>
+        </header>
+
+        @yield('isi_menu')
 
         <!-- Bottom Navigation (Minimalist KitaBisa Style) -->
         <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around items-center h-[70px] z-50 px-2 pb-[env(safe-area-inset-bottom)]">

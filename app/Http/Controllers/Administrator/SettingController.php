@@ -11,7 +11,25 @@ class SettingController extends Controller
 {
     public function index()
     {
-        return view('admin.pages.settings.index');
+        $settingsPath = storage_path('app/settings.json');
+        $village = [];
+        if (File::exists($settingsPath)) {
+            $village = json_decode(File::get($settingsPath), true);
+        }
+        return view('admin.pages.settings.index', compact('village'));
+    }
+
+    public function update_village(Request $request)
+    {
+        $data = [
+            'name' => $request->village_name,
+            'bendesa' => $request->bendesa_name,
+            'address' => $request->village_address,
+        ];
+
+        File::put(storage_path('app/settings.json'), json_encode($data));
+
+        return redirect()->back()->with('success', 'Identitas Desa berhasil diperbarui!');
     }
 
     public function update_logo(Request $request)
@@ -38,27 +56,50 @@ class SettingController extends Controller
 
         return redirect()->back()->with('error', 'Gagal mengunggah logo.');
     }
-    public function update_gallery(Request $request)
+    public function upload_hero_slide(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,svg|max:5120',
+            'hero_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'hero_title' => 'nullable|string|max:255',
         ]);
 
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $fileName = time() . '_' . $file->getClientOriginalName();
+        if ($request->hasFile('hero_image')) {
+            $file = $request->file('hero_image');
+            $fileName = time() . str_shuffle("abcdefghijklmnopqrstuvwxyz") . '.' . $file->getClientOriginalExtension();
             
-            $destinationPath = public_path('storage/gallery');
-            
+            $destinationPath = public_path('GambarSlides');
             if (!File::isDirectory($destinationPath)) {
                 File::makeDirectory($destinationPath, 0777, true, true);
             }
-            
             $file->move($destinationPath, $fileName);
 
-            return redirect()->back()->with('success', 'Foto Galeri berhasil ditambahkan!');
+            // Save to tb_gambar_home
+            $slide = new \App\Models\Gambar\Slides\Slides;
+            $slide->image_name = $fileName;
+            $slide->title = $request->hero_title ?? 'Hero Slide';
+            $slide->deskripsi = $request->hero_title ?? '';
+            $slide->alt = $request->hero_title ?? '';
+            $slide->url_path = '/GambarSlides/' . $fileName;
+            $slide->aktif = '1';
+            $slide->save();
+
+            return redirect()->back()->with('success', 'Slide Hero berhasil ditambahkan!');
         }
 
-        return redirect()->back()->with('error', 'Gagal mengunggah foto.');
+        return redirect()->back()->with('error', 'Gagal mengunggah slide.');
+    }
+
+    public function delete_hero_slide(Request $request)
+    {
+        $slide = \App\Models\Gambar\Slides\Slides::find($request->id);
+        if ($slide) {
+            // Delete physical file
+            $filePath = public_path('GambarSlides/' . $slide->image_name);
+            if (File::exists($filePath)) {
+                File::delete($filePath);
+            }
+            $slide->delete();
+        }
+        return redirect()->back()->with('success', 'Slide berhasil dihapus.');
     }
 }

@@ -44,7 +44,7 @@ jobs:
       - name: Sync Backend Core Files
         uses: Burnett01/rsync-deployments@5.2.1
         with:
-          switches: -avzr --delete --exclude='.env' --exclude='storage/' --exclude='bootstrap/cache/' --exclude='vendor/' --exclude='node_modules/' --exclude='public/' --exclude='.git/' --exclude='.github/'
+          switches: -avzr --delete --exclude='.env' --exclude='storage/' --exclude='bootstrap/cache/' --exclude='vendor/' --exclude='node_modules/' --exclude='public/' --exclude='.git/' --exclude='.github/' --exclude='bootstrap/app.php'
           path: ./
           remote_path: domains/spda.kumtura.com/laravel_app/
           remote_host: ${{ secrets.HOSTINGER_HOST }}

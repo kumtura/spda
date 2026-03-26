@@ -39,7 +39,7 @@ class UserController extends BaseController
     public function indexuser(Request $request){
         $datas = User::where('id' , Session::get('idloginpt'))->orderBy('id' , 'desc')->firstOrfail();
 
-        return view('front.pages.user_profile.update_form' , compact('datas'));
+        return view('admin.pages.user_profile.update_form' , compact('datas'));
     }
 
 	public function login_user(Request $request){
@@ -188,7 +188,8 @@ class UserController extends BaseController
 
     public function post_user(Request $request){
          $curr_level = Session::get('level');
-         $curr_banjar = Auth::guard('admin')->user()->id_banjar;
+         $user = Auth::guard('admin')->user();
+         $curr_banjar = $user ? $user->id_banjar : null;
 
     	 $list=new User;
 
@@ -236,14 +237,23 @@ class UserController extends BaseController
 	}
 
     public function destroy(Request $request){
-	$halaman="tb_admin";
-	//$admin_list=tb_admin::findOrFail($id_admin);
-	//$idx = $id;
-	$admin_list=User::where('id', '=' ,$request->input('id'))->delete();
-	//$admin_list->delete();
-	//return redirect('admin/merk');
-	echo "success";
-}
+        $userId = $request->input('id');
+        
+        // Cascade delete: remove loker associated with usaha owned by this user
+        $usahaIds = \DB::table('tb_usaha')
+            ->join('tb_penanggung_jawab', 'tb_penanggung_jawab.id_penanggung_jawab', '=', 'tb_usaha.id_penanggung_jawab')
+            ->where('tb_penanggung_jawab.id_user', $userId)
+            ->pluck('tb_usaha.id_usaha');
+        
+        if ($usahaIds->count() > 0) {
+            \App\Models\Loker::whereIn('id_usaha', $usahaIds)->delete();
+        }
+        
+        // Delete the user itself
+        User::where('id', '=', $userId)->delete();
+        
+        echo "success";
+    }
 
 
 }

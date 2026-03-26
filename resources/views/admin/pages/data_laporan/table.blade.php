@@ -111,84 +111,88 @@
         ambil_warta();
     });
 
-    function ambil_warta() {
+    async function ambil_warta() {
         const container = document.getElementById('div_container_isi');
         
-        $.ajax({
-            type: "get",
-            url: "{{ url('administrator/ambil_listlaporan') }}",
-            dataType: "json",
-            success: function(data) {
-                container.innerHTML = '';
-                if(data.length === 0) {
-                    container.innerHTML = '<div class="col-span-full py-12 text-center"><i class="bi bi-inbox text-3xl text-slate-200 block mb-2"></i><p class="text-xs font-black text-slate-400 uppercase">Belum ada laporan</p></div>';
-                    return;
-                }
+        try {
+            const response = await fetch("{{ url('administrator/ambil_listlaporan') }}");
+            const data = await response.json();
+            
+            container.innerHTML = '';
+            if(data.length === 0) {
+                container.innerHTML = '<div class="col-span-full py-12 text-center"><i class="bi bi-inbox text-3xl text-slate-200 block mb-2"></i><p class="text-xs font-black text-slate-400 uppercase">Belum ada laporan</p></div>';
+                return;
+            }
 
-                data.forEach(item => {
-                    const card = `
-                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow group">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="h-12 w-12 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500 border border-rose-100 group-hover:scale-110 transition-transform">
-                                    <i class="bi bi-file-earmark-pdf-fill text-2xl"></i>
-                                </div>
-                                <span class="px-2 py-0.5 bg-blue-50 text-primary-light rounded text-[9px] font-black uppercase tracking-widest border border-blue-100">${item.tahun}</span>
+            data.forEach(item => {
+                const card = `
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow group">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="h-12 w-12 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500 border border-rose-100 group-hover:scale-110 transition-transform">
+                                <i class="bi bi-file-earmark-pdf-fill text-2xl"></i>
                             </div>
-                            <h3 class="text-sm font-black text-slate-800 tracking-tight leading-snug mb-1 line-clamp-2">${item.title}</h3>
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-6">Financial Archive • PDF</p>
-                            
-                            <div class="flex gap-2">
-                                <a href="{{ url('storage/laporan') }}/${item.file}" target="_blank" 
-                                   class="flex-1 h-9 flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-primary-light text-white rounded-lg font-black text-[9px] uppercase tracking-widest transition-all">
-                                    <i class="bi bi-download"></i> Unduh
-                                </a>
-                                <div class="flex gap-1.5">
-                                    <button onclick="window.Alpine.find(document.querySelector('[x-data]')).openEdit('${item.id_laporan}', '${item.title}', '${item.tahun}')"
-                                            class="h-9 w-9 flex items-center justify-center bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-primary-light hover:border-primary-light transition-all shadow-sm">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </button>
-                                    <button onclick="deletedata('${item.id_laporan}')"
-                                            class="h-9 w-9 flex items-center justify-center bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-rose-500 hover:border-rose-100 transition-all shadow-sm">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-                                </div>
+                            <span class="px-2 py-0.5 bg-blue-50 text-primary-light rounded text-[9px] font-black uppercase tracking-widest border border-blue-100">${item.tahun}</span>
+                        </div>
+                        <h3 class="text-sm font-black text-slate-800 tracking-tight leading-snug mb-1 line-clamp-2">${item.title}</h3>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-6">Financial Archive • PDF</p>
+                        
+                        <div class="flex gap-2">
+                            <a href="{{ url('storage/laporan') }}/${item.file}" target="_blank" 
+                               class="flex-1 h-9 flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-primary-light text-white rounded-lg font-black text-[9px] uppercase tracking-widest transition-all">
+                                <i class="bi bi-download"></i> Unduh
+                            </a>
+                            <div class="flex gap-1.5">
+                                <button onclick="window.Alpine.find(document.querySelector('[x-data]')).openEdit('${item.id_laporan}', '${item.title}', '${item.tahun}')"
+                                        class="h-9 w-9 flex items-center justify-center bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-primary-light hover:border-primary-light transition-all shadow-sm">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button onclick="deletedata('${item.id_laporan}')"
+                                        class="h-9 w-9 flex items-center justify-center bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-rose-500 hover:border-rose-100 transition-all shadow-sm">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
                             </div>
                         </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', card);
-                });
-            }
-        });
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            container.innerHTML = '<div class="col-span-full py-12 text-center text-rose-500"><i class="bi bi-exclamation-triangle text-3xl block mb-2"></i><p class="text-xs font-bold uppercase">Gagal memuat data</p></div>';
+        }
     }
 
-    function tambahdata() {
-        let formData = new FormData(document.getElementById('frm_warta'));
+    async function tambahdata() {
+        let form = document.getElementById('frm_warta');
+        let formData = new FormData(form);
         let isEdit = document.getElementById('t_aksi_pencarian').value === 'edit';
         let targetUrl = isEdit ? "{{ url('administrator/updatelaporan') }}" : "{{ url('administrator/tambahlaporan') }}";
 
-        $.ajax({
-            url: targetUrl,
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function() {
-                window.Alpine.find(document.querySelector('[x-data]')).showAddModal = false;
-                ambil_warta();
-            }
-        });
-    }
-
-    function deletedata(id) {
-        if(confirm('Hapus laporan ini?')) {
-            $.ajax({
-                type: "GET",
-                url: "{{ url('administrator/hapuswarta') }}",
-                data: { id: id },
-                success: function() {
-                    ambil_warta();
+        try {
+            await fetch(targetUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
                 }
             });
+            window.Alpine.find(document.querySelector('[x-data]')).showAddModal = false;
+            ambil_warta();
+        } catch(error) {
+            console.error('Error saving:', error);
+        }
+    }
+
+    async function deletedata(id) {
+        if(confirm('Hapus laporan ini?')) {
+            try {
+                await fetch(`{{ url('administrator/hapuswarta') }}?id=${id}`, {
+                    method: 'GET'
+                });
+                ambil_warta();
+            } catch(error) {
+                console.error('Error deleting:', error);
+            }
         }
     }
 </script>

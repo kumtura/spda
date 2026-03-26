@@ -8,6 +8,7 @@ class Slides extends Model
 {   
     //public $timestamps = false; 
     //
+    protected $primaryKey = 'id_gambar_home';
     protected $fillable = ['id_gambar_home', 'image_name', 'title','aktif'];
     protected $table='tb_gambar_home';
 

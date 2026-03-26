@@ -1,6 +1,6 @@
 @extends('index')
 
-@section('content')
+@section('isi_menu')
 <div class="px-6 space-y-6">
     <!-- Header Page -->
     <div class="bg-white/95 backdrop-blur-xl border border-white/20 p-6 rounded-3xl shadow-lg border-l-4 border-l-primary-light animate-in fade-in slide-in-from-bottom-4 duration-700 relative overflow-hidden">
@@ -61,48 +61,101 @@
             </form>
         </div>
 
-        <!-- Hero Slider & Visual Assets -->
+        <!-- Hero Slideshow Manager -->
         <div class="bg-white rounded-4xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition duration-300">
             <h3 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100 flex items-center gap-2">
-                <i class="bi bi-collection-play-fill text-primary-light"></i> Pengaturan Visual Beranda
+                <i class="bi bi-collection-play-fill text-primary-light"></i> Slideshow Hero Beranda
             </h3>
-            
-            <div class="space-y-6">
-                <p class="text-[11px] text-slate-500 leading-relaxed">Kelola aset visual yang muncul pada landing page utama, termasuk slider gambar dan kategori promo/informasi.</p>
-                
-                <div class="grid grid-cols-1 gap-4">
-                    <!-- Quick Link: Slider Images -->
-                    <a href="{{ url('administrator/datagambar_slides') }}" class="group flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-white hover:shadow-lg hover:border-primary-light/20 transition-all">
-                        <div class="h-12 w-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary-light group-hover:bg-primary-light group-hover:text-white transition-colors">
-                            <i class="bi bi-images text-xl"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">Manajemen Slide</h4>
-                            <p class="text-[10px] text-slate-400 font-bold">Unggah & atur urutan gambar slider utama.</p>
-                        </div>
-                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-primary-light transition-colors"></i>
-                    </a>
 
-                    <!-- Quick Link: Slider Categories -->
-                    <a href="{{ url('administrator/datakategori_slides') }}" class="group flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-white hover:shadow-lg hover:border-primary-light/20 transition-all">
-                        <div class="h-12 w-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary-light group-hover:bg-primary-light group-hover:text-white transition-colors">
-                            <i class="bi bi-tags-fill text-xl"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">Kategori Slide</h4>
-                            <p class="text-[10px] text-slate-400 font-bold">Kelompokkan gambar berdasarkan promosi/acara.</p>
-                        </div>
-                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-primary-light transition-colors"></i>
-                    </a>
+            @php
+                $heroSlides = \App\Models\Gambar\Slides\Slides::where('aktif', '1')->orderBy('id_gambar_home', 'desc')->get();
+            @endphp
+            
+            <!-- Current Slides -->
+            @if($heroSlides->count() > 0)
+            <div class="mb-6 space-y-3">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Slide Aktif ({{ $heroSlides->count() }})</p>
+                @foreach($heroSlides as $slide)
+                <div class="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div class="h-16 w-24 rounded-xl overflow-hidden shrink-0 bg-slate-200">
+                        <img src="{{ asset('GambarSlides/'.$slide->image_name) }}" class="h-full w-full object-cover" alt="{{ $slide->title }}">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold text-slate-700 truncate">{{ $slide->title ?: 'Hero Slide' }}</p>
+                        <p class="text-[10px] text-slate-400">{{ $slide->created_at ? $slide->created_at->format('d M Y') : '-' }}</p>
+                    </div>
+                    <form action="{{ url('administrator/settings/delete_hero_slide') }}" method="POST" onsubmit="return confirm('Hapus slide ini?')">
+                        @csrf
+                        <input type="hidden" name="id" value="{{ $slide->id_gambar_home }}">
+                        <button type="submit" class="h-8 w-8 bg-white border border-rose-200 text-rose-400 rounded-lg flex items-center justify-center hover:bg-rose-50 transition-colors">
+                            <i class="bi bi-trash3 text-sm"></i>
+                        </button>
+                    </form>
                 </div>
-                
-                <div class="p-4 bg-sky-50 rounded-2xl border border-sky-100">
-                    <div class="flex gap-3">
-                        <i class="bi bi-info-circle-fill text-sky-500 mt-0.5"></i>
-                        <p class="text-[10px] text-sky-700 font-bold leading-relaxed lowercase">Gunakan manajemen terpusat ini untuk memastikan visual website tetap konsisten dan menarik bagi pengunjung.</p>
+                @endforeach
+            </div>
+            @else
+            <div class="mb-6 p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
+                <i class="bi bi-images text-2xl text-slate-300 mb-1 block"></i>
+                <p class="text-xs text-slate-400 font-bold">Belum ada slide. Upload gambar pertama Anda.</p>
+            </div>
+            @endif
+
+            <!-- Upload New -->
+            <form action="{{ url('administrator/settings/upload_hero_slide') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="space-y-3">
+                    <div>
+                        <label class="block mb-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Judul Slide (Opsional)</label>
+                        <input type="text" name="hero_title" placeholder="Mis: Nyepi 2026" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block mb-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Gambar Slide</label>
+                        <input type="file" name="hero_image" required accept="image/png,image/jpeg,image/webp" class="block w-full text-sm text-slate-500 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 file:mr-4 file:py-2.5 file:px-4 file:rounded-l-xl file:border-0 file:text-xs file:font-semibold file:bg-primary-light file:text-white hover:file:bg-primary-dark transition-all">
+                        <p class="text-[9px] text-slate-400 mt-1 px-1">Format: JPG, PNG, WEBP. Maks: 5MB. Resolusi landscape untuk hasil terbaik.</p>
                     </div>
                 </div>
-            </div>
+                <div class="flex justify-end pt-4">
+                    <button type="submit" class="bg-primary-light hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 transition-colors flex items-center gap-2">
+                        <i class="bi bi-cloud-arrow-up-fill"></i> Tambah Slide
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Village Data Settings -->
+        <div class="bg-white rounded-4xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition duration-300 col-span-1 md:col-span-2">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 pb-3 border-b border-slate-100 flex items-center gap-2">
+                <i class="bi bi-geo-alt-fill text-primary-light"></i> Informasi Identitas Desa Adat
+            </h3>
+            
+            <form action="{{ url('administrator/settings/update_village') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                @csrf
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Desa Adat</label>
+                        <input type="text" name="village_name" value="{{ $village['name'] ?? 'SPDA' }}" required
+                               class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Bendesa Adat</label>
+                        <input type="text" name="bendesa_name" value="{{ $village['bendesa'] ?? '' }}" required
+                               class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Lengkap Kantor</label>
+                        <textarea name="village_address" rows="4" required
+                                  class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all resize-none">{{ $village['address'] ?? '' }}</textarea>
+                    </div>
+                </div>
+                <div class="md:col-span-2 flex justify-end pt-4">
+                    <button type="submit" class="bg-slate-900 hover:bg-primary-dark text-white px-10 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl transition-all transform hover:-translate-y-1">
+                        Simpan Identitas Desa <i class="bi bi-check-lg ml-2"></i>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

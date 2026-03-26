@@ -30,7 +30,10 @@
         </div>
 
         <div class="px-6 py-8 flex-1">
-            <h2 class="text-lg font-bold text-slate-800 mb-8 text-center">Masuk untuk mengelola SPDA</h2>
+            <h2 class="text-lg font-bold text-slate-800 mb-8 text-center tracking-tight">
+                {{ $village['name'] ?? 'SPDA' }}<br>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mt-2">Manajemen Desa Adat Terpadu</span>
+            </h2>
 
             <x-auth-session-status class="mb-4" :status="session('status')" />
 

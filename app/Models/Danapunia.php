@@ -34,7 +34,7 @@ class Danapunia extends Model
         // }
         // else{
           
-        $data = Usaha::select(DB::raw('DISTINCT id_usaha , tb_usaha.*,tb_detail_usaha.*,tb_penanggung_jawab.*'))->join("tb_detail_usaha" , "tb_detail_usaha.id_detail_usaha" , "tb_usaha.id_detail_usaha")->join("tb_penanggung_jawab","tb_penanggung_jawab.id_penanggung_jawab",'tb_usaha.id_penanggung_jawab')->groupBy('id_usaha')->orderBy("id_usaha","desc")->paginate(20);
+        $data = Usaha::select('tb_usaha.id_usaha', 'tb_usaha.aktif_status', 'tb_detail_usaha.nama_usaha', 'tb_detail_usaha.email_usaha', 'tb_detail_usaha.minimal_bayar', 'tb_detail_usaha.logo', 'tb_penanggung_jawab.nama', 'tb_penanggung_jawab.alamat')->join("tb_detail_usaha" , "tb_detail_usaha.id_detail_usaha" , "tb_usaha.id_detail_usaha")->join("tb_penanggung_jawab","tb_penanggung_jawab.id_penanggung_jawab",'tb_usaha.id_penanggung_jawab')->groupBy('tb_usaha.id_usaha')->orderBy("tb_usaha.id_usaha","desc")->paginate(20);
         
         // }
 

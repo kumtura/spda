@@ -19,7 +19,7 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, ...$levels)
     {
         if (!Auth::check() || !in_array(Auth::user()->id_level, $levels)) {
-            return redirect('administrator/login');
+            return redirect('/login');
         }
 
         return $next($request);

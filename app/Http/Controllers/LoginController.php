@@ -184,6 +184,6 @@ class LoginController extends BaseController
         session()->forget('level');
 
         
-        return redirect('administrator/login');
+        return redirect('/login');
     }
 }

@@ -25,10 +25,6 @@ Route::get('/donasi', 'LandingController@donasi')->name('public.donasi');
 Route::post('/donasi/submit', 'LandingController@donasi_post')->name('public.donasi.submit');
 
 Route::middleware(['guest'])->group(function () {
-    Route::get('/login', function () {
-        return view('auth.login');
-    })->name('login');
-
     Route::get('/register_usaha', function () {
         $banjar = App\Models\Banjar::where('aktif', '1')->get();
         $kategori = App\Models\Kategori_Usaha::where('aktif', '1')->get();
@@ -211,9 +207,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 		});
     });
 
-Route::prefix('administrator')->group(function () {
-    require __DIR__.'/auth.php';
-});
+require __DIR__.'/auth.php';
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -152,8 +152,8 @@
         </div>
         <div class="space-y-4">
             <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-                <div class="h-32 bg-slate-200 relative">
-                    <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500&auto=format&fit=crop" class="w-full h-full object-cover" alt="">
+                <div class="h-32 bg-slate-50 relative flex items-center justify-center">
+                    <i class="bi bi-image text-3xl text-slate-200"></i>
                     <span class="absolute top-2 right-2 bg-emerald-500 text-white text-[8px] font-bold px-2 py-1 rounded-sm tracking-widest uppercase">Pembangunan</span>
                 </div>
                 <div class="p-3">
@@ -168,8 +168,8 @@
                 </div>
             </div>
             <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-                <div class="h-32 bg-slate-200 relative">
-                    <img src="https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=500&auto=format&fit=crop" class="w-full h-full object-cover" alt="">
+                <div class="h-32 bg-slate-50 relative flex items-center justify-center">
+                    <i class="bi bi-image text-3xl text-slate-200"></i>
                     <span class="absolute top-2 right-2 bg-red-500 text-white text-[8px] font-bold px-2 py-1 rounded-sm tracking-widest uppercase">Mendesak</span>
                 </div>
                 <div class="p-3">

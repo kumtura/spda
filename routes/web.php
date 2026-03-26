@@ -27,7 +27,7 @@ Route::post('/donasi/submit', 'LandingController@donasi_post')->name('public.don
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', function () {
         return view('auth.login');
-    })->name('public.login');
+    })->name('login');
 
     Route::get('/register_usaha', function () {
         $banjar = App\Models\Banjar::where('aktif', '1')->get();

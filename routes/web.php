@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LandingController;
+use App\Http\Controllers\Administrator\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,11 +20,11 @@ Route::get('/', function () {
     return view('front.pages.home');
 })->name('public.home');
 
-Route::get('/berita', 'LandingController@berita')->name('public.berita');
-Route::get('/berita/{id}', 'LandingController@berita_detail')->name('public.berita.detail');
-Route::get('/punia', 'LandingController@punia')->name('public.punia');
-Route::get('/donasi', 'LandingController@donasi')->name('public.donasi');
-Route::post('/donasi/submit', 'LandingController@donasi_post')->name('public.donasi.submit');
+Route::get('/berita', [LandingController::class, 'berita'])->name('public.berita');
+Route::get('/berita/{id}', [LandingController::class, 'berita_detail'])->name('public.berita.detail');
+Route::get('/punia', [LandingController::class, 'punia'])->name('public.punia');
+Route::get('/donasi', [LandingController::class, 'donasi'])->name('public.donasi');
+Route::post('/donasi/submit', [LandingController::class, 'donasi_post'])->name('public.donasi.submit');
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/register_usaha', function () {
@@ -65,7 +67,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 
 		Route::get('/home', [
 			'as'   => 'home',
-			'uses' => 'Administrator\DashboardController@indexhome',
+			'uses' => [DashboardController::class, 'indexhome'],
 		])->middleware('role:1,2,3,4');
 
 		Route::get('/get_danapunia_range', [

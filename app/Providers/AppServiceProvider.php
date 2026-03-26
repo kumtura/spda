@@ -11,6 +11,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        /*
         $this->app->singleton('url', function ($app) {
             $routes = $app['router']->getRoutes();
 
@@ -21,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
                 $routes, $request, $app['config']['app.asset_url']
             );
         });
+        */
     }
 
     /**

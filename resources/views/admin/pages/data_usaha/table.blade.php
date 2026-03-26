@@ -2,1083 +2,313 @@
 
 @section('isi_menu')
 
-<div class="container-fluid">
-    <!-- *************************************************************** -->
-    <!-- Start First Cards -->
-    <!-- *************************************************************** -->
-
-<div class="modal fade" id="editedModal" tabindex="-1" role="dialog" aria-labelledby="editedModalLabel" aria-hidden="true">
-    <form id="form_multi_edit" name="form_multi_edit" enctype="multipart/form-data" method="post" onsubmit="submit_edit_gambar_form(this); return false;">
+<div class="space-y-6" x-data="{ 
+    showAddModal: false,
+    activeTab: 'detail',
     
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editedModalLabel">Form Edit Gambar</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    
-                    <div class="col-lg-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <strong>Form</strong> Edit Usaha
-                                    </div>
-                                    <div class="card-body card-block">
-
-                                   
-                                            {{ csrf_field() }}
-                                            <input type="hidden" name="edit_hidden_textfield" id="edit_hidden_textfield" />
-
-                                            <div class="row form-group">
-                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Title</label></div>
-                                                <div class="col-12 col-md-9"><input type="text" id="edit_text_title_new" name="edit_text_title_new" required="required" class="form-control" /><small class="form-text text-muted">Masukkan Title</small></div>
-                                            </div>
-                                            
-                                            
-
-                                            <div class="row form-group">
-                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Alt Desc</label></div>
-                                                <div class="col-12 col-md-9"><input type="text" id="edit_text_desc_new" name="edit_text_desc_new" required="required"  class="form-control"><small class="form-text text-muted">Masukkan Alt Desc</small></div>
-                                            </div>
-
-                                            <div class="row form-group">
-                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Gambar Desktop <br />( landscape )</label></div>
-                                                <div class="col-12 col-md-9"><input type="file" id="edit_f_upload_gambar" onchange="document.getElementById('edit_current_desktop_image').src = window.URL.createObjectURL(this.files[0]);" name="edit_f_upload_gambar" class="form-control"> <!-- <small class="form-text text-muted">Masukkan Nama Kategori</small> --> </div>
-
-                                                <div class="col col-md-6"><div class="col-md-12"> <img src="" id="edit_desktop_image" class="img-fluid" style="opacity:0.5;" /> </div> </div>
-                                                <div class="col col-md-6"><div class="col-md-12">  <img src="<?php echo url("public")."/default.png"; ?>" id="edit_current_desktop_image" class="img-fluid"  /> </div> </div>
-                                            </div>
-                                            
-
-                                            <div class="row form-group">
-                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Gambar Mobile <br />( potrait )</label></div>
-                                                <div class="col-12 col-md-9"><input type="file" id="edit_f_upload_gambar_mobile" name="edit_f_upload_gambar_mobile" onchange="document.getElementById('edit_current_mobile_image').src = window.URL.createObjectURL(this.files[0]);" class="form-control"> <!-- <small class="form-text text-muted">Masukkan Nama Kategori</small> --> </div>
-
-                                                <div class="col col-md-6"><div class="col-md-12">  <img src="" id="edit_mobile_image" class="img-fluid" style="opacity:0.5;" /> </div> </div>
-                                                <div class="col col-md-6"><div class="col-md-12">  <img src="<?php echo url("public")."/default.png"; ?>" id="edit_current_mobile_image" class="img-fluid"  /> </div> </div>
-
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                    
-                                </div>
-
-                                    <button type="reset" class="btn btn-secondary" style="display:none;" id="btn_reset">Reset</button>
-
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    
-                    <button type="submit" class="btn btn-primary">Confirm</button>
-                </div>
-
-            </div>
-        </div>
-    </form>
-
-</div>
-
-
-<div class="modal fade" id="largeModal" tabindex="-1" role="dialog" aria-labelledby="largeModalLabel" aria-hidden="true">
-    <form id="form_maintenance_usaha" name="form_maintenance_usaha" enctype="multipart/form-data" method="post" action="<?php echo url("administrator/submit_post_add_usaha"); ?>">
+    // Form Data
+    usahaName: '',
+    usahaEmail: '',
+    usahaPhone: '',
+    usahaWA: '',
+    usahaAddress: '',
+    usahaKategori: '',
+    minPayment: '',
+    banjarId: '',
+    googleMaps: '',
     
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="largeModalLabel">Form Maintenance Usaha</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    
-                    <div class="col-lg-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <strong>Form</strong> Input Usaha
-                        </div>
-                        
-                        
-        <div class="card-body card-block">
-                            
-                        <!--<ul class="nav nav-tabs mb-3" id="div_tabs">-->
-                        <!--    <li class="nav-item" onclick="#"><a href="#detail_usaha" data-toggle="tab" aria-expanded="false" class="nav-link active"><i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i><span class="d-none d-lg-block">Detail Usaha</span></a></li>-->
-                        <!--    <li class="nav-item" onclick="#">-->
-                        <!--    <a href="#pngg_jawab" data-toggle="tab" aria-expanded="false" class="nav-link "><i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i><span class="d-none d-lg-block">Penanggung Jawab</span></a>-->
-                        <!--    </li>-->
-                        <!--</ul>-->
-                        
-                <nav>
-                  <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                      
-                    <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">Detail Usaha</a>
-                    <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Penanggung Jawab</a>
-                    <a class="nav-item nav-link" id="nav-credentials-tab" data-toggle="tab" href="#nav-credentials" role="tab" aria-controls="nav-credentials-tab" aria-selected="false" onclick="$('#text_username_new').val($('#text_email_usaha_new').val());">Credentials</a>
-                    
-                  </div>
-                </nav>
-                
-                <p>&nbsp;</p>
-                <div class="tab-content" id="nav-tabContent">
+    pjName: '',
+    pjStatus: '',
+    pjAddress: '',
+    pjEmail: '',
+    pjPanel: '',
+    
+    username: '',
+    password: '',
 
-                    <div class="tab-pane fade" id="nav-credentials" role="tabpanel" aria-labelledby="nav-credentials-tab">
-                    
-                        <div class="row form-group">
-                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Username :</label></div>
-                                <div class="col-12 col-md-9">
-                                    <input type="text" id="text_username_new" name="text_username_new" readonly="readonly" class="form-control" value="" />
-                                    <small class="form-text text-muted">Username Login Investor ( email investor )</small>
-                                </div>
-                        </div>
-                        <div class="row form-group">
-                            <div class="col col-md-3"><label for="text-input" class=" form-control-label">Password :</label></div>
-                                <div class="col-12 col-md-9">
-                                    <input type="password" id="text_password_new" name="text_password_new" required="required" class="form-control">
-                                    <small class="form-text text-muted">Masukkan Password Investor</small>
-                                </div>
-                        </div>
+    openAdd() {
+        this.showAddModal = true;
+        this.activeTab = 'detail';
+    },
 
-                    </div>
+    updateUsername() {
+        this.username = this.usahaEmail;
+    }
+}">
 
-                    <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight">Manajemen Data Usaha</h1>
+            <p class="text-slate-500 font-medium text-sm">Kelola profil usaha, verifikasi pendaftaran, dan data investor.</p>
+        </div>
+        <button @click="openAdd()" 
+                class="flex items-center justify-center gap-2 bg-primary-light hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-100 transition-all transform hover:-translate-y-1">
+            <i class="bi bi-plus-lg text-lg"></i>
+            Tambah Usaha Baru
+        </button>
+    </div>
 
-                    
-                        
-                        <div id="detail_usaha">
-
-                       
-                                {{ csrf_field() }}
-
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Nama Usaha :</label></div>
-                                    <div class="col-12 col-md-9"><input type="text" id="text_title_new" name="text_title_new" required="required" class="form-control"><small class="form-text text-muted">Masukkan Nama Usaha</small></div>
-                                </div>
-                                
-                                
-                                            <div class="row form-group">
-                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Kategori Usaha</label></div>
-                                                <div class="col-12 col-md-9">
-                                        
-                                        <select id="cmb_kategori_usaha" name="cmb_kategori_usaha" required="required" class="form-control">
-                                                <option value="">- Pilih Kategori Usaha -</option>
-                                        <?php
-                                        foreach($kategori as $rows){
-                                            ?>
-                                            <option value="<?php echo $rows->id_kategori_usaha; ?>"><?php echo $rows->nama_kategori_usaha; ?></option>
-                                            <?php
-                                        }
-                                        ?>
-                                        </select>
-                                                
-                                                <small class="form-text text-muted">Pilih Kategori Usaha</small></div>
-                                            </div>
-                                
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Minimal Pembayaran :</label></div>
-                                    <div class="col-12 col-md-9"><input type="text" id="text_minimal_pembayaran" name="text_minimal_pembayaran" required="required" class="form-control"><small class="form-text text-muted">Masukkan Inputan Minimal Pembayaran</small></div>
-                                </div>
-                                
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Email Usaha :</label></div>
-                                    <div class="col-12 col-md-9"><input type="text" id="text_email_usaha_new" name="text_email_usaha_new" required="required" class="form-control"><small class="form-text text-muted">Masukkan Nama Usaha</small></div>
-                                </div>
-                                
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">No.Telp Kantor Usaha :</label></div>
-                                    <div class="col-12 col-md-9"><input type="text" id="text_telpkantor_new" name="text_telpkantor_new" required="required" class="form-control"><small class="form-text text-muted">Masukkan Nama Usaha</small></div>
-                                </div>
-                                
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">No.Telp WA :</label></div>
-                                    <div class="col-12 col-md-9"><input type="text" id="text_notelp_was" name="text_notelp_was" required="required" class="form-control"><small class="form-text text-muted">Masukkan Nama Usaha</small></div>
-                                </div>
-
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Nama Banjar :</label></div>
-                                    <div class="col-12 col-md-9">
-                                        
-                                        <select class="form-control" id="text_desc_new" name="text_desc_new" required="required">
-                                            <option value="">- Pilih Banjar -</option>
-                                            <?php
-                                                foreach($banjar as $rows_banjar){
-                                                    ?>
-                                                    <option value="<?php echo $rows_banjar->id_data_banjar; ?>"><?php echo $rows_banjar->nama_banjar; ?></option>
-                                                    <?php
-                                                }
-                                                ?>
-                                        </select>
-                                        <small class="form-text text-muted">Masukkan Nama Banjar</small></div>
-                                </div>
-
-                                <div class="row form-group">
-                                        <div class="col col-md-3"><label for="text-input" class=" form-control-label">Alamat Usaha :</label></div>
-                                <div class="col-12 col-md-9">
-                                    <textarea class="col-12 col-md-12" name="t_alamat_usaha" class="form-control"><?php echo $rows->alamat_banjar; ?></textarea>
-                                    <small class="form-text text-muted">Masukkan alamat Usaha</small></div>
-                                </div>
-                                
-                                <div class="row form-group">
-                                    
-                                <div class="col col-md-12" style="margin-top:30px;">
-                                    
-                                    <div class="row">
-                                    
-                                        <div class="col col-md-3"><label for="text-input" class=" form-control-label">Facebook Url :</label>
-                                        </div>
-                                            
-                                        <div class="col-12 col-md-9">
-                                            <input type="text" name="cmb_social_facebook" id="cmb_social_facebook" class="form-control" />
-                                        </div>
-                                    
-                                    </div>
-                                
-                                </div>
-                                
-                                <div class="col col-md-12" style="margin-top:30px;">
-                                    
-                                    <div class="row">
-                                
-                                        <div class="col col-md-3"><label for="text-input" class=" form-control-label">Twitter Url :</label>
-                                        </div>
-                                            
-                                        <div class="col-12 col-md-9">
-                                            <input type="text" name="cmb_social_twitter" id="cmb_social_twitter" class="form-control" />
-                                        </div>
-                                    
-                                    </div>
-                                
-                                </div>
-                                
-                                <div class="col col-md-12" style="margin-top:30px;">
-                                    
-                                    <div class="row">
-                                
-                                        <div class="col col-md-3"><label for="text-input" class=" form-control-label">Website Url :</label>
-                                        </div>
-                                            
-                                        <div class="col-12 col-md-9">
-                                            <input type="text" name="cmb_social_website" id="cmb_social_website" class="form-control" />
-                                        </div>
-                                    
-                                    </div>
-                                
-                                </div>
-                                    
-                                </div>
-                                
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Google Maps :</label></div>
-                                    <div class="col-12 col-md-9"><input type="text" id="text_google_maps" name="text_google_maps" required="required" class="form-control"><small class="form-text text-muted">Masukkan Embed Link Google Maps</small></div>
-                                </div>
-
-                                <div class="row form-group"  style="margin-top:30px;">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Gambar logo :</label></div>
-                                    <div class="col-12 col-md-9"><input type="file" id="f_upload_gambar_mobile" name="f_upload_gambar_mobile" required="required" class="form-control"><small class="form-text text-muted">Masukkan Nama Kategori</small></div>
-                                </div>
-                                </div>
-                                
-                      
-                    </div>
-                  <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                      
-                      
-                        <div id="pngg_jawab">
-                            <div class="row form-group">
-                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Nama  :</label></div>
-                                
-                                <div class="col-12 col-md-9">
-                                <input type="text" id="text_namapngg_new" name="text_namapngg_new" required="required" class="form-control"><small class="form-text text-muted">Masukkan Nama Penanggung Jawab</small></div>
-                            </div>
-                            
-                            <div class="row form-group">
-                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Status  :</label></div>
-                                
-                                <div class="col-12 col-md-9">
-                                <input type="text" id="text_statuspngg_new" name="text_statuspngg_new" required="required" class="form-control"><small class="form-text text-muted">Masukkan Status Penanggung Jawab</small></div>
-                            </div>
-                            
-                            <div class="row form-group">
-                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Alamat  :</label></div>
-                                
-                                <div class="col-12 col-md-9">
-                                <input type="text" id="text_alamat_pngg_new" name="text_alamat_pngg_new" required="required" class="form-control"><small class="form-text text-muted">Masukkan Alamat Penanggung Jawab</small></div>
-                            </div>
-                            
-                            <div class="row form-group">
-                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Email  :</label></div>
-                                
-                                <div class="col-12 col-md-9">
-                                <input type="text" id="text_email_usaha_new" name="text_email_pngg_new" required="required" class="form-control"><small class="form-text text-muted">Masukkan Email </small></div>
-                            </div>
-                            
-                            <div class="row form-group">
-                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">No.Telp  :</label></div>
-                                
-                                <div class="col-12 col-md-9">
-                                <input type="text" id="text_notelp_pngg_new" name="text_notelp_pngg_new" required="required" class="form-control"><small class="form-text text-muted">Masukkan No.Telp Penanggung Jawab</small></div>
-                            </div>
-                            
-                            
-                            
-                        </div>
-                        
-                  </div>
-                  <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">...</div>
-                </div>
-
-                                
-                                
-                            </div>
-                        </div>
-                        
-                    </div>
-
-                    <button type="reset" class="btn btn-secondary" style="display:none;" id="btn_reset">Reset</button>
-
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    
-                    <button type="submit" class="btn btn-primary">Confirm</button>
-                </div>
-
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="glass-card p-5 flex items-center gap-4 border border-slate-200">
+            <div class="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                <i class="bi bi-building-check text-xl"></i>
             </div>
-        </div>
-    </form>
-
-</div>
-
-
-<div id="div_detail_berita" style="display:none;">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title" id="judul_berita"> Data Usaha</h4>
-                        <hr />
-
-                        <p>&nbsp;</p>
-
-                        <center>
-                            <div class="col-md-6">
-                                <img id="img_berita" class="img-fluid" />
-                            </div>
-                        </center>
-
-                        <p>&nbsp;</p>
-
-                        <!-- <div class="col-md-12" id="isi_berita">
-                            
-                        </div> -->
-
-                        </div>
-                    </div>
-                </div>
-        </div>
-</div>
-
-
-<div class="content mt-3" id="div_form_berita" style="display:none;">
-    <div class="animated fadeIn">
-        <div class="row">
-
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <strong class="card-title">Data Tambah Usaha</strong>
-                </div>
-                <div class="card-body">
-
-                <div class="col-lg-12">
-
-                <form method="post" enctype="multipart/form-data" id="frm_berita" name="frm_berita" onsubmit="tambahdata(this); treturn false">
-                    
-                    <ul class="nav nav-tabs mb-3" id="div_tabs">
-                        <li class="nav-item" onclick="#"><a href="#detail_usaha" data-toggle="tab" aria-expanded="false" class="nav-link "><i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i><span class="d-none d-lg-block">Detail Usaha</span></a>
-                        </li>
-                        <li class="nav-item" onclick="#"><a href="#pngg_jawab" data-toggle="tab" aria-expanded="false" class="nav-link "><i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i><span class="d-none d-lg-block">Penanggung Jawab</span></a>
-                        </li>
-                    </ul>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <strong>Tambah</strong> Data
-                        </div>
-                        <div class="card-body card-block">
-                            
-                                <!--<div class="row form-group">
-                                    <div class="col col-md-3"><label class=" form-control-label">Static</label></div>
-                                    <div class="col-12 col-md-9">
-                                        <p class="form-control-static">Username</p>
-                                    </div>
-                                </div>
-                                -->
-                                <input type="hidden" name="t_idberita" id="t_idberita"  />
-
-                                <div>
-                                    <input type="hidden" name="t_aksi_pencarian" id="t_aksi_pencarian" value="" />
-                                </div>
-
-                                {{ csrf_field() }}
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Judul Usaha</label></div>
-                                    <div class="col-12 col-md-9"><input type="text" id="textinputan" name="textinputan" required="required" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Judul Berita</small></div>
-                                </div>
-
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Tanggal Usaha</label></div>
-
-                                    <div class="col-4 col-md-2">
-
-                                    <select type="text" id="hariinput" name="hariinput" required="required" placeholder="" class="form-control">
-                                        <option value="minggu">  Minggu </option>
-                                        <option value="senin">  Senin </option>
-                                        <option value="selasa">  Selasa </option>
-                                        <option value="rabu">  Rabu </option>
-                                        <option value="kamis"> Kamis </option>
-                                        <option value="jumat">  Jumat </option>
-                                        <option value="sabtu">  Sabtu </option>
-                                    </select>
-
-                                    <small class="form-text text-muted">Masukkan Hari Usaha</small></div>
-
-                                    <div class="col-4 col-md-3"><input type="date" id="tanggalinput" name="tanggalinput" required="required" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Tanggal Berita</small></div>
-
-                                    <div class="col-4 col-md-2"><input type="time" id="waktuinput" name="waktuinput" required="required" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Waktu Berita</small></div>
-
-
-                                </div>
-
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Kategori Usaha</label></div>
-                                    <div class="col-12 col-md-9">
-
-                                    <select type="text" id="kategoriinputan" name="kategoriinputan" required="required" placeholder="" class="form-control">
-                                        <option value=""> -- Kategori --</option>
-                                    </select>
-
-                                    <small class="form-text text-muted">Masukkan Kategori Usaha</small></div>
-                                </div>
-
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Isi Usaha</label></div>
-                                    <div class="col-12 col-md-9">
-                                    <!--<div id="toolbar-container"></div>
-
-                                <!-- This container will become the editable. -->
-                                <!--<div id="editor" style="border:1px solid #999999; min-height:400px;">
-                                    <p>Input Berita Di sini.</p>
-                                </div>-->
-                                <textarea name="DSC" class="materialize-textarea"></textarea>
-                                <small class="form-text text-muted">Masukkan Isi Usaha</small></div>
-                                </div>
-
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Foto</label></div>
-                                    
-                                    <div class="col-3 col-md-2" id="div_foto_berita">
-                                        <img id="img_foto_berita" class="img-fluid" />
-                                    </div>
-
-                                    <div class="col-9 col-md-4"><input type="file" id="uploadinput" name="uploadinput" placeholder="Text" class="form-control"><small class="form-text text-muted">Upload Foto Berita</small></div>
-
-                                </div>
-
-                            
-                        </div>
-                    </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="openView()">Cancel</button>
-                <button type="reset" class="btn btn-secondary" id="btn_cancel" style="display:none;">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="btn_submit_approve">
-                    Submit
-                </button>
+            <div>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Terdaftar</p>
+                <p class="text-lg font-black text-slate-800">{{ count($usaha) }} Usaha</p>
             </div>
-
-        </form>
-                                                   
-        </div>
-
         </div>
     </div>
-</div>
 
-      </div>
-    </div><!-- .animated -->
-</div><!-- .content -->
-
- <div class="row" id="view_berita_div">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-             
-             <h4 class="card-title">Data Usaha</h4>
-
-             <hr />
-
-             <?php
-               // if(Session::get('level') == "2"){
-             ?>
-
-                 <button onclick="openModal();" type="button"
-                        class="btn waves-effect waves-light btn-primary"><i class="fas fa-plus"></i> Tambah Usaha 
-                 </button>
-
-             <?php
-              //  }
-             ?>
-            
-             <p></p>
-             
-            <div>
-
-                <div class="row form-group">
-                     <div class="col col-md-3" style="margin-top:30px;"></div>
-
-
-                    <br clear="all" />
-
-                    <div class="col col-md-3" style="margin-top:10px;"></div>
-
-                    <!-- <div class="col-9 col-md-9" style="margin-top:20px;">
-                      <input type="submit"  id="btn_submit_cari" name="btn_submit_cari" value="Cari Data" class="btn-primary" /> 
-                    </div> -->
-
-    <div class="col-12 col-md-12" style="margin-top:20px; overflow:auto;">
-            <table id="ikantable" class="table table-striped table-bordered display no-wrap datatable"
-                style="width:100%">
+    <!-- Table Section -->
+    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Nama Usaha</th>
-                        <th>Email</th>
-                        <th>Contact</th>
-                        <th>Status</th>
-                        <!--<th>Owner</th>-->
-                        <th>Aksi</th>
+                    <tr class="bg-slate-50/50">
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Profil Usaha</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Kontak & Komunikasi</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status Verifikasi</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Manajemen</th>
                     </tr>
                 </thead>
-                <tbody>
-                        <?php
-                        $no = 1;
-                        foreach($usaha as $rows){
-                            $act = "<i class='fa fa-check' style='color:green;'> Aktif</i>";
-                            $btn = "";
-
-                            if($rows->aktif_status == "0"){
-                                $url_appr = url("administrator/approve_usaha/".$rows->id_usaha);
-                                $act = "<i class='fa fa-times' style='color:red;'> Pending</i>";
-                                $btn = "<a href='".$url_appr."'> <i class='fa fa-check' style='color:green;'></i> <span style='color:green;'> Confirm </span> </a>";
-                            }
-                        ?>
-                        
-                        <tr>
-                            <td><?php echo $no; ?></td>
-                            <td><b> <?php echo $rows->nama_usaha; ?></b><br /><small><?php echo $rows->alamat_banjar; ?></small></td>
-                            <td><?php echo $rows->email_usaha; ?></td>
-                            <td><?php echo $rows->no_wa; ?></td>
-                            <td><?php echo $act; ?></td>
-                            <!--<td><?php //echo $rows->nama; ?></td>-->
-                            <td><a href="<?php echo url('administrator/detail_usaha/'.$rows->id_usaha); ?>"> <i class="fa fa-eye"></i> Detail </a> <br /> <?php echo $btn; ?> </td>
-                        </tr>
-                        
-                        <?php
-                        $no++;
-                        }
-                        ?>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach($usaha as $rows)
+                    <tr class="group hover:bg-slate-50 transition-colors duration-200">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-4">
+                                <div class="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-primary-light border border-blue-100 shadow-sm transition-transform">
+                                    <i class="bi bi-building text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-black text-slate-800 tracking-tight group-hover:text-primary-light transition-colors">{{ $rows->nama_usaha }}</p>
+                                    <p class="text-[10px] font-bold text-slate-400 truncate max-w-[200px]">{{ $rows->alamat_banjar }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <i class="bi bi-envelope text-slate-300"></i>
+                                    <span class="text-xs font-bold text-slate-600">{{ $rows->email_usaha }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="bi bi-whatsapp text-emerald-400"></i>
+                                    <span class="text-xs font-bold text-slate-600">{{ $rows->no_wa }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            @if($rows->aktif_status == "1")
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                                    <span class="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                    Verified
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest border border-amber-100">
+                                    <span class="h-1.5 w-1.5 bg-amber-500 rounded-full"></span>
+                                    Pending
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{{ url('administrator/detail_usaha/'.$rows->id_usaha) }}" 
+                                   class="h-9 px-4 flex items-center gap-2 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-primary-light hover:border-primary-light transition-all">
+                                    <i class="bi bi-gear-fill"></i> Detail
+                                </a>
+                                @if($rows->aktif_status == "0")
+                                <a href="{{ url('administrator/approve_usaha/'.$rows->id_usaha) }}" 
+                                   class="h-9 px-4 flex items-center gap-2 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all">
+                                    <i class="bi bi-check-lg"></i> Konfirmasi
+                                </a>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
-
     </div>
 
-    <div id="div_container_isi">
+    <!-- Add Modal -->
+    <template x-teleport="body">
+        <div x-show="showAddModal" 
+             class="fixed inset-0 z-100 overflow-y-auto px-4 py-12 flex items-center justify-center bg-slate-900/60 backdrop-blur-md"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             x-cloak>
+            
+            <div class="bg-white w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl relative border border-slate-200" @click.away="showAddModal = false">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 rounded-xl bg-primary-light text-white flex items-center justify-center shadow-lg shadow-blue-100">
+                            <i class="bi bi-plus-square text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-[9px] font-black text-primary-light uppercase tracking-widest mb-0.5 block">Registrasi Baru</span>
+                            <h3 class="text-xl font-black text-slate-800 tracking-tight">Form Pendaftaran Usaha</h3>
+                        </div>
+                    </div>
+                    <button @click="showAddModal = false" class="h-10 w-10 flex items-center justify-center hover:bg-slate-200 rounded-xl transition-all text-slate-400">
+                        <i class="bi bi-x-lg text-lg"></i>
+                    </button>
+                </div>
+
+                <form action="{{ url('administrator/submit_post_add_usaha') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
                     
+                    <!-- Tabs Navigation -->
+                    <div class="flex border-b border-slate-100 bg-slate-50/50">
+                        <button type="button" @click="activeTab = 'detail'" 
+                                :class="activeTab === 'detail' ? 'text-primary-light bg-white border-b-2 border-primary-light' : 'text-slate-400'"
+                                class="flex-1 px-6 py-4 font-black text-[10px] uppercase tracking-widest transition-all">1. Detail Usaha</button>
+                        <button type="button" @click="activeTab = 'pj'" 
+                                :class="activeTab === 'pj' ? 'text-primary-light bg-white border-b-2 border-primary-light' : 'text-slate-400'"
+                                class="flex-1 px-6 py-4 font-black text-[10px] uppercase tracking-widest transition-all">2. Penanggung Jawab</button>
+                        <button type="button" @click="activeTab = 'auth'; updateUsername()" 
+                                :class="activeTab === 'auth' ? 'text-primary-light bg-white border-b-2 border-primary-light' : 'text-slate-400'"
+                                class="flex-1 px-6 py-4 font-black text-[10px] uppercase tracking-widest transition-all">3. Credentials</button>
+                    </div>
 
-    </div>
+                    <div class="p-8 min-h-[400px]">
+                        <!-- Tab: Detail Usaha -->
+                        <div x-show="activeTab === 'detail'" class="grid grid-cols-1 md:grid-cols-2 gap-6" x-transition>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Usaha</label>
+                                <input type="text" name="text_title_new" required x-model="usahaName"
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Kategori</label>
+                                <select name="cmb_kategori_usaha" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                                    <option value="">Pilih Kategori</option>
+                                    @foreach($kategori as $k)
+                                        <option value="{{ $k->id_kategori_usaha }}">{{ $k->nama_kategori_usaha }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email Bisnis</label>
+                                <input type="email" name="text_email_usaha_new" required x-model="usahaEmail"
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">WhatsApp</label>
+                                <input type="text" name="text_notelp_was" required
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Minimal Setoran</label>
+                                <input type="number" name="text_minimal_pembayaran" required
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Banjar</label>
+                                <select name="text_desc_new" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                                    <option value="">Pilih Banjar</option>
+                                    @foreach($banjar as $b)
+                                        <option value="{{ $b->id_data_banjar }}">{{ $b->nama_banjar }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="md:col-span-2 space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Upload Logo</label>
+                                <input type="file" name="f_upload_gambar_mobile" required
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-500 transition-all">
+                            </div>
+                        </div>
 
-</div>
+                        <!-- Tab: PJ -->
+                        <div x-show="activeTab === 'pj'" class="grid grid-cols-1 md:grid-cols-2 gap-6" x-transition>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama PJ</label>
+                                <input type="text" name="text_namapngg_new" required
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Jabatan</label>
+                                <input type="text" name="text_statuspngg_new" required
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                            </div>
+                            <div class="md:col-span-2 space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Lengkap</label>
+                                <textarea name="text_alamat_pngg_new" required rows="2"
+                                          class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all"></textarea>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email PJ</label>
+                                <input type="email" name="text_email_pngg_new" required
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">No. Telp</label>
+                                <input type="text" name="text_notelp_pngg_new" required
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                            </div>
+                        </div>
 
+                        <!-- Tab: Auth -->
+                        <div x-show="activeTab === 'auth'" class="max-w-md mx-auto space-y-6 pt-6" x-transition>
+                            <div class="p-6 bg-slate-900 rounded-2xl text-white space-y-2 relative overflow-hidden shadow-lg">
+                                <i class="bi bi-shield-lock text-4xl opacity-10 absolute -right-2 -bottom-2"></i>
+                                <h4 class="text-sm font-black uppercase tracking-wider">Access Node</h4>
+                                <p class="text-xs font-medium text-slate-400 leading-relaxed">Gunakan email bisnis sebagai identitas sistem utama.</p>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Username Login</label>
+                                    <input type="text" name="text_username_new" x-model="username" readonly
+                                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black italic text-slate-400">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Password Login</label>
+                                    <input type="password" name="text_password_new" required placeholder="••••••••"
+                                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                        <div>
+                            <template x-if="activeTab !== 'detail'">
+                                <button type="button" @click="activeTab === 'auth' ? activeTab = 'pj' : activeTab = 'detail'" 
+                                        class="px-4 py-2.5 font-black text-[10px] uppercase tracking-widest text-slate-500 hover:bg-slate-200 rounded-lg transition-all">
+                                    <i class="bi bi-chevron-left mr-1"></i> Kembali
+                                </button>
+                            </template>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button type="button" @click="showAddModal = false"
+                                    class="px-6 py-2.5 font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-all">Batal</button>
+                            <template x-if="activeTab !== 'auth'">
+                                <button type="button" @click="activeTab === 'detail' ? activeTab = 'pj' : activeTab = 'auth'; if(activeTab === 'auth') updateUsername()"
+                                        class="px-8 py-2.5 bg-primary-light hover:bg-primary-dark text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-100 transition-all transform hover:-translate-y-1">
+                                    Lanjut <i class="bi bi-chevron-right ml-1"></i>
+                                </button>
+                            </template>
+                            <template x-if="activeTab === 'auth'">
+                                <button type="submit"
+                                        class="px-10 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100 transition-all transform hover:-translate-y-1">
+                                    Daftarkan Usaha <i class="bi bi-check-lg ml-1"></i>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-</div>
+    </template>
 
 </div>
-                       
 
-    <script type="text/javascript">
-    
-    var table = "";
-    var active_id = "";
-
-    var level_user = "<?php echo Session::get('level'); ?>";
-    
-    $('#ikantable').DataTable();
-
-    function submit_gambar_form(form){
-
-        var formData = new FormData(document.getElementById('form_multi'));
-        formData.append("urutan_id" , active_id);
-
-        //console.log("formdata" , formData);
-
-        //console.log("submits" , );
-        $.ajax({
-            data:formData,
-            url:url_menu_apis+"/"+"post_gambar_baru",
-            type:"post",
-            processData: false,
-            contentType: false,
-            cache: false,
-            success:function(data){
-                //$("#register_user_new").val();
-                if(data == "success"){
-                    $("#largeModal").modal("hide");
-                    $("#btn_reset").click();
-                }
-            }
-        });
-
-        return false;
-
-    }
-
-    function submit_edit_gambar_form(form){
-
-        var formData = new FormData(document.getElementById('form_multi_edit'));
-        formData.append("urutan_id" , active_id);
-
-        //console.log("formdata" , formData);
-
-        //console.log("submits" , );
-        $.ajax({
-            data:formData,
-            url:url_menu_apis+"/"+"post_gambar_baru_edit",
-            type:"post",
-            processData: false,
-            contentType: false,
-            cache: false,
-            success:function(data){
-                //$("#register_user_new").val();
-                if(data == "success"){
-                    $("#largeModal").modal("hide");
-                    $("#btn_reset").click();
-                }
-            }
-        });
-
-        return false;
-
-        }
-
-    jQuery(document).ready(function() {
-
-
-            $('#textinputancari').on('keypress', function (e) {
-                
-                 if(e.which === 13){
-                    //alert("click");
-                    ambil_beritaparam(active_id , $('#textinputancari').val(), $("#chk_cari").val());
-                 }
-
-            });
-
-            $('#btn_submit_cari').on('click', function (e) {
-                 //if(e.which === 13){
-                    //alert("click");
-                
-                    //alert($(".chk_cari:checked").val());
-
-                    ambil_beritaparam(active_id , $('#textinputancari').val(), $(".chk_cari:checked").val());
-                // }
-            });
-
-            jQuery('textarea[name="DSC"]').ckeditor();
-
-            $("#div_container_isi").html("");
-
-            //$("#div_tabs").html("");
-
-            // $.ajax({
-            //     type:"get",
-            //     url:"<?php //echo url('ambil_listberita'); ?>",
-            //     data:"",
-            //     dataType:"json",
-            //     success:function(data){
-            //     //console.log("databerita" , data);
-            //     $.each(data,function(index , element){
-
-            //         var sudah_update = '<a href="javascript:void(0)" onclick="open_detail('+element.id_berita+')" class="btn btn-warning"><i class="fas fa-bullseye"></i>  </a> </div><div style="float:right;"><a href="javascript:void(0)" class="btn btn-success" onclick="editModal('+element.id_berita+')"><i class="fas fa-pencil-alt"></i> Edit</a> &nbsp; <a href="javascript:void(0)" class="btn btn-primary"> <i class="fas fa-trash"></i> Hapus</a></div>';
-
-            //         if(element.sudah_update == "1" && level_user != 3){
-            //             sudah_update = "<i class='fa fa-check' style='color:green;'></i> Berita ini sudah diupdate oleh editor";
-            //         }
-
-            //         if(element.approved == "1"){
-            //             sudah_update = "<i class='fa fa-check' style='color:green;'></i> Di Setujui";
-            //         }
-
-            //         var isi_berita = '<div class="col-lg-6 col-md-6" style="float:left; margin-top:30px; height:800px; overflow:auto;"><div class="card"><img class="card-img-top img-fluid" src="'+element.urlfoto+'" alt="Card image cap"><div class="card-body"><h4 class="card-title">'+element.judul_berita+'</h4><h5 class="card-title" style="text-align:right;"><small>'+element.tanggal+'</small></small></h5><p class="card-text">'+element.isi_berita+'</p><br clear="all" /><h4 class="card-title" style="text-align:left;">'+element.kode_wartawan+'<br clear="all" /> <p></p></h4> <div style="float:left;">'+sudah_update+'</h4></div></div></div>';
-
-            //         $("#div_container_isi").append(isi_berita);
-
-            //     });
-
-            //   }
-            // });
-
-
-            //jQuery('.modal-dialog').draggable();
-
-
-        } );
-
-        function open_detail(id){
-
-            jQuery.ajax({
-                type:"GET",
-                url:url_menu_apis+"/"+"ambil_listslides",
-                dataType:"json",
-                data:"posisi="+id,
-                success:function(data){
-
-                   // $("#view_berita_div").slideUp();
-            
-                    //$("#div_detail_berita").slideDown();
-
-                    //jQuery("#judul_berita").html('<a onclick="openViewdetail()" style="cursor:pointer;"> <i class="fas fa-undo"></i> </a> &nbsp;'+" "+data.judul_berita);
-                    //jQuery("#isi_berita").html(data.isi_berita);
-
-                    jQuery("#img_berita").prop("src" , "<?php echo url('storage/GambarSlides/'); ?>"+"/"+data.image_name);
-
-                    
-
-                    //jQuery("#editdataModal").modal('show');
-                }
-            });
-
-        }
-
-        
-
-        function ambil_gambar(id){
-
-            $("#div_container_isi").html("");
-            active_id = id;
-
-            $('#textinputancari').val("");
-            $("#ditemukan_berita").html("");
-
-
-            $.ajax({
-                type:"get",
-                url:url_menu_apis+"/"+"ambil_listslides"+"/"+id,
-                data:"posisi="+id,
-                dataType:"json",
-                success:function(data){
-                //console.log("databerita" , data);
-                $.each(data,function(index , element){
-
-                var sudah_update = '<a href="javascript:void(0)" onclick="open_detail('+element.id_berita+')" class="btn btn-warning"><i class="fas fa-bullseye"></i> </a> </div><div style="float:right;"><a href="javascript:void(0)" class="btn btn-success" onclick="editModal('+element.id_berita+')"><i class="fas fa-pencil-alt"></i> Edit</a> &nbsp; <a href="javascript:void(0)" class="btn btn-primary"> <i class="fas fa-trash"></i> Hapus</a></div>';
-
-                if(element.sudah_update == "1"){
-                    sudah_update = "<i class='fa fa-check' style='color:green;'></i> Berita ini sudah diupdate oleh editor";
-                }
-
-                if(element.approved == "1"){
-                        sudah_update = "<i class='fa fa-check' style='color:green;'></i> Di Setujui";
-                }
-
-                var url_gambar = "<?php echo url('storage/GambarSlides/'); ?>"+"/"+element.image_name;
-
-                var is_aktif = "<div style='float:right; background:blue; color:#FFFFFF; cursor:pointer; padding:5px 10px 5px 10px; border-radius:10px; font-size:14px;' onclick='active_slides("+element.id_gambar_home+")'> Non Slide </div>";
-
-                if(element.is_slide == 1){
-                    is_aktif = "<div style='float:right; background:green; color:#FFFFFF;m cursor:pointer; padding:5px 10px 5px 10px; border-radius:10px; font-size:14px;' onclick='active_slides("+element.id_gambar_home+")'> Aktif </div>";
-
-                }
-
-                var abs_edit = "<div class='edit_gambar_icon' onclick='editedModal("+element.id_gambar_home+");'> <i class='fa fa-edit'></i> </div>";
-
-                var isi_berita = '<div class="col-lg-4 col-md-6" style="float:left; position:relative; margin-top:30px; height:800px; overflow:auto;">'+abs_edit+'<div class="card"><img class="card-img-top img-fluid" style="height:150px; object-fit:cover;" src="'+url_gambar+'" alt="Card image cap" /><div class="card-body"><h4 class="card-title">'+element.title+'</h4><p class="card-text">'+is_aktif+'</p><br clear="all" /></div></div></div>';
-
-                $("#div_container_isi").append(isi_berita);
-
-                });
-
-              }
-            });
-
-        }
-
-        function append_kategori(){
-
-            $("#kategoriinputan").html("");
-
-            $.ajax({
-                type:"get",
-                url:"<?php echo url('ambil_listkategori_awal'); ?>",
-                data:"",
-                dataType:"json",
-                success:function(data){
-                //console.log("databerita" , data);
-                var len = data.length;
-                var a = 1;
-                $.each(data,function(index , element){
-
-                    var kategori = '<option value='+element.id_kategori_berita+'>'+element.name+'</option></li>';
-                    a++;
-                    $("#kategoriinputan").append(kategori);
-
-                });
-
-              }
-            });
-
-        }
-
-        function openModal(){
-            $("#largeModal").modal('show');
-        }
-
-        function editedModal(index){
-            $("#editedModal").modal('show');
-
-            $.ajax({
-                type:"GET",
-                data:"id="+index,
-                url:url_menu_apis+"/get_gambar_slide",
-                dataType:"json",
-                success:function(data){
-                    //alert(data.alt);
-                    $("#edit_text_title_new").val(data.title);
-                    $("#edit_text_desc_new").val(data.alt);
-
-                    $("#edit_hidden_textfield").val(data.id_gambar_home);
-                    
-                    $("#edit_desktop_image").prop("src",url_menu_asset+"/GambarSlides/"+data.image_name);
-
-                    $("#edit_mobile_image").prop("src",url_menu_asset+"/GambarSlides/"+data.image_name_mobile);
-                    
-                   
-                }
-            });
-            
-             $("#editedModal").modal('hide');
-
-        }
-
-        function active_slides(id){
-            var conn = confirm("Tampilkan Gambar ke SlideShow ? "+id);
-
-            if(conn == true){
-
-                $.ajax({
-                    type:"POST",
-                    data:"id="+id,
-                    url:url_menu_apis+"/post_active_slides",
-                    success:function(data){
-                        ambil_gambar(active_id);
-                    }
-                });
-
-            }
-        }
-
-        function editModal(id){
-
-            append_kategori();
-
-            if(level_user == "3"){
-                $("#btn_submit_approve").html("Submit & Approve");
-            }
-            else{
-                $("#btn_submit_approve").html("Submit");
-            }
-
-            $("#view_berita_div").slideUp();
-            
-            $("#div_form_berita").slideDown();
-
-
-
-            jQuery.ajax({
-                type:"GET",
-                url:"<?php echo url('ambil_berita'); ?>"+"/"+id,
-                dataType:"json",
-                data:"",
-                async:false,
-                success:function(data){
-
-                    $("#view_berita_div").slideUp();
-            
-                    $("#div_form_berita").slideDown();
-
-                    $("#div_foto_berita").show();
-
-                    $("#div_video_berita").show();
-
-                    var tgl = data.tanggal_berita;
-                    var sp_tgl = tgl.split(" ");
-
-                    jQuery("#t_idberita").val(data.id_berita);
-
-                    jQuery("#textinputan").val(data.judul_berita);
-                    jQuery("#hariinput").val(data.hari);
-                    jQuery("#tanggalinput").val(sp_tgl[0]);
-                    jQuery("#waktuinput").val(sp_tgl[1]);
-                    jQuery("#t_aksi_pencarian").val("edit");
-
-                    CKEDITOR.instances['DSC'].setData(data.isi_berita);
-
-                    $("#img_foto_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
-
-                    //jQuery("#img_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
-
-                    
-
-                    //jQuery("#editdataModal").modal('show');
-                }
-            });
-
-
-
-        }
-
-        function openView(){
-
-            $("#view_berita_div").slideDown();
-            
-            $("#div_form_berita").slideUp();
-
-        }
-
-        function openViewdetail(){
-
-            $("#view_berita_div").slideDown();
-            
-            $("#div_detail_berita").slideUp();
-
-        }
-
-        function deletedata(value){
-            var conn = confirm("Hapus data ?");
-
-            if(conn == true){
-                jQuery.ajax({
-                    type:"GET",
-                    url:"<?php echo url('hapuskategori/'); ?>",
-                    data:"id="+value,
-                    success:function(data){
-                        table.ajax.reload();
-                    }
-                })
-            }
-        }
-
-        function editdataModal(value){
-            
-            jQuery.ajax({
-                type:"GET",
-                url:"<?php echo url('ambil_kategori'); ?>"+"/"+value,
-                dataType:"json",
-                data:"",
-                success:function(data){
-
-                    jQuery("#iduserinput_edit").val(data.id_kategori_berita);
-                    jQuery("#textinput_edit").val(data.nama_kategori_berita);
-
-                    jQuery("#editdataModal").modal('show');
-                }
-            });
-
-            
-        }
-
-        function submit_edit_form(){
-            var serial = jQuery("#form_multi_edit").serialize();
-
-            jQuery.ajax({
-                type:"POST",
-                url:"<?php echo url('updatekategori'); ?>",
-                data:serial,
-                success:function(data){
-                        jQuery("#editdataModal").modal('hide');
-                        table.ajax.reload();
-                }
-            });
-
-        }
-
-        function tambahdata(){
-
-            //var file_data =  $('#uploadinput').prop('files')[0]; 
-            //var file_video = $('#videoinput').prop('files')[0]; 
-
-            var form_data = new FormData(); 
-
-            console.log("formdata" , form_data);        
-
-            return false; 
-
-            // form_data.append('uploadinput', file_data);
-            // // form_data.append('videoinput', file_video);
-            // form_data.append('hari', $("#hariinput").val());
-            // form_data.append('tanggal', $("#tanggalinput").val());
-            // form_data.append('waktu', $("#waktuinput").val());
-            // form_data.append('judul', $("#textinputan").val());
-            // form_data.append('kategori', $("#kategoriinputan").val());
-            // form_data.append('DSC', CKEDITOR.instances['DSC'].getData());
-            // form_data.append('_token', "<?php //echo csrf_token(); ?>");
-            // form_data.append('t_idberita', $("#t_idberita").val());
-
-            // var url = "<?php //echo url('tambahberita'); ?>";
-
-            // if($('#t_aksi_pencarian').val() == "edit"){
-            //     url = "<?php //echo url('updateberita'); ?>";
-            // }
-
-            // //alert(form_data);                             
-            // $.ajax({
-            //     url: url, // point to server-side PHP script 
-            //     dataType: 'text',  // what to expect back from the PHP script, if anything
-            //     cache: false,
-            //     contentType: false,
-            //     processData: false,
-            //     data: form_data,                         
-            //     type: 'post',
-            //     success: function(response){
-            //        // alert(php_script_response); // display response from the PHP script, if any
-            //         ambil_berita(response);
-
-            //         openView();
-            //     }
-            //  });
-
-
-        }
-
-
-        function submit_form(){
-            var serial = jQuery("#form_multi").serialize();
-
-            jQuery.ajax({
-                type:"POST",
-                url:"<?php echo url('post_kategori'); ?>",
-                data:serial,
-                success:function(data){
-                        jQuery("#largeModal").modal('hide');
-                        table.ajax.reload();
-                }
-            });
-
-        }
-
-    </script>
 @stop

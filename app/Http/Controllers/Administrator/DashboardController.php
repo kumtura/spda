@@ -37,12 +37,25 @@ class DashboardController extends BaseController
 {
 
     public function indexhome(Request $request){
+        $level = Session::get('level');
         $usaha = Usaha::get_dataUsaha($request);
         $jml_karyawan = Karyawan::get_jmltenaga($request);
 
         $totalpunia = Danapunia::get_totalPunia($request);
         
-         return view('admin.pages.home',compact('usaha','totalpunia','jml_karyawan'));
+        if($level == "1" || $level == "4") {
+            // Bendesa Adat & Admin Sistem use the Desktop Dashboard
+            return view('admin.pages.home',compact('usaha','totalpunia','jml_karyawan'));
+        } else if ($level == "2") {
+            // Kelian Adat uses the Mobile Dashboard
+            return view('backend.kelian.home',compact('usaha','totalpunia','jml_karyawan'));
+        } else if ($level == "3") {
+            // Unit Usaha uses the Mobile Dashboard
+            return view('backend.usaha.home',compact('usaha','totalpunia','jml_karyawan'));
+        }
+
+        // Fallback to desktop home if level not specified
+        return view('admin.pages.home',compact('usaha','totalpunia','jml_karyawan'));
     }
     
     public function get_danapunia_range(){

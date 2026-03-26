@@ -1,0 +1,169 @@
+<aside id="sidebar" 
+    x-data="{ 
+        openSettings: false, 
+        openGambar: false, 
+        openGbrHome: false,
+        openBlog: false,
+        openTenaga: false
+    }"
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20'"
+    class="fixed top-0 left-0 z-40 w-64 h-screen transition-all duration-300 sidebar-gradient border-r border-white/10 sm:translate-x-0 overflow-y-auto no-scrollbar shadow-2xl" 
+    aria-label="Sidebar">
+   
+    <!-- Sidebar Header / Branding -->
+    <div class="h-20 flex items-center justify-between px-6 mb-2 border-b border-white/10 shrink-0">
+        <div class="flex items-center gap-3 overflow-hidden">
+            <div class="h-10 w-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0 border border-white/10 shadow-lg">
+                <i class="bi bi-grid-1x2-fill text-yellow-400 text-xl"></i>
+            </div>
+            <div class="transition-all duration-300" x-show="sidebarOpen" x-transition:enter="delay-150 duration-300" x-transition:enter-start="opacity-0 -translate-x-4">
+                <h1 class="text-white font-bold text-sm tracking-tighter leading-none mb-1">DANA PUNIA</h1>
+                <p class="text-white/40 font-bold text-[9px] uppercase tracking-widest leading-none">Manajemen v2</p>
+            </div>
+        </div>
+       
+       <!-- Sidebar Toggle (Inside Sidebar - Desktop) -->
+       <button @click="sidebarOpen = !sidebarOpen; mobileSidebarOpen = false" class="hidden lg:flex p-2 bg-white/10 hover:bg-white text-white hover:text-primary-light rounded-xl transition-all shadow-sm border border-white/10">
+           <i class="bi bi-chevron-bar-left text-xl" x-show="sidebarOpen"></i>
+           <i class="bi bi-chevron-bar-right text-xl" x-show="!sidebarOpen"></i>
+       </button>
+       
+       <!-- Close Button (Mobile Only) -->
+       <button @click="mobileSidebarOpen = false" class="lg:hidden p-2 bg-white/10 hover:bg-rose-500 text-white rounded-xl transition-all shadow-sm border border-white/10">
+           <i class="bi bi-x-lg text-lg"></i>
+       </button>
+   </div>
+
+   <div class="h-full px-4 pb-4 overflow-y-auto custom-scrollbar">
+      <ul class="space-y-2 font-medium">
+         <!-- Dashboard -->
+         <li>
+            <a href="{{ url('administrator/') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator') ? 'bg-white/15 shadow-sm' : '' }}">
+               <i class="bi bi-grid-fill w-5 h-5 text-yellow-400 flex items-center justify-center"></i>
+               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Dasbor Utama</span>
+            </a>
+         </li>
+         
+         <li class="pt-4 mt-4 border-t border-white/20" x-show="sidebarOpen">
+            <span class="px-2 text-[10px] font-bold text-yellow-500 uppercase tracking-widest">Manajemen Master</span>
+         </li>
+
+         <!-- Data User (Level 1 & 4) -->
+         @if(Session::get('level') == "1" || Session::get('level') == "4")
+         <li>
+            <a href="{{ url('administrator/datauser') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/datauser*') ? 'bg-white/15' : '' }}">
+               <i class="bi bi-shield-lock-fill w-5 h-5 text-white flex items-center justify-center"></i>
+               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Data Pengguna</span>
+            </a>
+         </li>
+         @endif
+
+         <!-- Settings Dropdown -->
+         <li>
+            <button type="button" @click="openSettings = !openSettings" 
+                    class="flex items-center w-full p-2.5 text-white transition duration-75 rounded-xl group hover:bg-white/10">
+                  <i class="bi bi-gear-fill w-5 h-5 text-white flex items-center justify-center"></i>
+                  <span class="flex-1 ms-3 text-left text-sm font-semibold tracking-tight" x-show="sidebarOpen">Pengaturan & Alat</span>
+                  <i class="bi bi-chevron-down w-3 h-3 transition-transform duration-300" :class="openSettings ? 'rotate-180' : ''" x-show="sidebarOpen"></i>
+            </button>
+            <ul x-show="openSettings && sidebarOpen" x-transition x-cloak class="py-2 space-y-1 ml-4 border-l border-white/10 pl-2">
+                  <li><a href="{{ url('administrator/databanjar') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/databanjar*') ? 'text-white bg-white/5' : '' }}">Data Banjar</a></li>
+                  <li><a href="{{ url('administrator/datamenu') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/datamenu*') ? 'text-white bg-white/5' : '' }}">Menu Anggota</a></li>
+                  <li><a href="{{ url('administrator/data_laporan') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_laporan*') ? 'text-white bg-white/5' : '' }}">Arsip Laporan</a></li>
+                  @if(Session::get('level') == "1" || Session::get('level') == "4")
+                  <li><a href="{{ url('administrator/settings') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/settings*') ? 'text-white bg-white/5' : '' }}">Pengaturan Website</a></li>
+                  @endif
+                  
+                  <!-- Data Gambar Nest -->
+                  <li>
+                    <button type="button" @click.stop="openGambar = !openGambar" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5">
+                        <span class="flex-1 text-left">Data Gambar</span>
+                        <i class="bi bi-chevron-down w-2 h-2 transition-transform duration-300" :class="openGambar ? 'rotate-180' : ''"></i>
+                    </button>
+                    <ul x-show="openGambar" x-transition x-cloak class="py-1 space-y-1 ml-4 border-l border-white/10 pl-2">
+                        <li>
+                            <button type="button" @click.stop="openGbrHome = !openGbrHome" class="flex items-center w-full p-2 text-blue-200/70 hover:text-blue-200 transition duration-75 rounded-lg text-[10px] font-semibold hover:bg-white/5">
+                                <span class="flex-1 text-left uppercase tracking-wider">Slide Beranda</span>
+                                <i class="bi bi-chevron-down w-2 h-2 transition-transform duration-300" :class="openGbrHome ? 'rotate-180' : ''"></i>
+                            </button>
+                            <ul x-show="openGbrHome" x-transition x-cloak class="py-1 space-y-1">
+                                <li><a href="{{ url('administrator/datakategori_slides') }}" class="flex items-center w-full p-2 text-white/60 hover:text-white rounded-lg text-[10px] font-bold hover:bg-white/5">Kategori</a></li>
+                                <li><a href="{{ url('administrator/datagambar_slides') }}" class="flex items-center w-full p-2 text-white/60 hover:text-white rounded-lg text-[10px] font-bold hover:bg-white/5">Data Gambar</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                  </li>
+            </ul>
+         </li>
+
+          <li class="pt-4 mt-4 border-t border-white/20" x-show="sidebarOpen">
+            <span class="px-2 text-[10px] font-bold text-yellow-500 uppercase tracking-widest">Data Operasional</span>
+          </li>
+
+          <!-- Data Usaha -->
+          <li>
+            <a href="{{ url('administrator/data_usaha') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/data_usaha*') ? 'bg-white/15' : '' }}">
+               <i class="bi bi-briefcase-fill w-5 h-5 text-white flex items-center justify-center"></i>
+               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Data Unit Usaha</span>
+            </a>
+          </li>
+
+          <!-- Data Blog Dropdown -->
+          <li>
+            <button type="button" @click="openBlog = !openBlog" 
+                    class="flex items-center w-full p-2.5 text-white transition duration-75 rounded-xl group hover:bg-white/10">
+                  <i class="bi bi-newspaper w-5 h-5 text-white flex items-center justify-center"></i>
+                  <span class="flex-1 ms-3 text-left text-sm font-semibold tracking-tight" x-show="sidebarOpen">Jurnalistik & Berita</span>
+                  <i class="bi bi-chevron-down w-3 h-3 transition-transform duration-300" :class="openBlog ? 'rotate-180' : ''" x-show="sidebarOpen"></i>
+            </button>
+            <ul x-show="openBlog && sidebarOpen" x-transition x-cloak class="py-2 space-y-1 ml-4 border-l border-white/10 pl-2">
+                  <li><a href="{{ url('administrator/databerita') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/databerita') ? 'text-white bg-white/5' : '' }}">Daftar Berita</a></li>
+                  <li><a href="{{ url('administrator/data_kategoriberita') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_kategoriberita*') ? 'text-white bg-white/5' : '' }}">Kategori</a></li>
+            </ul>
+          </li>
+
+          <li>
+            <a href="{{ url('administrator/datapunia_wajib') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/datapunia_wajib*') ? 'bg-white/15' : '' }}">
+               <i class="bi bi-check2-circle w-5 h-5 text-white flex items-center justify-center"></i>
+               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Punia Wajib</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ url('administrator/datasumbangan') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/datasumbangan*') ? 'bg-white/15' : '' }}">
+               <i class="bi bi-heart-pulse-fill w-5 h-5 text-white flex items-center justify-center"></i>
+               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Data Sumbangan</span>
+            </a>
+          </li>
+
+          <!-- Tenaga Kerja Dropdown -->
+          <li>
+            <button type="button" @click="openTenaga = !openTenaga" 
+                    class="flex items-center w-full p-2.5 text-white transition duration-75 rounded-xl group hover:bg-white/10">
+                  <i class="bi bi-person-workspace w-5 h-5 text-white flex items-center justify-center"></i>
+                  <span class="flex-1 ms-3 text-left text-sm font-semibold tracking-tight" x-show="sidebarOpen">Tenaga Kerja</span>
+                  <i class="bi bi-chevron-down w-3 h-3 transition-transform duration-300" :class="openTenaga ? 'rotate-180' : ''" x-show="sidebarOpen"></i>
+            </button>
+            <ul x-show="openTenaga && sidebarOpen" x-transition x-cloak class="py-2 space-y-1 ml-4 border-l border-white/10 pl-2">
+                  <li><a href="{{ url('administrator/data_tenagakerja') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_tenagakerja') ? 'text-white bg-white/5' : '' }}">Basis Data</a></li>
+                  <li><a href="{{ url('administrator/data_tenagakerja_skill') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_tenagakerja_skill*') ? 'text-white bg-white/5' : '' }}">Keahlian</a></li>
+                  <li><a href="{{ url('administrator/data_tenagakerja_interview') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_tenagakerja_interview*') ? 'text-white bg-white/5' : '' }}">Wawancara</a></li>
+                  <li><a href="{{ url('administrator/data_tenagakerja_approve') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_tenagakerja_approve*') ? 'text-white bg-white/5' : '' }}">Diterima</a></li>
+            </ul>
+          </li>
+          
+          <li class="pt-4 mt-4 border-t border-white/20"></li>
+
+          <li>
+            <form method="POST" action="{{ url('logoutadmin') }}">
+               @csrf
+               <a href="{{ url('logoutadmin') }}" onclick="event.preventDefault(); this.closest('form').submit();" 
+                  class="flex items-center p-2.5 text-white rounded-xl hover:bg-rose-500/20 group hover:text-rose-100 transition-all">
+                  <i class="bi bi-box-arrow-right w-5 h-5 flex items-center justify-center"></i>
+                  <span class="flex-1 ms-3 whitespace-nowrap text-sm font-semibold tracking-tight" x-show="sidebarOpen">Keluar Sistem</span>
+               </a>
+            </form>
+          </li>
+      </ul>
+   </div>
+</aside>

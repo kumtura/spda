@@ -2,891 +2,395 @@
 
 @section('isi_menu')
 
-<div class="container-fluid">
-    <!-- *************************************************************** -->
-    <!-- Start First Cards -->
-    <!-- *************************************************************** -->
+<div class="space-y-8" x-data="{ 
+    view: 'table', // table, form, detail
+    activeCategory: '',
+    searchQuery: '',
+    
+    // Form Data
+    newsId: '',
+    newsTitle: '',
+    newsDay: 'senin',
+    newsDate: '{{ date('Y-m-d') }}',
+    newsTime: '{{ date('H:i') }}',
+    newsCategory: '',
+    newsContent: '',
+    newsImagePreview: null,
+    isEdit: false,
 
+    // Detail Data
+    detail: {
+        title: '',
+        content: '',
+        image: ''
+    },
 
-<div class="modal fade" id="largeModal" tabindex="-1" role="dialog" aria-labelledby="largeModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="largeModalLabel">Edit Data User</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+    init() {
+        // Load initial categories
+        this.loadCategories();
+    },
+
+    loadCategories() {
+        $.ajax({
+            url: '{{ url('ambil_listkategori_awal') }}',
+            dataType: 'json',
+            success: (data) => {
+                if (data.length > 0) {
+                    this.activeCategory = data[0].id_kategori_berita;
+                    this.fetchNews();
+                }
+            }
+        });
+    },
+
+    fetchNews() {
+        // This would call the existing AJAX but we'll adapt it for Alpine if needed
+        // For now let's keep the existing jQuery logic for data fetching to ensure business logic parity
+        // but render with a modern UI.
+        window.ambil_berita(this.activeCategory);
+    },
+
+    openAdd() {
+        this.isEdit = false;
+        this.newsId = '';
+        this.newsTitle = '';
+        this.newsContent = '';
+        this.view = 'form';
+        if (CKEDITOR.instances['DSC']) CKEDITOR.instances['DSC'].setData('');
+    },
+
+    openEdit(id) {
+        $.ajax({
+            url: '{{ url('ambil_berita') }}/' + id,
+            dataType: 'json',
+            success: (data) => {
+                this.isEdit = true;
+                this.newsId = data.id_berita;
+                this.newsTitle = data.judul_berita;
+                this.newsDay = data.hari;
+                this.newsDate = data.tanggal_berita.split(' ')[0];
+                this.newsTime = data.tanggal_berita.split(' ')[1];
+                this.newsCategory = data.id_kategori_berita;
+                this.newsImagePreview = '{{ url('storage/berita/foto/') }}/' + data.foto;
+                this.view = 'form';
+                if (CKEDITOR.instances['DSC']) CKEDITOR.instances['DSC'].setData(data.isi_berita);
+            }
+        });
+    },
+
+    openDetail(id) {
+        $.ajax({
+            url: '{{ url('ambil_berita') }}/' + id,
+            dataType: 'json',
+            success: (data) => {
+                this.detail = {
+                    title: data.judul_berita,
+                    content: data.isi_berita,
+                    image: '{{ url('storage/berita/foto/') }}/' + data.foto
+                };
+                this.view = 'detail';
+            }
+        });
+    }
+}">
+
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6" x-show="view === 'table'">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight">Manajemen Berita & Konten</h1>
+            <p class="text-slate-500 font-medium text-sm">Publikasikan informasi terbaru untuk masyarakat dan investor.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="relative w-64">
+                <i class="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" x-model="searchQuery" @keyup.enter="window.ambil_beritaparam(activeCategory, searchQuery, 2)"
+                       placeholder="Cari judul berita..." 
+                       class="w-full bg-white border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+            </div>
+            <button @click="openAdd()" 
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-indigo-100 transition-all transform hover:-translate-y-1">
+                <i class="bi bi-plus-lg mr-2"></i> Tambah Berita
+            </button>
+        </div>
+    </div>
+
+    <!-- Categories Tab -->
+    <div class="flex flex-wrap gap-2 p-1.5 bg-white/50 backdrop-blur-md rounded-4xl border border-white/60 shadow-xl overflow-x-auto no-scrollbar" x-show="view === 'table'">
+        @foreach($kategori as $k)
+        <button @click="activeCategory = '{{ $k->id_kategori_berita }}'; window.ambil_berita(activeCategory)"
+                :class="activeCategory == '{{ $k->id_kategori_berita }}' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:bg-white'"
+                class="px-6 py-3 rounded-3xl font-black text-[10px] uppercase tracking-widest transition-all duration-300 shrink-0">
+            {{ $k->name }}
+        </button>
+        @endforeach
+    </div>
+
+    <!-- News Grid Container -->
+    <div id="div_container_isi" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" x-show="view === 'table'">
+        <!-- Rendered via jQuery/AJAX for now to keep parity, but target these styles in the JS -->
+    </div>
+
+    <!-- Empty State for JS to target -->
+    <div id="ditemukan_berita" class="text-center py-12 hidden" x-show="view === 'table'">
+        <!-- JS will populate message -->
+    </div>
+
+    <!-- Detail View -->
+    <div class="max-w-4xl mx-auto space-y-8" x-show="view === 'detail'" x-transition>
+        <button @click="view = 'table'" class="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-black text-[10px] uppercase tracking-widest transition-all">
+            <i class="bi bi-arrow-left text-lg"></i> Kembali ke List
+        </button>
+        
+        <div class="glass-card rounded-3xl overflow-hidden border-white/60 shadow-2xl bg-white">
+            <div class="h-[400px] w-full overflow-hidden relative">
+                <img :src="detail.image" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-linear-to-t from-slate-900/60 to-transparent flex flex-col justify-end p-12">
+                    <h2 class="text-4xl font-black text-white leading-tight tracking-tight" x-text="detail.title"></h2>
+                </div>
+            </div>
+            <div class="p-12 prose prose-indigo max-w-none prose-slate prose-lg">
+                <div x-html="detail.content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form View -->
+    <div class="max-w-4xl mx-auto space-y-8" x-show="view === 'form'" x-transition>
+        <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight" x-text="isEdit ? 'Update Berita Existing' : 'Publikasi Berita Baru'"></h2>
+            <button @click="view = 'table'" class="h-12 w-12 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 transition-colors">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="glass-card rounded-3xl p-10 border-white/60 shadow-2xl bg-white">
+            <form id="frm_berita" onsubmit="window.tambahdata(); return false;" class="space-y-8">
+                @csrf
+                <input type="hidden" name="t_idberita" x-model="newsId">
+                <input type="hidden" name="t_aksi_pencarian" :value="isEdit ? 'edit' : ''">
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Judul Artikel</label>
+                    <input type="text" name="textinputan" x-model="newsTitle" required
+                           class="w-full bg-slate-50 border-none rounded-2xl px-6 py-5 text-lg font-black text-slate-800 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-300">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Kategori</label>
+                        <select name="kategoriinputan" x-model="newsCategory" required
+                                class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700">
+                            <option value="">Pilih Kategori</option>
+                            @foreach($kategori as $k)
+                                <option value="{{ $k->id_kategori_berita }}">{{ $k->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Tanggal</label>
+                        <input type="date" name="tanggalinput" x-model="newsDate" required
+                               class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Waktu</label>
+                        <input type="time" name="waktuinput" x-model="newsTime" required
+                               class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Konten Berita</label>
+                    <div class="rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+                        <textarea name="DSC" class="materialize-textarea"></textarea>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Cover Image / Foto</label>
+                    <div class="flex items-center gap-6">
+                        <div class="h-32 w-48 bg-slate-100 rounded-3xl overflow-hidden border-2 border-white shadow-lg shrink-0">
+                            <template x-if="newsImagePreview">
+                                <img :src="newsImagePreview" class="w-full h-full object-cover">
+                            </template>
+                            <template x-if="!newsImagePreview">
+                                <div class="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                                    <i class="bi bi-image text-3xl"></i>
+                                    <span class="text-[9px] font-black uppercase mt-1">Preview</span>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="flex-1 relative">
+                            <input type="file" name="uploadinput" id="uploadinput" 
+                                   class="absolute inset-0 opacity-0 cursor-pointer"
+                                   @change="newsImagePreview = URL.createObjectURL($event.target.files[0])">
+                            <div class="w-full py-10 bg-indigo-50 border-2 border-dashed border-indigo-200 rounded-3xl flex flex-col items-center justify-center text-indigo-400 group-hover:bg-indigo-100 transition-all">
+                                <i class="bi bi-cloud-arrow-up text-3xl mb-2"></i>
+                                <span class="text-[10px] font-black uppercase tracking-widest">Click to Upload Image</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4 pt-8">
+                    <button type="button" @click="view = 'table'" 
+                            class="px-8 py-4 font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-600">Cancel</button>
+                    <button type="submit" 
+                            class="px-12 py-4 bg-slate-900 hover:bg-indigo-600 text-white rounded-3xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl transition-all transform hover:-translate-y-1">
+                        Post Article <i class="bi bi-send ml-2"></i>
                     </button>
                 </div>
-                <div class="modal-body">
-                    
-                        <div class="col-lg-12">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <strong>Form</strong> Edit User
-                                        </div>
-                                        <div class="card-body card-block">
-
-                                        <form id="form_multi" enctype="multipart/form-data" method="post">
-                                            
-                                                <!--<div class="row form-group">
-                                                    <div class="col col-md-3"><label class=" form-control-label">Static</label></div>
-                                                    <div class="col-12 col-md-9">
-                                                        <p class="form-control-static">Username</p>
-                                                    </div>
-                                                </div>
-                                                -->
-                                                {{ csrf_field() }}
-
-
-                                                
-
-                                                <div class="row form-group">
-                                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Nama Kategori</label></div>
-                                                    <div class="col-12 col-md-9"><input type="text" id="textinput" name="textinput" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Nama Kategori</small></div>
-                                                </div>
-
-
-                                            
-                                        </div>
-                                    </div>
-                                    
-                                </div>
-
-                                    <button type="reset" class="btn btn-secondary" style="display:none;" id="btn_reset">Reset</button>
-
-                    </form>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    
-                    <button type="button" class="btn btn-primary" onclick="submit_form(); return false;">Confirm</button>
-                </div>
-            </div>
-        </div>
-        </form>
-    </div>
-
-    <div class="modal fade" id="editdataModal" tabindex="-1" role="dialog" aria-labelledby="largeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="largeModalLabel">Tambah Data Kategori</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                
-                    <div class="col-lg-12">
-
-                        <div class="card">
-                            <div class="card-header">
-                                <strong>Form</strong> Tambah Kategori
-                            </div>
-                            <div class="card-body card-block">
-
-                            <form id="form_multi_edit" enctype="multipart/form-data" method="post">
-
-                            <input id="iduserinput_edit" name="iduserinput_edit" type="hidden" />
-                                    {{ csrf_field() }}
-                                    <div class="row form-group">
-                                        <div class="col col-md-3"><label for="text-input" class=" form-control-label">Nama Kategori</label></div>
-                                        <div class="col-12 col-md-9"><input type="text" id="textinput_edit" name="textinput_edit" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Nama Kategori</small></div>
-                                    </div>
-                            </div>
-                        </div>
-                                
-                    </div>
-
-                </form>
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="submit_edit_form(); return false;">Confirm</button>
-            </div>
+            </form>
         </div>
     </div>
-    </form>
+
 </div>
 
-
-<div id="div_detail_berita" style="display:none;">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title" id="judul_berita"> Data Berita</h4>
-                        <hr />
-
-                        <p>&nbsp;</p>
-
-                        <center>
-                            <div class="col-md-6">
-                                <img id="img_berita" class="img-fluid" />
-                            </div>
-                        </center>
-
-                        <p>&nbsp;</p>
-
-                        <div class="col-md-12" id="isi_berita">
-                            
-                        </div>
-
-                        </div>
-                    </div>
-                </div>
-        </div>
-</div>
-
-
-<div class="content mt-3" id="div_form_berita" style="display:none;">
-    <div class="animated fadeIn">
-        <div class="row">
-
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <strong class="card-title">Data Tambah Berita</strong>
-                </div>
-                <div class="card-body">
-
-                <div class="col-lg-12">
-
-                <form method="post" enctype="multipart/form-data" id="frm_berita" name="frm_berita">
-
-                    <div class="card">
-                        <div class="card-header">
-                            <strong>Tambah</strong> Data
-                        </div>
-                        <div class="card-body card-block">
-                            
-                                <!--<div class="row form-group">
-                                    <div class="col col-md-3"><label class=" form-control-label">Static</label></div>
-                                    <div class="col-12 col-md-9">
-                                        <p class="form-control-static">Username</p>
-                                    </div>
-                                </div>
-                                -->
-                                <input type="hidden" name="t_idberita" id="t_idberita"  />
-
-                                <div>
-                                    <input type="hidden" name="t_aksi_pencarian" id="t_aksi_pencarian" value="" />
-                                </div>
-
-                                {{ csrf_field() }}
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Judul Berita</label></div>
-                                    <div class="col-12 col-md-9"><input type="text" id="textinputan" name="textinputan" required="required" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Judul Berita</small></div>
-                                </div>
-
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Tanggal Berita</label></div>
-
-                                    <div class="col-4 col-md-2">
-
-                                    <select type="text" id="hariinput" name="hariinput" required="required" placeholder="" class="form-control">
-                                        <option value="minggu">  Minggu </option>
-                                        <option value="senin">  Senin </option>
-                                        <option value="selasa">  Selasa </option>
-                                        <option value="rabu">  Rabu </option>
-                                        <option value="kamis"> Kamis </option>
-                                        <option value="jumat">  Jumat </option>
-                                        <option value="sabtu">  Sabtu </option>
-                                    </select>
-
-                                    <small class="form-text text-muted">Masukkan Hari Berita</small></div>
-
-                                    <div class="col-4 col-md-3"><input type="date" id="tanggalinput" name="tanggalinput" required="required" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Tanggal Berita</small></div>
-
-                                    <div class="col-4 col-md-2"><input type="time" id="waktuinput" name="waktuinput" required="required" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Waktu Berita</small></div>
-
-
-                                </div>
-
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Kategori Berita</label></div>
-                                    <div class="col-12 col-md-9">
-
-                                    <select type="text" id="kategoriinputan" name="kategoriinputan" required="required" placeholder="" class="form-control">
-                                        <option value=""> -- Kategori --</option>
-                                    </select>
-
-                                    <small class="form-text text-muted">Masukkan Kategori Berita</small></div>
-                                </div>
-
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Isi Berita</label></div>
-                                    <div class="col-12 col-md-9">
-                                    <!--<div id="toolbar-container"></div>
-
-                                <!-- This container will become the editable. -->
-                                <!--<div id="editor" style="border:1px solid #999999; min-height:400px;">
-                                    <p>Input Berita Di sini.</p>
-                                </div>-->
-                                <textarea name="DSC" class="materialize-textarea"></textarea>
-                                <small class="form-text text-muted">Masukkan Isi Berita</small></div>
-                                </div>
-
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Foto</label></div>
-                                    
-                                    <div class="col-3 col-md-2" id="div_foto_berita">
-                                        <img id="img_foto_berita" class="img-fluid" />
-                                    </div>
-
-                                    <div class="col-9 col-md-4"><input type="file" id="uploadinput" name="uploadinput" placeholder="Text" class="form-control"><small class="form-text text-muted">Upload Foto Berita</small></div>
-
-                                </div>
-
-                            
-                        </div>
-                    </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="openView()">Cancel</button>
-                <button type="reset" class="btn btn-secondary" id="btn_cancel" style="display:none;">Cancel</button>
-                <button type="button" class="btn btn-primary" id="btn_submit_approve" onclick="tambahdata();">
-                    Submit
-                </button>
+<script>
+    // Bridge jQuery logic to modern UI
+    window.ambil_berita = function(id) {
+        $("#div_container_isi").html(`
+            <div class="col-span-full py-20 flex flex-col items-center justify-center text-slate-300">
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mb-4"></div>
+                <span class="text-[10px] font-black uppercase tracking-widest">Synchronizing Archive...</span>
             </div>
-
-        </form>
-                                                   
-        </div>
-
-        </div>
-    </div>
-</div>
-
-      </div>
-    </div><!-- .animated -->
-</div><!-- .content -->
-
- <div class="row" id="view_berita_div">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-             
-             <h4 class="card-title">Data Berita</h4>
-
-             <hr />
-
-             <?php
-               // if(Session::get('level') == "2"){
-             ?>
-
-                 <button onclick="openModal();" type="button"
-                        class="btn waves-effect waves-light btn-primary"><i class="fas fa-plus"></i> Tambah Berita 
-                 </button>
-
-             <?php
-              //  }
-             ?>
-            
-             <p></p>
-
-             <p>&nbsp;</p>
-
-            <div>
-
-                <ul class="nav nav-tabs mb-3" id="div_tabs">
-                    
-                </ul>
-
-                <div class="row form-group">
-                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Pencarian Berita : </label></div>
-
-                    <div class="col-12 col-md-9">
-                      <input type="text" id="textinputancari" name="textinputancari" required="required" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Judul Berita ( Tekan Enter )</small>
-                    </div>
-
-                    <br clear="all" />
-                    <p></p>
-
-                    <div class="col col-md-3" style="margin-top:30px;"></div>
-
-                    <!-- <div class="col-9 col-md-9" style="margin-top:20px;">
-                      <input type="radio" value="0" id="chk_cari" name="chk_cari" class="chk_cari"  /> Belum Di Update &nbsp;
-                      <input type="radio" value="1" id="chk_cari2" name="chk_cari" class="chk_cari"  /> Sudah Di Update &nbsp;
-                      <input type="radio" value="3" id="chk_cari2" name="chk_cari" class="chk_cari"  /> Di Setujui &nbsp;
-                      <input type="radio" value="2" id="chk_cari3" name="chk_cari" class="chk_cari" checked /> Semua
-                    </div> -->
-
-                    <br clear="all" />
-                    <p></p>
-
-                    <div class="col col-md-3" style="margin-top:30px;"></div>
-
-                    <div class="col-9 col-md-9" style="margin-top:20px;">
-                      <input type="submit"  id="btn_submit_cari" name="btn_submit_cari" value="Cari Data" class="btn-primary" /> 
-                    </div>
-
-                    <div class="col-12 col-md-9" style="margin-top:20px;">
-                        <div id="ditemukan_berita"></div>
-                    </div>
-
-            </div>
-
-
-            <div id="div_container_isi">
-                                
-                    <div class="col-lg-3 col-md-6" style="float:left;">
-                        <!-- Card -->
-                        <div class="card">
-                            <img class="card-img-top img-fluid" src="../assets/images/big/img1.jpg"
-                                alt="Card image cap">
-                            <div class="card-body">
-                                <h4 class="card-title">Card title</h4>
-                                <p class="card-text">Some quick example text to build on the card title and make
-                                    up the bulk of the card's content.</p>
-                                <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
-                            </div>
-                        </div>
-                        <!-- Card -->
-                    </div>
-                    <!-- column -->
-                    <!-- column -->
-                    <div class="col-lg-3 col-md-6" style="float:left;">
-                        <!-- Card -->
-                        <div class="card">
-                            <img class="card-img-top img-fluid" src="../assets/images/big/img2.jpg"
-                                alt="Card image cap">
-                            <div class="card-body">
-                                <h4 class="card-title">Card title</h4>
-                                <p class="card-text">Some quick example text to build on the card title and make
-                                    up the bulk of the card's content.</p>
-                                <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
-                            </div>
-                        </div>
-                        <!-- Card -->
-                    </div>
-                    <!-- column -->
-                    <!-- column -->
-                    <div class="col-lg-3 col-md-6" style="float:left;">
-                        <!-- Card -->
-                        <div class="card">
-                            <img class="card-img-top img-fluid" src="../assets/images/big/img3.jpg"
-                                alt="Card image cap">
-                            <div class="card-body">
-                                <h4 class="card-title">Card title</h4>
-                                <p class="card-text">Some quick example text to build on the card title and make
-                                    up the bulk of the card's content.</p>
-                                <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
-                            </div>
-                        </div>
-                        <!-- Card -->
-                    </div>
-                    <!-- column -->
-                    <!-- column -->
-                    <div class="col-lg-3 col-md-6 img-fluid" style="float:left;">
-                        <!-- Card -->
-                        <div class="card">
-                            <img class="card-img-top img-fluid" src="../assets/images/big/img4.jpg"
-                                alt="Card image cap">
-                            <div class="card-body">
-                                <h4 class="card-title">Card title</h4>
-                                <p class="card-text">Some quick example text to build on the card title and make
-                                    up the bulk of the card's content.</p>
-                                <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
-                            </div>
-                        </div>
-                        <!-- Card -->
-                    </div>
-
-                    <div class="col-lg-3 col-md-6 img-fluid" style="float:left;">
-                        <!-- Card -->
-                        <div class="card">
-                            <img class="card-img-top img-fluid" src="../assets/images/big/img4.jpg"
-                                alt="Card image cap">
-                            <div class="card-body">
-                                <h4 class="card-title">Card title</h4>
-                                <p class="card-text">Some quick example text to build on the card title and make
-                                    up the bulk of the card's content.</p>
-                                <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
-                            </div>
-                        </div>
-                        <!-- Card -->
-                    </div>
-
-            </div>
-
-    </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                </div>
-                       
-
-    <script type="text/javascript">
-    var table = "";
-    var active_id = "";
-
-    var level_user = "<?php echo Session::get('level'); ?>";
-
-        jQuery(document).ready(function() {
-
-            /*table = jQuery('#ikantable').DataTable( {
-                "ajax": {
-                    "url": "<?php //echo url('ambil_listkategori'); ?>",
-                    "dataSrc": ""
-                },
-                columns: [
-                    { "data": 'no' },
-                    { "data": 'name' },
-                    { "data": 'aksi' }
-                ]
-            } );*/
-
-            $('#textinputancari').on('keypress', function (e) {
-                
-                 if(e.which === 13){
-                    //alert("click");
-                    ambil_beritaparam(active_id , $('#textinputancari').val(), $("#chk_cari").val());
-                 }
-
-            });
-
-            $('#btn_submit_cari').on('click', function (e) {
-                 //if(e.which === 13){
-                    //alert("click");
-                
-                    //alert($(".chk_cari:checked").val());
-
-                    ambil_beritaparam(active_id , $('#textinputancari').val(), $(".chk_cari:checked").val());
-                // }
-            });
-
-            jQuery('textarea[name="DSC"]').ckeditor();
-
-            $("#div_container_isi").html("");
-
-            $("#div_tabs").html("");
-
-            $.ajax({
-                type:"get",
-                url:"<?php echo url('ambil_listberita'); ?>",
-                data:"",
-                dataType:"json",
-                success:function(data){
-                //console.log("databerita" , data);
-                $.each(data,function(index , element){
-
-                    var sudah_update = '<a href="javascript:void(0)" onclick="open_detail('+element.id_berita+')" class="btn btn-warning"><i class="fas fa-bullseye"></i>  </a> </div><div style="float:right;"><a href="javascript:void(0)" class="btn btn-success" onclick="editModal('+element.id_berita+')"><i class="fas fa-pencil-alt"></i> Edit</a> &nbsp; <a href="javascript:void(0)" class="btn btn-primary"> <i class="fas fa-trash"></i> Hapus</a></div>';
-
-                    if(element.sudah_update == "1" && level_user != 3){
-                        sudah_update = "<i class='fa fa-check' style='color:green;'></i> Berita ini sudah diupdate oleh editor";
-                    }
-
-                    if(element.approved == "1"){
-                        sudah_update = "<i class='fa fa-check' style='color:green;'></i> Di Setujui";
-                    }
-
-                    var isi_berita = '<div class="col-lg-6 col-md-6" style="float:left; margin-top:30px; height:800px; overflow:auto;"><div class="card"><img class="card-img-top img-fluid" src="'+element.urlfoto+'" alt="Card image cap"><div class="card-body"><h4 class="card-title">'+element.judul_berita+'</h4><h5 class="card-title" style="text-align:right;"><small>'+element.tanggal+'</small></small></h5><p class="card-text">'+element.isi_berita+'</p><br clear="all" /><h4 class="card-title" style="text-align:left;">'+element.kode_wartawan+'<br clear="all" /> <p></p></h4> <div style="float:left;">'+sudah_update+'</h4></div></div></div>';
-
-                    $("#div_container_isi").append(isi_berita);
-
-                });
-
-              }
-            });
-
-            $.ajax({
-                type:"get",
-                url:"<?php echo url('ambil_listkategori_awal'); ?>",
-                data:"",
-                dataType:"json",
-                success:function(data){
-                //console.log("databerita" , data);
-                var len = data.length;
-                var a = 1;
-                $.each(data,function(index , element){
-
-                var active = "";
-
-                if(a == 1){
-                    active = "active";
-                    active_id = element.id_kategori_berita;
-                }
-
-                
-
-                var kategori = '<li class="nav-item" onclick="ambil_berita('+element.id_kategori_berita+');"><a href="#home" data-toggle="tab" aria-expanded="false" class="nav-link '+active+'"><i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i><span class="d-none d-lg-block">'+element.name+'</span></a></li>';
-
-                a++;
-
-                $("#div_tabs").append(kategori);
-
-                });
-
-              }
-            });
-
-
-            
-
-            //jQuery('.modal-dialog').draggable();
-
-
-        } );
-
-        function open_detail(id){
-
-            jQuery.ajax({
-                type:"GET",
-                url:"<?php echo url('ambil_berita'); ?>"+"/"+id,
-                dataType:"json",
-                data:"",
-                success:function(data){
-
-                    $("#view_berita_div").slideUp();
-            
-                    $("#div_detail_berita").slideDown();
-
-                    jQuery("#judul_berita").html('<a onclick="openViewdetail()" style="cursor:pointer;"> <i class="fas fa-undo"></i> </a> &nbsp;'+" "+data.judul_berita);
-                    jQuery("#isi_berita").html(data.isi_berita);
-
-                    jQuery("#img_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
-
-                    
-
-                    //jQuery("#editdataModal").modal('show');
-                }
-            });
-
-        }
-
+        `);
         
-
-        function ambil_berita(id){
-
-            $("#div_container_isi").html("");
-            active_id = id;
-
-            $('#textinputancari').val("");
-            $("#ditemukan_berita").html("");
-
-
-            $.ajax({
-                type:"get",
-                url:"<?php echo url('ambil_listberita_kategori'); ?>",
-                data:"id="+id,
-                dataType:"json",
-                success:function(data){
-                //console.log("databerita" , data);
-                $.each(data,function(index , element){
-
-                var sudah_update = '<a href="javascript:void(0)" onclick="open_detail('+element.id_berita+')" class="btn btn-warning"><i class="fas fa-bullseye"></i> </a> </div><div style="float:right;"><a href="javascript:void(0)" class="btn btn-success" onclick="editModal('+element.id_berita+')"><i class="fas fa-pencil-alt"></i> Edit</a> &nbsp; <a href="javascript:void(0)" class="btn btn-primary"> <i class="fas fa-trash"></i> Hapus</a></div>';
-
-                if(element.sudah_update == "1"){
-                    sudah_update = "<i class='fa fa-check' style='color:green;'></i> Berita ini sudah diupdate oleh editor";
-                }
-
-                if(element.approved == "1"){
-                        sudah_update = "<i class='fa fa-check' style='color:green;'></i> Di Setujui";
-                }
-
-                var isi_berita = '<div class="col-lg-4 col-md-6" style="float:left; margin-top:30px; height:800px; overflow:auto;"><div class="card"><img class="card-img-top img-fluid" src="'+element.urlfoto+'" alt="Card image cap"><div class="card-body"><h4 class="card-title">'+element.judul_berita+'</h4><h5 class="card-title" style="text-align:right;"><small>'+element.tanggal+'</small></small></h5><p class="card-text">'+element.isi_berita+'</p><br clear="all" /><h4 class="card-title" style="text-align:left;">'+element.kode_wartawan+'<br clear="all" /> <p></p></h4> <div style="float:left;">'+sudah_update+'</h4></div></div></div>';
-
-                $("#div_container_isi").append(isi_berita);
-
-                });
-
-              }
-            });
-
-        }
-
-        function ambil_beritaparam(id,cari,is_update){
-
-            //alert(is_update+" & "+no_update);
-
-            $("#div_container_isi").html("");
-            active_id = id;
-
-
-            $.ajax({
-                type:"get",
-                url:"<?php echo url('ambil_listberita_kategori'); ?>",
-                data:"id="+id+"&cari="+cari+"&status_update="+is_update,
-                dataType:"json",
-                success:function(data){
-                //console.log("databerita" , data);
-                $("#ditemukan_berita").html("");
-
-                if(cari != ""){
-
-                if(data.length > 0){
-                    $("#ditemukan_berita").html("Ditemukan <b>"+data.length+"</b> judul berita dengan kata kunci '<b>"+cari+"</b>'");
-                }
-                else{
-                    $("#ditemukan_berita").html("Tidak ditemukan judul berita dengan kata kunci '<b>"+cari+"</b>'");
-                }
-
-                }
-                
-
-                $.each(data,function(index , element){
-                    
-                    var sudah_update = '<a href="javascript:void(0)" onclick="open_detail('+element.id_berita+')" class="btn btn-warning"><i class="fas fa-bullseye"></i> View </a> </div><div style="float:right;"><a href="javascript:void(0)" class="btn btn-success" onclick="editModal('+element.id_berita+')"><i class="fas fa-pencil-alt"></i> Edit</a> &nbsp; <a href="javascript:void(0)" class="btn btn-primary"> <i class="fas fa-trash"></i> Hapus</a></div>';
-
-                    if(element.sudah_update == "1"){
-                        sudah_update = "<i class='fa fa-check' style='color:green;'></i> Berita ini sudah diupdate oleh editor";
-                    }
-
-                    if(element.approved == "1"){
-                        sudah_update = "<i class='fa fa-check' style='color:green;'></i> Di Setujui";
-                    }
-
-                    var isi_berita = '<div class="col-lg-4 col-md-6" style="float:left; margin-top:30px; height:800px; overflow:auto;"><div class="card"><img class="card-img-top img-fluid" src="'+element.urlfoto+'" alt="Card image cap"><div class="card-body"><h4 class="card-title">'+element.judul_berita+'</h4><h5 class="card-title" style="text-align:right;"><small>'+element.tanggal+'</small></small></h5><p class="card-text">'+element.isi_berita+'</p><br clear="all" /><h4 class="card-title" style="text-align:left;">'+element.kode_wartawan+'<br clear="all" /> <p></p></h4> <div style="float:left;">'+sudah_update+'</div></div></div>';
-
-                    $("#div_container_isi").append(isi_berita);
-
-                });
-
-              }
-            });
-
-        }
-
-        function append_kategori(){
-
-            $("#kategoriinputan").html("");
-
-            $.ajax({
-                type:"get",
-                url:"<?php echo url('ambil_listkategori_awal'); ?>",
-                data:"",
-                dataType:"json",
-                success:function(data){
-                //console.log("databerita" , data);
-                var len = data.length;
-                var a = 1;
-                $.each(data,function(index , element){
-
-                    var kategori = '<option value='+element.id_kategori_berita+'>'+element.name+'</option></li>';
-                    a++;
-                    $("#kategoriinputan").append(kategori);
-
-
-
-                });
-
-              }
-            });
-
-        }
-
-        function openModal(){
-
-            append_kategori();
-
-            $("#btn_cancel").click();
-
-            $("#view_berita_div").slideUp();
-            
-            $("#div_form_berita").slideDown();
-
-            $("#div_foto_berita").hide();
-
-            $("#div_video_berita").hide();
-
-            CKEDITOR.instances['DSC'].setData("");
-
-            jQuery("#t_aksi_pencarian").val("");
-
-            $("#t_idberita").val("");
-
-
-        }
-
-        function editModal(id){
-
-            append_kategori();
-
-            if(level_user == "3"){
-                $("#btn_submit_approve").html("Submit & Approve");
+        $.ajax({
+            type: "get",
+            url: "{{ url('ambil_listberita_kategori') }}",
+            data: "id=" + id,
+            dataType: "json",
+            success: function(data) {
+                render_news_grid(data);
             }
-            else{
-                $("#btn_submit_approve").html("Submit");
+        });
+    }
+
+    window.ambil_beritaparam = function(id, cari, is_update) {
+        $("#div_container_isi").html("");
+        $.ajax({
+            type: "get",
+            url: "{{ url('ambil_listberita_kategori') }}",
+            data: "id=" + id + "&cari=" + cari + "&status_update=" + is_update,
+            dataType: "json",
+            success: function(data) {
+                render_news_grid(data);
+            }
+        });
+    }
+
+    function render_news_grid(data) {
+        const container = $("#div_container_isi");
+        container.html("");
+        
+        if (data.length === 0) {
+            container.html(`
+                <div class="col-span-full py-20 text-center">
+                    <div class="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-300 text-3xl mb-4">
+                        <i class="bi bi-inbox"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-400 tracking-tight">Belum Ada Artikel</h3>
+                </div>
+            `);
+            return;
+        }
+
+        $.each(data, function(index, element) {
+            let statusBadge = '';
+            if (element.approved == "1") {
+                statusBadge = `<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[8px] font-black uppercase tracking-widest border border-emerald-100">Verified</span>`;
+            } else if (element.sudah_update == "1") {
+                statusBadge = `<span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[8px] font-black uppercase tracking-widest border border-amber-100">Draft</span>`;
             }
 
-            $("#view_berita_div").slideUp();
-            
-            $("#div_form_berita").slideDown();
+            const card = `
+                <div class="glass-card flex flex-col rounded-3xl overflow-hidden border-white/60 bg-white shadow-xl hover:shadow-2xl transition-all duration-500 group">
+                    <div class="h-56 relative overflow-hidden shrink-0">
+                        <img src="${element.urlfoto}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
+                            <div class="flex items-center gap-2">
+                                <button onclick="window.dispatchEvent(new CustomEvent('news-detail', { detail: ${element.id_berita} }))" class="h-10 w-10 flex items-center justify-center bg-white text-indigo-600 rounded-xl shadow-lg hover:scale-110 transition-transform">
+                                    <i class="bi bi-eye-fill"></i>
+                                </button>
+                                <button onclick="window.dispatchEvent(new CustomEvent('news-edit', { detail: ${element.id_berita} }))" class="h-10 w-10 flex items-center justify-center bg-white text-emerald-600 rounded-xl shadow-lg hover:scale-110 transition-transform">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col">
+                        <div class="flex items-center justify-between mb-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <span>${element.tanggal}</span>
+                            ${statusBadge}
+                        </div>
+                        <h4 class="text-lg font-black text-slate-800 tracking-tight leading-tight group-hover:text-indigo-600 transition-colors mb-3">${element.judul_berita}</h4>
+                        <div class="text-xs text-slate-400 leading-relaxed font-medium line-clamp-3 mb-6">
+                            ${element.isi_berita.replace(/<[^>]*>?/gm, '')}
+                        </div>
+                        <div class="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
+                            <div class="flex items-center gap-2">
+                                <div class="h-8 w-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500 text-xs font-black uppercase">
+                                    ${element.kode_wartawan.charAt(0)}
+                                </div>
+                                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${element.kode_wartawan}</span>
+                            </div>
+                            <button onclick="window.dispatchEvent(new CustomEvent('news-del', { detail: ${element.id_berita} }))" class="text-rose-400 hover:text-rose-600 transition-colors">
+                                <i class="bi bi-trash3 text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.append(card);
+        });
+    }
 
-
-
-            jQuery.ajax({
-                type:"GET",
-                url:"<?php echo url('ambil_berita'); ?>"+"/"+id,
-                dataType:"json",
-                data:"",
-                async:false,
-                success:function(data){
-
-                    $("#view_berita_div").slideUp();
-            
-                    $("#div_form_berita").slideDown();
-
-                    $("#div_foto_berita").show();
-
-                    $("#div_video_berita").show();
-
-                    var tgl = data.tanggal_berita;
-                    var sp_tgl = tgl.split(" ");
-
-                    jQuery("#t_idberita").val(data.id_berita);
-
-                    jQuery("#textinputan").val(data.judul_berita);
-                    jQuery("#hariinput").val(data.hari);
-                    jQuery("#tanggalinput").val(sp_tgl[0]);
-                    jQuery("#waktuinput").val(sp_tgl[1]);
-                    jQuery("#t_aksi_pencarian").val("edit");
-
-                    CKEDITOR.instances['DSC'].setData(data.isi_berita);
-
-                    $("#img_foto_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
-
-                    //jQuery("#img_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
-
-                    
-
-                    //jQuery("#editdataModal").modal('show');
-                }
-            });
-
-
-
-        }
-
-        function openView(){
-
-            $("#view_berita_div").slideDown();
-            
-            $("#div_form_berita").slideUp();
-
-        }
-
-        function openViewdetail(){
-
-            $("#view_berita_div").slideDown();
-            
-            $("#div_detail_berita").slideUp();
-
-        }
-
-        function deletedata(value){
-            var conn = confirm("Hapus data ?");
-
-            if(conn == true){
-                jQuery.ajax({
-                    type:"GET",
-                    url:"<?php echo url('hapuskategori/'); ?>",
-                    data:"id="+value,
-                    success:function(data){
-                        table.ajax.reload();
-                    }
-                })
-            }
-        }
-
-        function editdataModal(value){
-            
-            jQuery.ajax({
-                type:"GET",
-                url:"<?php echo url('ambil_kategori'); ?>"+"/"+value,
-                dataType:"json",
-                data:"",
-                success:function(data){
-
-                    jQuery("#iduserinput_edit").val(data.id_kategori_berita);
-                    jQuery("#textinput_edit").val(data.nama_kategori_berita);
-
-                    jQuery("#editdataModal").modal('show');
-                }
-            });
-
-            
-        }
-
-        function submit_edit_form(){
-            var serial = jQuery("#form_multi_edit").serialize();
-
-            jQuery.ajax({
-                type:"POST",
-                url:"<?php echo url('updatekategori'); ?>",
-                data:serial,
-                success:function(data){
-                        jQuery("#editdataModal").modal('hide');
-                        table.ajax.reload();
-                }
-            });
-
-        }
-
-        function tambahdata(){
-
-            var file_data =  $('#uploadinput').prop('files')[0]; 
-            //var file_video = $('#videoinput').prop('files')[0]; 
-
-            var form_data = new FormData();          
-
-            form_data.append('uploadinput', file_data);
-            // form_data.append('videoinput', file_video);
-            form_data.append('hari', $("#hariinput").val());
-            form_data.append('tanggal', $("#tanggalinput").val());
-            form_data.append('waktu', $("#waktuinput").val());
-            form_data.append('judul', $("#textinputan").val());
-            form_data.append('kategori', $("#kategoriinputan").val());
-            form_data.append('DSC', CKEDITOR.instances['DSC'].getData());
-            form_data.append('_token', "<?php echo csrf_token(); ?>");
-            form_data.append('t_idberita', $("#t_idberita").val());
-
-            var url = "<?php echo url('tambahberita'); ?>";
-
-            if($('#t_aksi_pencarian').val() == "edit"){
-                url = "<?php echo url('updateberita'); ?>";
-            }
-
-            //alert(form_data);                             
+    // Custom Event Handlers for UI communication
+    window.addEventListener('news-detail', (e) => {
+        const alpineStore = document.querySelector('[x-data]').__x.$data;
+        alpineStore.openDetail(e.detail);
+    });
+    window.addEventListener('news-edit', (e) => {
+        const alpineStore = document.querySelector('[x-data]').__x.$data;
+        alpineStore.openEdit(e.detail);
+    });
+    window.addEventListener('news-del', (e) => {
+        if(confirm('Hapus berita ini permanen?')) {
             $.ajax({
-                url: url, // point to server-side PHP script 
-                dataType: 'text',  // what to expect back from the PHP script, if anything
-                cache: false,
-                contentType: false,
-                processData: false,
-                data: form_data,                         
-                type: 'post',
-                success: function(response){
-                   // alert(php_script_response); // display response from the PHP script, if any
-                    ambil_berita(response);
-
-                    openView();
-                }
-             });
-
-
-        }
-
-
-        function submit_form(){
-            var serial = jQuery("#form_multi").serialize();
-
-            jQuery.ajax({
-                type:"POST",
-                url:"<?php echo url('post_kategori'); ?>",
-                data:serial,
-                success:function(data){
-                        jQuery("#largeModal").modal('hide');
-                        table.ajax.reload();
+                type: "GET",
+                url: "{{ url('hapusberita/') }}",
+                data: "id=" + e.detail,
+                success: function(data) {
+                    window.ambil_berita(document.querySelector('[x-data]').__x.$data.activeCategory);
                 }
             });
-
         }
+    });
 
-    </script>
+    window.tambahdata = function() {
+        const form = document.getElementById('frm_berita');
+        const formData = new FormData(form);
+        formData.append('DSC', CKEDITOR.instances['DSC'].getData());
+
+        $.ajax({
+            url: "{{ url('administrator/post_berita_baru') }}",
+            type: "POST",
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(data) {
+                if(data == "success") {
+                    const alpineStore = document.querySelector('[x-data]').__x.$data;
+                    alpineStore.view = 'table';
+                    window.ambil_berita(alpineStore.activeCategory);
+                }
+            }
+        });
+    }
+
+    jQuery(document).ready(function() {
+        jQuery('textarea[name="DSC"]').ckeditor();
+    });
+</script>
+
 @stop

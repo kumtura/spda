@@ -2,794 +2,195 @@
 
 @section('isi_menu')
 
-<div class="container-fluid">
-                <!-- *************************************************************** -->
-                <!-- Start First Cards -->
-                <!-- *************************************************************** -->
+<div class="space-y-6" x-data="{ 
+    showAddModal: false,
+    editMode: false,
+    
+    // Form Data
+    laporanId: '',
+    laporanTitle: '',
+    laporanYear: '{{ date('Y') }}',
 
+    openAdd() {
+        this.editMode = false;
+        this.laporanId = '';
+        this.laporanTitle = '';
+        this.laporanYear = '{{ date('Y') }}';
+        this.showAddModal = true;
+    },
 
-            <div class="modal fade" id="largeModal" tabindex="-1" role="dialog" aria-labelledby="largeModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="largeModalLabel">Edit Data Laporan</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                
-                                 <div class="col-lg-12">
-                                                <div class="card">
-                                                    <div class="card-header">
-                                                        <strong>Form</strong> Edit Laporan
-                                                    </div>
-                                                    <div class="card-body card-block">
+    openEdit(id, title, year) {
+        this.editMode = true;
+        this.laporanId = id;
+        this.laporanTitle = title;
+        this.laporanYear = year;
+        this.showAddModal = true;
+    }
+}">
 
-                                                    <form id="form_multi" enctype="multipart/form-data" method="post">
-                                                        
-                                                            <!--<div class="row form-group">
-                                                                <div class="col col-md-3"><label class=" form-control-label">Static</label></div>
-                                                                <div class="col-12 col-md-9">
-                                                                    <p class="form-control-static">Username</p>
-                                                                </div>
-                                                            </div>
-                                                            -->
-                                                            {{ csrf_field() }}
-
-
-                                                            
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Nama Kategori</label></div>
-                                                                <div class="col-12 col-md-9"><input type="text" id="textinput" name="textinput" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Nama Kategori</small></div>
-                                                            </div>
-
-
-                                                        
-                                                    </div>
-                                                </div>
-                                               
-                                            </div>
-
-                                             <button type="reset" class="btn btn-secondary" style="display:none;" id="btn_reset">Reset</button>
-
-                                </form>
-
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                               
-                                <button type="button" class="btn btn-primary" onclick="submit_form(); return false;">Confirm</button>
-                            </div>
-                        </div>
-                    </div>
-                 </form>
-            </div>
-
-
-                 <div class="modal fade" id="editdataModal" tabindex="-1" role="dialog" aria-labelledby="largeModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="largeModalLabel">Tambah Data Warta</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                
-                                 <div class="col-lg-12">
-                                                <div class="card">
-                                                    <div class="card-header">
-                                                        <strong>Form</strong> Tambah Ibadah
-                                                    </div>
-                                                    <div class="card-body card-block">
-
-                                                    <form id="form_multi_edit" enctype="multipart/form-data" method="post">
-
-                                                    <input id="iduserinput_edit" name="iduserinput_edit" type="hidden" />
-                                                        
-                                                            {{ csrf_field() }}
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Nama Kategori</label></div>
-                                                                <div class="col-12 col-md-9"><input type="text" id="textinput_edit" name="textinput_edit" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Nama Kategori</small></div>
-                                                            </div>
-
-
-                                                    </div>
-                                                </div>
-                                               
-                                            </div>
-
-                                </form>
-
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-primary" onclick="submit_edit_form(); return false;">Confirm</button>
-                            </div>
-                        </div>
-                    </div>
-                 </form>
-                </div>
-
-
-<div id="div_detail_berita" style="display:none;">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title" id="judul_berita"> Data Laporan Keuangan</h4>
-                        <hr />
-
-                        <p>&nbsp;</p>
-
-                        <center>
-                            <div class="col-md-6">
-                                <img id="img_berita" class="img-fluid" />
-                            </div>
-                        </center>
-
-                        <p>&nbsp;</p>
-
-                        <div class="col-md-12" id="isi_berita">
-                            
-                        </div>
-
-                        </div>
-                    </div>
-                </div>
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight">Arsip Laporan Keuangan</h1>
+            <p class="text-slate-500 font-medium text-sm">Akses dan kelola dokumen laporan keuangan tahunan dalam format digital.</p>
         </div>
+        <button @click="openAdd()" 
+                class="flex items-center justify-center gap-2 bg-primary-light hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-100 transition-all transform hover:-translate-y-0.5">
+            <i class="bi bi-file-earmark-pdf text-lg"></i>
+            Tambah Laporan
+        </button>
+    </div>
+
+    <!-- Reports Grid -->
+    <div id="div_container_isi" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="col-span-full py-12 text-center">
+            <div class="animate-spin h-6 w-6 border-2 border-primary-light border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Memuat Arsip...</p>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <template x-teleport="body">
+        <div x-show="showAddModal" 
+             class="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 backdrop-blur-md px-4 py-8"
+             x-cloak>
+            
+            <div class="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl relative border border-slate-200" @click.away="showAddModal = false">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 rounded-xl bg-primary-light text-white flex items-center justify-center shadow-lg transform rotate-2">
+                            <i class="bi bi-cloud-upload text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-[9px] font-black text-primary-light uppercase tracking-widest block" x-text="editMode ? 'Modifikasi Arsip' : 'Upload Baru'"></span>
+                            <h3 class="text-xl font-black text-slate-800 tracking-tight" x-text="editMode ? 'Edit Laporan' : 'Upload Laporan'"></h3>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="frm_warta" class="p-6 space-y-6">
+                    @csrf
+                    <input type="hidden" name="t_idberita" x-model="laporanId">
+                    <input type="hidden" id="t_aksi_pencarian" :value="editMode ? 'edit' : ''">
+
+                    <div class="space-y-6">
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Judul Laporan</label>
+                            <input type="text" name="textinputan" id="textinputan" required x-model="laporanTitle"
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Tahun Anggaran</label>
+                            <input type="number" name="tanggalinput" id="tanggalinput" required x-model="laporanYear"
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">File (PDF)</label>
+                            <input type="file" name="uploadinput" id="uploadinput" 
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold outline-none">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
+                        <button type="button" @click="showAddModal = false" class="px-6 py-2.5 font-black text-[10px] uppercase text-slate-400">Batal</button>
+                        <button type="button" onclick="tambahdata()" 
+                                class="px-8 py-2.5 bg-slate-900 hover:bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all transform hover:-translate-y-0.5">
+                            Simpan Laporan <i class="bi bi-check-lg ml-1"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
 </div>
 
-
-<div class="content mt-3" id="div_form_berita" style="display:none;">
-    <div class="animated fadeIn">
-        <div class="row">
-
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <strong class="card-title">Data Tambah Warta</strong>
-                    </div>
-                    <div class="card-body">
-
-                            <div class="col-lg-12">
-
-                            <form method="post" enctype="multipart/form-data" id="frm_warta" name="frm_warta">
-
-                                <div class="card">
-                                    <div class="card-header">
-                                        <strong>Tambah</strong> Data
-                                    </div>
-                                    <div class="card-body card-block">
-                                        
-                                            <input type="hidden" name="t_idberita" id="t_idberita"  />
-
-                                            <div>
-                                                <input type="hidden" name="t_aksi_pencarian" id="t_aksi_pencarian" value="" />
-                                            </div>
-
-                                            {{ csrf_field() }}
-                                            <div class="row form-group">
-                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Judul Laporan</label></div>
-                                                <div class="col-12 col-md-9"><input type="text" id="textinputan" name="textinputan" required="required" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Judul Berita</small></div>
-                                            </div>
-
-                                            <div class="row form-group">
-                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Tahun laporan</label></div>
-
-                                                <div class="col-12 col-md-9">
-                                                    <input type="number" id="tanggalinput" name="tanggalinput" required="required" placeholder="" class="form-control" value="<?php echo date("Y"); ?>" /><small class="form-text text-muted">Masukkan Tahun Laporan</small>
-                                                </div>
-
-                                             </div>
-
-
-                                            <div class="row form-group">
-                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">File</label></div>
-                                                
-                                                <div class="col-3 col-md-2" id="div_foto_berita">
-                                                    <img id="img_foto_berita" class="img-fluid" />
-                                                </div>
-
-                                                <div class="col-9 col-md-4"><input type="file" id="uploadinput" name="uploadinput" placeholder="Text" class="form-control"><small class="form-text text-muted">Upload Foto Warta</small></div>
-
-                                            </div>
-
-                                            <!-- <div class="row form-group">
-                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Data Ibadah</label></div>
-                                                    <div class="col-12 col-md-9">
-                                                    <Button class="btn btn-primary"> Pilih </Button>
-                                                </div>
-                                            </div> -->
-
-                                    </div>
-                                </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" onclick="openView()">Cancel</button>
-                            <button type="reset" class="btn btn-secondary" id="btn_cancel" style="display:none;">Cancel</button>
-                            <button type="button" class="btn btn-primary" id="btn_submit_approve" onclick="tambahdata();">
-                                Submit
-                            </button>
-                        </div>
-
-                    </form>
-                                            
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-
-        </div>
-    </div><!-- .animated -->
-</div><!-- .content -->
-
- <div class="row" id="view_berita_div">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-             
-             <h4 class="card-title">Data  Laporan Keuangan</h4>
-
-             <hr />
-
-             <?php
-               // if(Session::get('level') == "2"){
-             ?>
-
-                 <button onclick="openModal();" type="button"
-                        class="btn waves-effect waves-light btn-primary"><i class="fas fa-plus"></i> Tambah Laporan Keuangan 
-                 </button>
-
-             <?php
-              //  }
-             ?>
-            
-             <p></p>
-
-             <p>&nbsp;</p>
-
-            <div>
-
-            <ul class="nav nav-tabs mb-3" id="div_tabs"></ul>
-
-                <div class="row form-group">
-                    <!-- <div class="col col-md-3"><label for="text-input" class=" form-control-label">Pencarian Berita : </label></div>
-
-                    <div class="col-12 col-md-9">
-                      <input type="text" id="textinputancari" name="textinputancari" required="required" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Judul Berita ( Tekan Enter )</small>
-                    </div>
-
-                    <br clear="all" />
-                    <p></p>
-
-                    <div class="col col-md-3" style="margin-top:30px;"></div>
-
-                    <div class="col-9 col-md-9" style="margin-top:20px;">
-                      <input type="radio" value="0" id="chk_cari" name="chk_cari" class="chk_cari"  /> Belum Di Update &nbsp;
-                      <input type="radio" value="1" id="chk_cari2" name="chk_cari" class="chk_cari"  /> Sudah Di Update &nbsp;
-                      <input type="radio" value="3" id="chk_cari2" name="chk_cari" class="chk_cari"  /> Di Setujui &nbsp;
-                      <input type="radio" value="2" id="chk_cari3" name="chk_cari" class="chk_cari" checked /> Semua
-                    </div>
-
-                    <br clear="all" />
-                    <p></p>
-
-                    <div class="col col-md-3" style="margin-top:30px;"></div>
-
-                    <div class="col-9 col-md-9" style="margin-top:20px;">
-                      <input type="submit"  id="btn_submit_cari" name="btn_submit_cari" value="Cari Data" class="btn-primary" /> 
-                    </div>
-
-                    <div class="col-12 col-md-9" style="margin-top:20px;">
-                        <div id="ditemukan_berita"></div>
-                    </div> -->
-
-            </div>
-
-
-            <div id="div_container_isi">
-                                
-                    <div class="col-lg-3 col-md-6" style="float:left;">
-                        <!-- Card -->
-                        <div class="card">
-                            <img class="card-img-top img-fluid" src="../assets/images/big/img1.jpg"
-                                alt="Card image cap">
-                            <div class="card-body">
-                                <h4 class="card-title">Card title</h4>
-                                <p class="card-text">Some quick example text to build on the card title and make
-                                    up the bulk of the card's content.</p>
-                                <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
-                            </div>
-                        </div>
-                        <!-- Card -->
-                    </div>
-                    <!-- column -->
-                    <!-- column -->
-                    <div class="col-lg-3 col-md-6" style="float:left;">
-                        <!-- Card -->
-                        <div class="card">
-                            <img class="card-img-top img-fluid" src="../assets/images/big/img2.jpg"
-                                alt="Card image cap">
-                            <div class="card-body">
-                                <h4 class="card-title">Card title</h4>
-                                <p class="card-text">Some quick example text to build on the card title and make
-                                    up the bulk of the card's content.</p>
-                                <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
-                            </div>
-                        </div>
-                        <!-- Card -->
-                    </div>
-                    <!-- column -->
-                    <!-- column -->
-                    <div class="col-lg-3 col-md-6" style="float:left;">
-                        <!-- Card -->
-                        <div class="card">
-                            <img class="card-img-top img-fluid" src="../assets/images/big/img3.jpg"
-                                alt="Card image cap">
-                            <div class="card-body">
-                                <h4 class="card-title">Card title</h4>
-                                <p class="card-text">Some quick example text to build on the card title and make
-                                    up the bulk of the card's content.</p>
-                                <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
-                            </div>
-                        </div>
-                        <!-- Card -->
-                    </div>
-                    <!-- column -->
-                    <!-- column -->
-                    <div class="col-lg-3 col-md-6 img-fluid" style="float:left;">
-                        <!-- Card -->
-                        <div class="card">
-                            <img class="card-img-top img-fluid" src="../assets/images/big/img4.jpg"
-                                alt="Card image cap">
-                            <div class="card-body">
-                                <h4 class="card-title">Card title</h4>
-                                <p class="card-text">Some quick example text to build on the card title and make
-                                    up the bulk of the card's content.</p>
-                                <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
-                            </div>
-                        </div>
-                        <!-- Card -->
-                    </div>
-
-                    <div class="col-lg-3 col-md-6 img-fluid" style="float:left;">
-                        <!-- Card -->
-                        <div class="card">
-                            <img class="card-img-top img-fluid" src="../assets/images/big/img4.jpg"
-                                alt="Card image cap">
-                            <div class="card-body">
-                                <h4 class="card-title">Card title</h4>
-                                <p class="card-text">Some quick example text to build on the card title and make
-                                    up the bulk of the card's content.</p>
-                                <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
-                            </div>
-                        </div>
-                        <!-- Card -->
-                    </div>
-
-            </div>
-
-    </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                </div>
-                       
-
-    <script type="text/javascript">
-    var table = "";
-    var active_id = "";
-
-    var url_data_warta = "<?php echo url('public'); ?>";
-
-    var level_user = "<?php echo Session::get('level'); ?>";
-
-        jQuery(document).ready(function() {
-
-            /*table = jQuery('#ikantable').DataTable( {
-                "ajax": {
-                    "url": "<?php //echo url('ambil_listkategori'); ?>",
-                    "dataSrc": ""
-                },
-                columns: [
-                    { "data": 'no' },
-                    { "data": 'name' },
-                    { "data": 'aksi' }
-                ]
-            } );*/
-
-            $('#textinputancari').on('keypress', function (e) {
-                
-                 if(e.which === 13){
-                    //alert("click");
-                    ambil_beritaparam(active_id , $('#textinputancari').val(), $("#chk_cari").val());
-                 }
-
-            });
-
-            $('#btn_submit_cari').on('click', function (e) {
-                 //if(e.which === 13){
-                    //alert("click");
-                
-                    //alert($(".chk_cari:checked").val());
-
-                    ambil_beritaparam(active_id , $('#textinputancari').val(), $(".chk_cari:checked").val());
-                // }
-            });
-
-            jQuery('textarea[name="DSC"]').ckeditor();
-
-            $("#div_container_isi").html("");
-
-            $("#div_tabs").html("");
-
-
-
-            
-
-            //jQuery('.modal-dialog').draggable();
-
-
-        } );
-
-        function open_detail(id){
-
-            jQuery.ajax({
-                type:"GET",
-                url:"<?php echo url('ambil_berita'); ?>"+"/"+id,
-                dataType:"json",
-                data:"",
-                success:function(data){
-
-                    $("#view_berita_div").slideUp();
-            
-                    $("#div_detail_berita").slideDown();
-
-                    jQuery("#judul_berita").html('<a onclick="openViewdetail()" style="cursor:pointer;"> <i class="fas fa-undo"></i> </a> &nbsp;'+" "+data.judul_berita);
-                    jQuery("#isi_berita").html(data.isi_berita);
-
-                    jQuery("#img_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
-
-                    
-
-                    //jQuery("#editdataModal").modal('show');
-                }
-            });
-
-        }
-
-        
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
         ambil_warta();
+    });
 
-        function ambil_warta(){
+    function ambil_warta() {
+        const container = document.getElementById('div_container_isi');
+        
+        $.ajax({
+            type: "get",
+            url: "{{ url('administrator/ambil_listlaporan') }}",
+            dataType: "json",
+            success: function(data) {
+                container.innerHTML = '';
+                if(data.length === 0) {
+                    container.innerHTML = '<div class="col-span-full py-12 text-center"><i class="bi bi-inbox text-3xl text-slate-200 block mb-2"></i><p class="text-xs font-black text-slate-400 uppercase">Belum ada laporan</p></div>';
+                    return;
+                }
 
-            $("#div_container_isi").html("");
-            //active_id = id;
-
-            $('#textinputancari').val("");
-            $("#ditemukan_berita").html("");
-
-
-            $.ajax({
-                type:"get",
-                url:"<?php echo url('ambil_listlaporan'); ?>",
-                dataType:"json",
-                success:function(data){
-                //alert("tes");
-                //console.log("databerita" , data);
-                $.each(data,function(index , element){
-
-                var sudah_update = '<a href="javascript:void(0)" onclick="open_detail('+element.id_laporan+')" class="btn btn-warning"><i class="fas fa-download"></i> Download </a> </div><div style="float:right;"><a href="javascript:void(0)" class="btn btn-success" onclick="editModal('+element.id_laporan+')"><i class="fas fa-pencil-alt"></i> Edit</a></div>';
-
-                var foto_warta = url_data_warta + "/banner/pdf.png";
-
-                var keterangan = "Download File untuk Preview ..";
-                
-
-                var isi_berita = '<div class="col-lg-6 col-md-6" style="float:left; margin-top:30px; height:400px; overflow:auto;"><div class="card">'+
-                '<img class="card-img-top img-fluid" src="'+foto_warta+'" alt="Card image cap"><div class="card-body"><h4 class="card-title">'+element.title+'</h4>'+
-                '<h5 class="card-title" style="text-align:right;"><small> '+ element.tahun +'</small></small></h5><p class="card-text">'+keterangan +'</p><br clear="all" /><div style="float:left;">'+sudah_update+'</h4></div></div></div>';
-
-                $("#div_container_isi").append(isi_berita);
-
+                data.forEach(item => {
+                    const card = `
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow group">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="h-12 w-12 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500 border border-rose-100 group-hover:scale-110 transition-transform">
+                                    <i class="bi bi-file-earmark-pdf-fill text-2xl"></i>
+                                </div>
+                                <span class="px-2 py-0.5 bg-blue-50 text-primary-light rounded text-[9px] font-black uppercase tracking-widest border border-blue-100">${item.tahun}</span>
+                            </div>
+                            <h3 class="text-sm font-black text-slate-800 tracking-tight leading-snug mb-1 line-clamp-2">${item.title}</h3>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-6">Financial Archive • PDF</p>
+                            
+                            <div class="flex gap-2">
+                                <a href="{{ url('storage/laporan') }}/${item.file}" target="_blank" 
+                                   class="flex-1 h-9 flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-primary-light text-white rounded-lg font-black text-[9px] uppercase tracking-widest transition-all">
+                                    <i class="bi bi-download"></i> Unduh
+                                </a>
+                                <div class="flex gap-1.5">
+                                    <button onclick="window.Alpine.find(document.querySelector('[x-data]')).openEdit('${item.id_laporan}', '${item.title}', '${item.tahun}')"
+                                            class="h-9 w-9 flex items-center justify-center bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-primary-light hover:border-primary-light transition-all shadow-sm">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <button onclick="deletedata('${item.id_laporan}')"
+                                            class="h-9 w-9 flex items-center justify-center bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-rose-500 hover:border-rose-100 transition-all shadow-sm">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', card);
                 });
+            }
+        });
+    }
 
-              }
-            });
+    function tambahdata() {
+        let formData = new FormData(document.getElementById('frm_warta'));
+        let isEdit = document.getElementById('t_aksi_pencarian').value === 'edit';
+        let targetUrl = isEdit ? "{{ url('administrator/updatelaporan') }}" : "{{ url('administrator/tambahlaporan') }}";
 
-        }
+        $.ajax({
+            url: targetUrl,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function() {
+                window.Alpine.find(document.querySelector('[x-data]')).showAddModal = false;
+                ambil_warta();
+            }
+        });
+    }
 
-        function ambil_beritaparam(id,cari,is_update){
-
-            //alert(is_update+" & "+no_update);
-
-            $("#div_container_isi").html("");
-            active_id = id;
-
-
+    function deletedata(id) {
+        if(confirm('Hapus laporan ini?')) {
             $.ajax({
-                type:"get",
-                url:"<?php echo url('ambil_listberita_kategori'); ?>",
-                data:"id="+id+"&cari="+cari+"&status_update="+is_update,
-                dataType:"json",
-                success:function(data){
-                //console.log("databerita" , data);
-                $("#ditemukan_berita").html("");
-
-                if(cari != ""){
-
-                if(data.length > 0){
-                    $("#ditemukan_berita").html("Ditemukan <b>"+data.length+"</b> judul berita dengan kata kunci '<b>"+cari+"</b>'");
-                }
-                else{
-                    $("#ditemukan_berita").html("Tidak ditemukan judul berita dengan kata kunci '<b>"+cari+"</b>'");
-                }
-
-                }
-                
-
-                $.each(data,function(index , element){
-                    
-                    var sudah_update = '<a href="javascript:void(0)" onclick="open_detail('+element.id_berita+')" class="btn btn-warning"><i class="fas fa-bullseye"></i> View </a> </div><div style="float:right;"><a href="javascript:void(0)" class="btn btn-success" onclick="editModal('+element.id_berita+')"><i class="fas fa-pencil-alt"></i> Edit</a> &nbsp; <a href="javascript:void(0)" class="btn btn-primary"> <i class="fas fa-trash"></i> Hapus</a></div>';
-
-                    if(element.sudah_update == "1"){
-                        sudah_update = "<i class='fa fa-check' style='color:green;'></i> Berita ini sudah diupdate oleh editor";
-                    }
-
-                    if(element.approved == "1"){
-                        sudah_update = "<i class='fa fa-check' style='color:green;'></i> Di Setujui";
-                    }
-
-                    var isi_berita = '<div class="col-lg-4 col-md-6" style="float:left; margin-top:30px; height:800px; overflow:auto;"><div class="card"><img class="card-img-top img-fluid" src="'+element.urlfoto+'" alt="Card image cap"><div class="card-body"><h4 class="card-title">'+element.judul_berita+'</h4><h5 class="card-title" style="text-align:right;"><small>'+element.tanggal+'</small></small></h5><p class="card-text">'+element.isi_berita+'</p><br clear="all" /><h4 class="card-title" style="text-align:left;">'+element.kode_wartawan+'<br clear="all" /> <p></p></h4> <div style="float:left;">'+sudah_update+'</div></div></div>';
-
-                    $("#div_container_isi").append(isi_berita);
-
-                });
-
-              }
-            });
-
-        }
-
-        function append_kategori(){
-
-            $("#kategoriinputan").html("");
-
-            $.ajax({
-                type:"get",
-                url:"<?php echo url('ambil_listkategori_awal'); ?>",
-                data:"",
-                dataType:"json",
-                success:function(data){
-                //console.log("databerita" , data);
-                var len = data.length;
-                var a = 1;
-                $.each(data,function(index , element){
-
-                    var kategori = '<option value='+element.id_kategori_berita+'>'+element.name+'</option></li>';
-                    a++;
-                    $("#kategoriinputan").append(kategori);
-
-
-
-                });
-
-              }
-            });
-
-        }
-
-        function openModal(){
-
-            append_kategori();
-
-            $("#btn_cancel").click();
-
-            $("#view_berita_div").slideUp();
-            
-            $("#div_form_berita").slideDown();
-
-            $("#div_foto_berita").hide();
-
-            $("#div_video_berita").hide();
-
-            CKEDITOR.instances['DSC'].setData("");
-
-            jQuery("#t_aksi_pencarian").val("");
-
-            $("#t_idberita").val("");
-
-
-        }
-
-        function editModal(id){
-
-            append_kategori();
-
-            if(level_user == "3"){
-                $("#btn_submit_approve").html("Submit & Approve");
-            }
-            else{
-                $("#btn_submit_approve").html("Submit");
-            }
-
-            $("#view_berita_div").slideUp();
-            
-            $("#div_form_berita").slideDown();
-
-
-
-            jQuery.ajax({
-                type:"GET",
-                url:"<?php echo url('ambil_warta'); ?>"+"/"+id,
-                dataType:"json",
-                data:"",
-                async:false,
-                success:function(data){
-
-                    $("#view_berita_div").slideUp();
-            
-                    $("#div_form_berita").slideDown();
-
-                    $("#div_foto_berita").show();
-
-                    $("#div_video_berita").show();
-
-                    // var tgl = data.tanggal_berita;
-                    // var sp_tgl = tgl.split(" ");
-
-                    jQuery("#t_idberita").val(data.id_warta_berita);
-
-                    jQuery("#textinputan").val(data.title);
-                    jQuery("#tanggalinput").val(data.tanggal);
-                    // jQuery("#waktuinput").val(sp_tgl[1]);
-                    jQuery("#t_aksi_pencarian").val("edit");
-
-                    CKEDITOR.instances['DSC'].setData(data.keterangan);
-
-                    $("#img_foto_berita").prop("src" , "<?php echo url('storage/warta/thumbnail'); ?>"+"/thumb_"+data.foto);
-
-                    //jQuery("#img_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
-
-                    
-
-                    //jQuery("#editdataModal").modal('show');
-                }
-            });
-
-
-
-        }
-
-        function openView(){
-
-            $("#view_berita_div").slideDown();
-            
-            $("#div_form_berita").slideUp();
-
-        }
-
-        function openViewdetail(){
-
-            $("#view_berita_div").slideDown();
-            
-            $("#div_detail_berita").slideUp();
-
-        }
-
-        function deletedata(value){
-            var conn = confirm("Hapus data ?");
-
-            if(conn == true){
-                jQuery.ajax({
-                    type:"GET",
-                    url:"<?php echo url('hapuswarta/'); ?>",
-                    data:"id="+value,
-                    success:function(data){
-                        ambil_warta();
-                    }
-                })
-            }
-        }
-
-        function editdataModal(value){
-            
-            jQuery.ajax({
-                type:"GET",
-                url:"<?php echo url('ambil_kategori'); ?>"+"/"+value,
-                dataType:"json",
-                data:"",
-                success:function(data){
-
-                    jQuery("#iduserinput_edit").val(data.id_kategori_berita);
-                    jQuery("#textinput_edit").val(data.nama_kategori_berita);
-
-                    jQuery("#editdataModal").modal('show');
-                }
-            });
-
-            
-        }
-
-        function submit_edit_form(){
-            var serial = jQuery("#form_multi_edit").serialize();
-
-            jQuery.ajax({
-                type:"POST",
-                url:"<?php echo url('updatekategori'); ?>",
-                data:serial,
-                success:function(data){
-                        jQuery("#editdataModal").modal('hide');
-                        table.ajax.reload();
-                }
-            });
-
-        }
-
-        function tambahdata(){
-
-            var file_data =  $('#uploadinput').prop('files')[0]; 
-            //var file_video = $('#videoinput').prop('files')[0]; 
-
-            var form_data = new FormData();          
-
-            form_data.append('uploadinput', file_data);
-            //form_data.append('videoinput', file_video);
-            form_data.append('tanggal', $("#tanggalinput").val());
-            form_data.append('judul', $("#textinputan").val());
-            //form_data.append('DSC', CKEDITOR.instances['DSC'].getData());
-            form_data.append('_token', "<?php echo csrf_token(); ?>");
-            form_data.append('t_idberita', $("#t_idberita").val());
-
-            var url = "<?php echo url('tambahlaporan'); ?>";
-
-            if($('#t_aksi_pencarian').val() == "edit"){
-                url = "<?php echo url('updatelaporan'); ?>";
-            }
-
-            //alert(form_data);                             
-            $.ajax({
-                url: url, // point to server-side PHP script 
-                dataType: 'text',  // what to expect back from the PHP script, if anything
-                cache: false,
-                contentType: false,
-                processData: false,
-                data: form_data,                         
-                type: 'post',
-                success: function(response){
-                   // alert(php_script_response); // display response from the PHP script, if any
+                type: "GET",
+                url: "{{ url('administrator/hapuswarta') }}",
+                data: { id: id },
+                success: function() {
                     ambil_warta();
-
-                    openView();
-                }
-             });
-
-
-        }
-
-
-        function submit_form(){
-            var serial = jQuery("#form_multi").serialize();
-
-            jQuery.ajax({
-                type:"POST",
-                url:"<?php echo url('post_kategori'); ?>",
-                data:serial,
-                success:function(data){
-                        jQuery("#largeModal").modal('hide');
-                        table.ajax.reload();
                 }
             });
-
         }
+    }
+</script>
 
-    </script>
 @stop

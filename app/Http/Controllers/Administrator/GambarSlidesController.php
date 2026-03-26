@@ -65,34 +65,7 @@ class GambarSlidesController extends BaseController
 
         public function get_gambar_slide(Request $request){
             $getdata = Slides::get_gambar_slide($request);
-
-           // echo $getdata;
-
             return response()->json($getdata , 200); 
-        }
-
-        public function post_data_banjar(Request $request){
-
-        if($request->t_id_banjar == ""){
-            $datalist = Banjar::post_data_banjar($request);
-        }
-        else{
-            $datalist = Banjar::post_editdata_banjar($request);
-        }
-
-            return redirect("administrator/databanjar");
-        }
-
-        public function hapusbanjar(Request $request){
-
-            if($request->id != ""){
-                Banjar::post_hapus_banjar($request);
-            }
-            
-
-            echo "success";
-    
-                //return redirect("administrator/databanjar");
         }
 
         

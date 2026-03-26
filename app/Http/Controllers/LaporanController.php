@@ -72,90 +72,39 @@ class LaporanController extends BaseController
     }
 	
 	public function tambahlaporan(Request $request){
-    	//echo $request->input('DSC');
-    	//return;
     	$profile      = $request->file('uploadinput');
-        
         $filename     = str_shuffle("abcdefghijklmnopqrstuvwxyz0123456789").time() . '.' . $profile->guessExtension();
-        
         $profile->move(public_path('laporan'), $filename);
 
-        // $img = Image::make(public_path('laporan/'.$filename))->resize(300, 200);
-
-
-        // $img->save(public_path('warta/thumbnail/thumb_'.$filename));
-
 	    $list          				= new Laporan;
-	    $list->judul    		    = $request->input('judul');
+	    $list->judul    		    = $request->input('textinputan');
 	    $list->file   		        = $filename;
-        $list->tahun                = $request->input('tanggal');
+        $list->tahun                = $request->input('tanggalinput');
 	    $list->aktif   				= "1";
 	
 	    $list->save();
-		 //return view('admin_perikanan/berita');
-		echo $request->input('judul');
+		echo "success";
     }
 
-    public function ambil_warta(Request $request , $index){
+    public function updatelaporan(Request $request){
+        $profile = $request->file('uploadinput');
+        $data = [
+            'judul' => $request->input('textinputan'),
+            'tahun' => $request->input('tanggalinput'),
+        ];
 
-    	$data = Warta::where('id_warta_berita' , $index)->orderBy('id_warta_berita' , 'desc')->firstOrfail();
+        if($profile){
+            $filename = str_shuffle("abcdefghijklmnopqrstuvwxyz0123456789").time() . '.' . $profile->guessExtension();
+            $profile->move(public_path('laporan'), $filename);
+            $data['file'] = $filename;
+        }
 
-    	echo json_encode($data);
-
+        Laporan::where('id_laporan', $request->input('t_idberita'))->update($data);
+        echo "success";
     }
 
-    public function updatewarta(Request $request){
-        //$admin=tb_admin::findOrFail($id);
-            $halaman="tb_customer";
-            //echo $request->input('nama');
-            //$idx = $request->session()->get('id');
-            //$profile      = $request->file('uploadinput');
-    
-            $level = Session::get("level");
-    
-            $approved = "0";
-    
-            if($level == "3"){
-                $approved = "1";
-            }
-
-            $profile      = $request->file('uploadinput');
-
-            if($profile != null){
-        
-            $filename     = str_shuffle("abcdefghijklmnopqrstuvwxyz0123456789").time() . '.' . $profile->guessExtension();
-            
-            $profile->move(public_path('warta'), $filename);
-
-            $img = Image::make(public_path('warta/'.$filename))->resize(300, 200);
-
-
-            $img->save(public_path('warta/thumbnail/thumb_'.$filename));
-
-    
-            Warta::where('id_warta_berita', $request->input('t_idberita'))->update(array(
-                'title' =>  $request->input('judul') , 'tanggal' =>  $request->input('tanggal') , 'foto' => $filename, 'keterangan' => $request->input('DSC')));
-
-                
-            }
-            else{
-
-                Warta::where('id_warta_berita', $request->input('t_idberita'))->update(array(
-                    'title' =>  $request->input('judul') , 'tanggal' =>  $request->input('tanggal') ,  'keterangan' => $request->input('DSC')));
-    
-
-            }
-            
-    
-            echo $request->input('kategori');
-    
-            //return redirect('view-kategori-barang');
-            //return redirect('admin_perikanan/berita');
-        }
-
-        public function hapus_warta(Request $request){
-
-            Warta::where('id_warta_berita' , $request->id)->delete();
-        }
-	
+    public function hapus_laporan(Request $request){
+        Laporan::where('id_laporan' , $request->id)->delete();
+        echo "success";
+    }
 }

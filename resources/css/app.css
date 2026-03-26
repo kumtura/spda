@@ -1,6 +1,31 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+    --font-outfit: "Outfit", sans-serif;
+    --color-primary-light: #044c92;
+    --color-primary-dark: #04488b;
+}
+
+@layer base {
+    body {
+        font-family: var(--font-outfit);
+        @apply text-slate-900 antialiased bg-slate-50;
+    }
+}
+
+@layer components {
+    .sidebar-gradient {
+        background: linear-gradient(45deg, var(--color-primary-light) 0 50%, var(--color-primary-dark) 50% 100%);
+    }
+
+    .premium-blur {
+        @apply backdrop-blur-xl bg-white/80 border-white/20;
+    }
+
+    .glass-card {
+        @apply bg-white border border-slate-200 shadow-sm rounded-2xl;
+    }
+}
 
 /* Elegant Scrollbar */
 ::-webkit-scrollbar {

@@ -2,362 +2,173 @@
 
 @section('isi_menu')
 
-<div class="container-fluid">
-                <!-- *************************************************************** -->
-                <!-- Start First Cards -->
-                <!-- *************************************************************** -->
-                <div class="card-group">
-                    <div class="card border-right">
-                        <div class="card-body">
+<div class="space-y-6" x-data="{ 
+    showAddModal: false,
+    editMode: false,
+    
+    // Form Data
+    banjarId: '',
+    banjarName: '',
+    banjarAddress: '',
 
+    openAdd() {
+        this.editMode = false;
+        this.banjarId = '';
+        this.banjarName = '';
+        this.banjarAddress = '';
+        this.showAddModal = true;
+    },
 
-            <div class="modal fade" id="largeModal" tabindex="-1" role="dialog" aria-labelledby="largeModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="largeModalLabel">Edit Data Banjar</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
+    openEdit(id, name, address) {
+        this.editMode = true;
+        this.banjarId = id;
+        this.banjarName = name;
+        this.banjarAddress = address;
+        this.showAddModal = true;
+    },
+
+    confirmDelete(id) {
+        if(confirm('Hapus data banjar ini?')) {
+            let form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ url('administrator/hapusbanjar') }}';
+            
+            let idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'id';
+            idInput.value = id;
+            
+            let csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            
+            form.appendChild(idInput);
+            form.appendChild(csrfInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+}">
+
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight">Manajemen Wilayah Banjar</h1>
+            <p class="text-slate-500 font-medium text-sm">Kelola database wilayah administrasi banjar di ekosistem Dana Punia.</p>
+        </div>
+        <button @click="openAdd()" 
+                class="flex items-center justify-center gap-2 bg-primary-light hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-100 transition-all transform hover:-translate-y-0.5">
+            <i class="bi bi-plus-lg text-lg"></i>
+            Tambah Banjar
+        </button>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="glass-card p-5 flex items-center gap-4 border border-slate-200">
+            <div class="h-10 w-10 bg-blue-50 text-primary-light rounded-xl flex items-center justify-center">
+                <i class="bi bi-geo-alt-fill text-xl"></i>
+            </div>
+            <div>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Wilayah</p>
+                <p class="text-lg font-black text-slate-800 tracking-tight">{{ count($datalist) }} Banjar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="ikantable">
+                <thead>
+                    <tr class="bg-slate-50/50">
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">No</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Wilayah Banjar</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Alamat / Lokasi</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @php $no = 1; @endphp
+                    @foreach($datalist as $values)
+                    <tr class="group hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 text-xs font-bold text-slate-400 w-16">#{{ $no++ }}</td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs font-black text-slate-700 tracking-tight group-hover:text-primary-light transition-colors">{{ $values->nama_banjar }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-[10px] font-medium text-slate-500 italic max-w-xs truncate">
+                            {{ $values->alamat_banjar }}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button @click="openEdit('{{ $values->id_data_banjar }}', '{{ $values->nama_banjar }}', '{{ $values->alamat_banjar }}')"
+                                        class="h-8 w-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary-light hover:border-primary-light transition-all shadow-sm">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button @click="confirmDelete('{{ $values->id_data_banjar }}')"
+                                        class="h-8 w-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all shadow-sm">
+                                    <i class="bi bi-trash3"></i>
                                 </button>
                             </div>
-                            <form id="form_multi" method="post" action="<?php echo url("administrator/post_data_banjar"); ?>">
-                             
-                            <div class="modal-body">
-                                                
-                                
-                                 <div class="col-lg-12">
-                                                <div class="card">
-                                                    <div class="card-header">
-                                                        <strong>Tambah</strong> Data Banjar
-                                                    </div>
-                                                    <div class="card-body card-block">
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-                                                        
-                                                            <!--<div class="row form-group">
-                                                                <div class="col col-md-3"><label class=" form-control-label">Static</label></div>
-                                                                <div class="col-12 col-md-9">
-                                                                    <p class="form-control-static">Username</p>
-                                                                </div>
-                                                            </div>
-                                                            -->
-                                                            {{ csrf_field() }}
-                                                            <input type="hidden" name="t_id_banjar" id="t_id_banjar"  value="" />
-
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label"><b> Form Data </b></label></div>
-                                                            </div>
-
-                                                            <hr />
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Nama Banjar</label></div>
-                                                                <div class="col-12 col-md-9"><input type="text" id="t_nama_banjar" name="t_nama_banjar" required="required" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Nama Banjar</small></div>
-                                                            </div>
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label" required="required">Alamat Banjar</label></div>
-                                                                <div class="col-12 col-md-9"><textarea rows="4" name="t_alamat_banjar" id="t_alamat_banjar" class="form-control"></textarea></div>
-                                                            </div>
-
-
-                                                        
-                                                    </div>
-                                                </div>
-                                               
-                                            </div>
-
-                                             <button type="reset" class="btn btn-secondary" style="display:none;" id="btn_reset">Reset</button>
-
-
-                            </div>
-
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                               
-                                <button type="submit" class="btn btn-primary">Confirm</button>
-                            </div>
-
-                            </form>
-
-                        </div>
-                    </div>
-                 </form>
-                </div>
-
-
-                 <div class="modal fade" id="editdataModal" tabindex="-1" role="dialog" aria-labelledby="largeModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="largeModalLabel">Tambah Data User</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                
-                                 <div class="col-lg-12">
-                                                <div class="card">
-                                                    <div class="card-header">
-                                                        <strong>Form</strong> Tambah Banjar
-                                                    </div>
-                                                    <div class="card-body card-block">
-
-                                                    <form id="form_multi_edit" enctype="multipart/form-data" method="post">
-
-                                                    <input id="iduserinput_edit" name="iduserinput_edit" type="hidden" />
-                                                        
-                                                            <!--<div class="row form-group">
-                                                                <div class="col col-md-3"><label class=" form-control-label">Static</label></div>
-                                                                <div class="col-12 col-md-9">
-                                                                    <p class="form-control-static">Username</p>
-                                                                </div>
-                                                            </div>
-                                                            -->
-                                                            {{ csrf_field() }}
-
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label"><b> Credential User </b></label></div>
-                                                            </div>
-
-                                                            <hr />
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Email User</label></div>
-                                                                <div class="col-12 col-md-9"><input type="email" id="emailinput_edit" name="emailinput_edit" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Email User</small></div>
-                                                            </div>
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Password User</label></div>
-                                                                <div class="col-12 col-md-9"><input type="password" id="passwordinput_edit" name="passwordinput_edit" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Password User</small></div>
-                                                            </div>
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label"><b> Detail User </b></label></div>
-                                                            </div>
-                                                            <hr />
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Nama User</label></div>
-                                                                <div class="col-12 col-md-9"><input type="text" id="textinput_edit" name="textinput_edit" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan Nama User</small></div>
-                                                            </div>
-
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">No Telp/Wa</label></div>
-                                                                <div class="col-12 col-md-9"><input type="number" id="nowainput_edit" name="nowainput_edit" placeholder="" class="form-control"><small class="form-text text-muted">Masukkan No Telp/Wa</small></div>
-                                                            </div>
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Level</label></div>
-                                                                <div class="col-12 col-md-9">
-                                                                <select  id="levelinput_edit" name="levelinput_edit" placeholder="" class="form-control">
-                                                                <option value=""> - Level - </option>
-                                                                <option value="1"> - Admin - </option>
-                                                                <option value="2"> - Wartawan - </option>
-                                                                <option value="3"> - Pimpinan Redaksi - </option>
-                                                                <option value="4"> - Editor - </option>
-                                                                </select>
-                                                                <small class="form-text text-muted">Masukkan Level User</small></div>
-                                                            </div>
-
-                                                            
-
-                                                            <div class="row form-group">
-                                                                <div class="col col-md-3"><label for="text-input" class=" form-control-label">Foto</label></div>
-                                                                <div class="col-12 col-md-9"><input type="file" id="uploadinput_edit" name="uploadinput_edit" placeholder="Text" class="form-control"><small class="form-text text-muted">Masukkan Foto User</small></div>
-                                                            </div>
-
-                                                        
-                                                    </div>
-                                                </div>
-                                               
-                                            </div>
-
-                                </form>
-
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-primary" onclick="submit_edit_form(); return false;">Confirm</button>
-                            </div>
-                        </div>
-                    </div>
-                 </form>
-                </div>
-
-
- <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">Table Banjar</h4>
-                               <hr />
-                               <button onclick="openModal();" type="button"
-                                        class="btn waves-effect waves-light btn-primary"><i class="fas fa-plus"></i> Tambah Data </button>
-                                        <p>&nbsp;</p>
-                                <div class="table-responsive">
-                                    <table id="ikantable" class="table table-striped table-bordered display no-wrap datatable"
-                                        style="width:100%">
-                                        <thead>
-                                            <tr>
-                                                <th>No</th>
-                                                <th>Nama Banjar</th>
-                                                <th>Alamat</th>
-                                                <th>Aksi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-
-                                            <?php
-                                            $no = 1;
-                                                foreach($datalist as $values){
-                                                    ?>
-                                                    <tr>
-                                                        <td><?php echo $no; ?></td>
-                                                        <td><?php echo $values->nama_banjar; ?></td>
-                                                        <td><?php echo $values->alamat_banjar; ?></td>
-                                                        <td> <span style="cursor:pointer;" onclick="openModal_edit('<?php echo $values->id_data_banjar; ?>','<?php echo $values->nama_banjar; ?>','<?php echo $values->alamat_banjar; ?>');"> <i class="fas fa-edit"></i>  </span>&nbsp; <span style="cursor:pointer;" onclick="openDelete_data('<?php echo $values->id_data_banjar; ?>');"> <i class="fas fa-trash"></i> </span> </td>
-                                                    </tr>
-                                                    <?php
-                                            $no++;
-                                                }
-
-                                            ?>
-                                           
-                                        </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <th>No</th>
-                                                <th>Nama Banjar</th>
-                                                <th>Alamat</th>
-                                                <th>Aksi</th>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                </div>
-                        </div>
-                    </div>
-                </div>
-
-    <script type="text/javascript">
-    var table = "";
-
-    $('#ikantable').DataTable();
-
-        // jQuery(document).ready(function() {
-
-        //     table = jQuery('#ikantable').DataTable( {
-        //         "ajax": {
-        //             "url": "<?php echo url('administrator/ambil_listbanjar'); ?>",
-        //             "dataSrc": ""
-        //         },
-        //         columns: [
-        //             { "data": 'no' },
-        //             { "data": 'nama_banjar' },
-        //             { "data": 'alamat' },
-        //             { "data": 'aksi' }
-        //         ]
-        //     } );
-
-        //     //jQuery('.modal-dialog').draggable();
-
-
-        // } );
-
-        function openModal(){
-            $("#btn_reset").click();
-            $("#t_id_banjar").val("");
-
-            $("#largeModal").modal('show');
-        }
-
-        function openModal_edit(id,nama,alamat){
-            $("#btn_reset").click();
-
-            $("#t_id_banjar").val(id);
-            $("#t_nama_banjar").val(nama);
-            $("#t_alamat_banjar").val(alamat);
-
-            $("#largeModal").modal('show');
-        }
-
-        function openDelete_data(value){
-            var conn = confirm("Hapus data ?");
-
-            if(conn == true){
-                jQuery.ajax({
-                    type:"POST",
-                    url:"<?php echo url('administrator/hapusbanjar'); ?>",
-                    data:"id="+value,
-                    success:function(data){
-                        //table.ajax.reload();
-                        window.location = "<?php echo url('administrator/databanjar'); ?>";
-                    }
-                })
-            }
-        }
-
-        function editdataModal(value){
+    <!-- Modal Form -->
+    <template x-teleport="body">
+        <div x-show="showAddModal" 
+             class="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 backdrop-blur-md px-4 py-8"
+             x-cloak>
             
-            jQuery.ajax({
-                type:"GET",
-                url:"<?php echo url('administrator/ambil_user'); ?>"+"/"+value,
-                dataType:"json",
-                data:"",
-                success:function(data){
+            <div class="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl relative border border-slate-200" @click.away="showAddModal = false">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 rounded-xl bg-primary-light text-white flex items-center justify-center shadow-lg transform -rotate-2">
+                            <i class="bi bi-geo-alt text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-[9px] font-black text-primary-light uppercase tracking-widest mb-0.5 block" x-text="editMode ? 'Perbarui Data' : 'Banjar Baru'"></span>
+                            <h3 class="text-xl font-black text-slate-800 tracking-tight" x-text="editMode ? 'Edit Wilayah' : 'Tambah Wilayah'"></h3>
+                        </div>
+                    </div>
+                    <button @click="showAddModal = false" class="text-slate-400 hover:text-rose-500 transition-colors">
+                        <i class="bi bi-x-lg text-lg"></i>
+                    </button>
+                </div>
 
-                    jQuery("#iduserinput_edit").val(data.id);
-                    jQuery("#textinput_edit").val(data.name);
-                    jQuery("#emailinput_edit").val(data.email);
-                    jQuery("#levelinput_edit").val(data.id_level);
-                    jQuery("#nowainput_edit").val(data.no_wa);
+                <form action="{{ url('administrator/post_data_banjar') }}" method="POST" class="p-6 space-y-6">
+                    @csrf
+                    <input type="hidden" name="t_id_banjar" x-model="banjarId">
+                    
+                    <div class="space-y-6">
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Banjar</label>
+                            <input type="text" name="t_nama_banjar" required x-model="banjarName"
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                        </div>
 
-                    jQuery("#editdataModal").modal('show');
-                }
-            });
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Lengkap</label>
+                            <textarea name="t_alamat_banjar" required rows="3" x-model="banjarAddress"
+                                      class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all"></textarea>
+                        </div>
+                    </div>
 
-            
-        }
+                    <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
+                        <button type="button" @click="showAddModal = false" class="px-6 py-2.5 font-black text-[10px] uppercase text-slate-400">Batal</button>
+                        <button type="submit" class="px-8 py-2.5 bg-slate-900 hover:bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all transform hover:-translate-y-0.5">
+                            Simpan Data <i class="bi bi-check-lg ml-1"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+</div>
 
-        function submit_edit_form(){
-            var serial = jQuery("#form_multi_edit").serialize();
-
-            jQuery.ajax({
-                type:"POST",
-                url:"<?php echo url('updateuser'); ?>",
-                data:serial,
-                success:function(data){
-                        jQuery("#editdataModal").modal('hide');
-                        table.ajax.reload();
-                }
-            });
-
-        }
-
-
-        function submit_form(){
-            var serial = jQuery("#form_multi").serialize();
-
-            jQuery.ajax({
-                type:"POST",
-                url:"<?php echo url('post_user'); ?>",
-                data:serial,
-                success:function(data){
-                        jQuery("#largeModal").modal('hide');
-                        table.ajax.reload();
-                }
-            });
-
-        }
-
-    </script>
 @stop

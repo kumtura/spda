@@ -2,887 +2,376 @@
 
 @section('isi_menu')
 
-<div class="container-fluid">
-    <!-- *************************************************************** -->
-    <!-- Start First Cards -->
-    <!-- *************************************************************** -->
+<div class="space-y-8" x-data="{ 
+    showEditModal: false,
+    activeTab: 'detail',
+    profileImg: '{{ asset('storage/karyawan/'.$rows->foto_profile) }}',
+    isUploading: false,
 
-<div id="div_detail_berita" style="display:none;">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title" id="judul_berita"> Data Detail Berita</h4>
-                        <hr />
+    async uploadImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-                        <p>&nbsp;</p>
+        this.isUploading = true;
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('_token', '{{ csrf_token() }}');
 
-                        <center>
-                            <div class="col-md-6">
-                                <img id="img_berita" class="img-fluid" />
-                            </div>
-                        </center>
+        try {
+            const response = await fetch('{{ url('administrator/upload_gambar_karyawan/'.$rows->id_tenaga_kerja) }}', {
+                method: 'POST',
+                body: formData
+            });
+            const imgUrl = await response.text();
+            this.profileImg = imgUrl;
+        } catch (error) {
+            console.error('Upload failed:', error);
+        } finally {
+            this.isUploading = false;
+        }
+    }
+}">
 
-                        <p>&nbsp;</p>
+    <!-- Breadcrumbs / Top Actions -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <a href="{{ url('administrator/data_tenagakerja') }}" class="h-12 w-12 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm">
+                <i class="bi bi-arrow-left text-xl font-bold"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-black text-slate-800 tracking-tight">Profil Tenaga Kerja</h1>
+                <p class="text-slate-500 font-medium text-sm">Informasi lengkap dan riwayat kompetensi karyawan.</p>
+            </div>
+        </div>
+        <button @click="showEditModal = true" 
+                class="flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-6 py-3 rounded-2xl font-bold shadow-sm transition-all duration-300">
+            <i class="bi bi-pencil-square text-lg text-indigo-500"></i>
+            Edit Data Profil
+        </button>
+    </div>
 
-                        <!-- <div class="col-md-12" id="isi_berita">
-                            
-                        </div> -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Sidebar: Profile Overview -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="glass-card rounded-[2.5rem] overflow-hidden p-8 text-center relative group">
+                <!-- Avatar Upload -->
+                <div class="relative inline-block mx-auto mb-6">
+                    <div class="h-40 w-40 rounded-4xl bg-slate-100 p-1.5 border-4 border-white shadow-2xl overflow-hidden relative">
+                        <img :src="profileImg" class="w-full h-full object-cover rounded-3xl" alt="Profile">
+                        
+                        <!-- Upload Overlay -->
+                        <label class="absolute inset-0 bg-indigo-900/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-sm">
+                            <input type="file" @change="uploadImage" class="hidden">
+                            <i class="bi bi-camera-fill text-white text-3xl mb-1"></i>
+                            <span class="text-white text-[10px] font-black uppercase tracking-widest">Ganti Foto</span>
+                        </label>
 
+                        <!-- Loader -->
+                        <div x-show="isUploading" class="absolute inset-0 bg-white/80 flex items-center justify-center">
+                            <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
                         </div>
                     </div>
+                    <div class="absolute -bottom-2 -right-2 h-10 w-10 bg-emerald-500 border-4 border-white rounded-2xl flex items-center justify-center shadow-lg transform rotate-6">
+                        <i class="bi bi-patch-check-fill text-white text-lg"></i>
+                    </div>
                 </div>
+
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-black text-slate-800">{{ $rows->nama }}</h2>
+                    <p class="text-indigo-600 font-bold text-sm bg-indigo-50 inline-block px-4 py-1 rounded-full uppercase tracking-tighter">
+                        {{ Config::get('myconfig.status_tenaga')[$rows->status] }}
+                    </p>
+                </div>
+
+                <div class="mt-8 grid grid-cols-1 gap-4 text-left">
+                    <div class="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Email Address</p>
+                        <p class="text-sm font-bold text-slate-700 break-all">{{ $rows->email_karyawan }}</p>
+                    </div>
+                    <div class="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">WhatsApp / Cell</p>
+                        <p class="text-sm font-bold text-slate-700">{{ $rows->no_wa }}</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-center gap-3">
+                    @if($rows->foto_ijazah)
+                    <button onclick="window.open('{{ asset('storage/karyawan/'.$rows->foto_ijazah) }}')"
+                            class="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">
+                        <i class="bi bi-file-earmark-pdf text-lg"></i>
+                        Download CV
+                    </button>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Social Links -->
+            <div class="glass-card rounded-4xl p-6 space-y-4">
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest px-2">Koneksi Sosial</h3>
+                <div class="flex flex-col gap-2">
+                    <a href="#" class="flex items-center justify-between p-3 bg-blue-50/50 border border-blue-100/50 rounded-xl group hover:bg-blue-600 transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i class="bi bi-facebook text-xl text-blue-600 group-hover:text-white transition-colors"></i>
+                            <span class="text-sm font-bold text-blue-700 group-hover:text-white transition-colors">Facebook Profile</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-blue-400 group-hover:text-white transition-colors"></i>
+                    </a>
+                    <a href="#" class="flex items-center justify-between p-3 bg-slate-100/50 border border-slate-200/50 rounded-xl group hover:bg-slate-900 transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i class="bi bi-twitter-x text-xl text-slate-900 group-hover:text-white transition-colors"></i>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-white transition-colors">Twitter Handle</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-slate-400 group-hover:text-white transition-colors"></i>
+                    </a>
+                </div>
+            </div>
         </div>
-</div>
 
-
-<div class="modal fade" id="largeModal_edit" tabindex="-1" role="dialog" aria-labelledby="largeModalLabel" aria-hidden="true">
-    <form id="form_maintenance_usaha" name="form_maintenance_usaha" enctype="multipart/form-data" method="post" action="<?php echo url("administrator/update_post_add_tenagakerja"); ?>">
-    
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="largeModalLabel">Form Maintenance Tenaga Kerja</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+        <!-- Main Content: Detailed Info & Tabs -->
+        <div class="lg:col-span-8">
+            <div class="glass-card rounded-[2.5rem] min-h-[600px] flex flex-col overflow-hidden shadow-2xl">
+                <!-- Tabs Nav -->
+                <div class="flex border-b border-slate-100 p-2 bg-slate-50/30">
+                    <button @click="activeTab = 'detail'" 
+                            :class="activeTab === 'detail' ? 'bg-white shadow-md text-indigo-600' : 'text-slate-400 hover:bg-white/50'"
+                            class="flex-1 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all">
+                        <i class="bi bi-grid-fill mr-2"></i>Detail Personal
+                    </button>
+                    <button @click="activeTab = 'skill'" 
+                            :class="activeTab === 'skill' ? 'bg-white shadow-md text-indigo-600' : 'text-slate-400 hover:bg-white/50'"
+                            class="flex-1 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all">
+                        <i class="bi bi-lightning-charge-fill mr-2"></i>Keahlian
+                    </button>
+                    <button @click="activeTab = 'history'" 
+                            :class="activeTab === 'history' ? 'bg-white shadow-md text-indigo-600' : 'text-slate-400 hover:bg-white/50'"
+                            class="flex-1 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all">
+                        <i class="bi bi-clock-history mr-2"></i>Riwayat Status
                     </button>
                 </div>
-                <div class="modal-body">
-                    
-                    <div class="col-lg-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <strong>Form</strong> Input Tenaga Kerja
+
+                <!-- Tab Panels -->
+                <div class="flex-1 p-8">
+                    <!-- Detail Personal Panel -->
+                    <div x-show="activeTab === 'detail'" x-transition class="space-y-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-1 group">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Alamat Domisili</p>
+                                <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-indigo-50/50 group-hover:border-indigo-100 transition-all duration-300 min-h-[100px]">
+                                    <p class="text-slate-700 font-bold leading-relaxed">{{ $rows->alamat }}</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 gap-6">
+                                <div class="space-y-1">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Gender / Jenis Kelamin</p>
+                                    <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <i class="bi {{ $rows->jenis_kelamin == 1 ? 'bi-gender-male text-blue-500' : 'bi-gender-female text-rose-500' }} text-xl"></i>
+                                        <p class="text-slate-700 font-bold">{{ Config::get('myconfig.jk_tenaga')[$rows->jenis_kelamin] }}</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Umur Saat Ini</p>
+                                    <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <i class="bi bi-hourglass-split text-xl text-amber-500"></i>
+                                        <p class="text-slate-700 font-bold">{{ $rows->umur }} Tahun</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        
-                        
-        <div class="card-body card-block">
-                            
-                        <!--<ul class="nav nav-tabs mb-3" id="div_tabs">-->
-                        <!--    <li class="nav-item" onclick="#"><a href="#detail_usaha" data-toggle="tab" aria-expanded="false" class="nav-link active"><i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i><span class="d-none d-lg-block">Detail Usaha</span></a></li>-->
-                        <!--    <li class="nav-item" onclick="#">-->
-                        <!--    <a href="#pngg_jawab" data-toggle="tab" aria-expanded="false" class="nav-link "><i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i><span class="d-none d-lg-block">Penanggung Jawab</span></a>-->
-                        <!--    </li>-->
-                        <!--</ul>-->
-                        
-                <nav>
-                  <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                      
-                    <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home-edit" role="tab" aria-controls="nav-home" aria-selected="true">Detail Karyawan</a>
-                    <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile-edit" role="tab" aria-controls="nav-profile" aria-selected="false">Data Skill</a>
-                    
-                  </div>
-                </nav>
-                
-                <p>&nbsp;</p>
-                <div class="tab-content" id="nav-tabContents">
-                    <div class="tab-pane fade show active" id="nav-home-edit" role="tabpanel" aria-labelledby="nav-home-tab">
-                        
-                        <div id="detail_usaha">
 
-                                <input type="hidden" name="t_hidden_idtext" id="t_hidden_idtext" value="<?php echo $rows->id_tenaga_kerja; ?>" />
-                                <input type="hidden" name="_method" id="_method" value="put" />
-                       
-                                {{ csrf_field() }}
-
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Nama Karyawan :</label></div>
-                                    <div class="col-12 col-md-9"><input type="text" id="text_title_new" name="text_title_new" required="required" class="form-control" value="<?php echo $rows->nama; ?>" /><small class="form-text text-muted">Masukkan Nama Usaha</small></div>
+                        <div class="p-8 rounded-4xl bg-indigo-900 text-white relative overflow-hidden shadow-2xl">
+                            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div class="space-y-2">
+                                    <h4 class="text-lg font-black tracking-tight">Status Penempatan Sistem</h4>
+                                    <p class="text-indigo-200 font-medium text-sm leading-relaxed max-w-md">Saat ini karyawan terdaftar dengan status {{ Config::get('myconfig.status_tenaga')[$rows->status] }}. Anda dapat melihat riwayat perubahan status di tab histori.</p>
                                 </div>
-                                
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Email Karyawan :</label></div>
-                                    <div class="col-12 col-md-9"><input type="text" id="text_email_usaha_new" name="text_email_usaha_new" required="required" class="form-control" value="<?php echo $rows->email_karyawan; ?>" /><small class="form-text text-muted">Masukkan Nama Usaha</small></div>
+                                <div class="px-8 py-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+                                    <span class="text-[10px] font-black text-indigo-300 uppercase tracking-[0.2em] mb-1 block">Tingkat Prioritas</span>
+                                    <p class="font-black text-2xl uppercase italic">Reguler</p>
                                 </div>
-                                
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">No. WA:</label></div>
-                                    <div class="col-12 col-md-9"><input type="text" id="text_telpkantor_new" name="text_telpkantor_new" required="required" class="form-control" value="<?php echo $rows->no_wa; ?>" /><small class="form-text text-muted">Masukkan Nama Usaha</small></div>
+                            </div>
+                            <!-- Decorative Circle -->
+                            <div class="absolute -right-16 -top-16 w-64 h-64 bg-indigo-500 rounded-full opacity-20 blur-3xl"></div>
+                        </div>
+                    </div>
+
+                    <!-- Skill Panel -->
+                    <div x-show="activeTab === 'skill'" x-transition class="space-y-6">
+                        <div class="flex items-center justify-between mb-2 px-2">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Matrik Kompetensi</h4>
+                            <span class="text-[10px] bg-slate-100 text-slate-500 px-3 py-1 rounded-full font-black uppercase">{{ count($skill_kerja) }} Skill Terdeteksi</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            @foreach($skill_kerja as $rows_tek)
+                            <div class="flex items-center gap-4 p-5 bg-white border-2 border-slate-50 rounded-3xl shadow-sm hover:shadow-md hover:border-indigo-100 transition-all group">
+                                <div class="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center transition-transform group-hover:rotate-12 group-hover:scale-110">
+                                    <i class="bi bi-check2-circle text-2xl"></i>
                                 </div>
-                                
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Umur :</label></div>
-                                    <div class="col-12 col-md-9"><input type="number" id="text_notelp_was" name="text_notelp_was" required="required" class="form-control" value="<?php echo $rows->umur; ?>" /><small class="form-text text-muted">Masukkan Nama Usaha</small></div>
+                                <div>
+                                    <p class="font-black text-slate-700 tracking-tight">{{ $rows_tek->nama_skill }}</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Verified Proficiency</p>
                                 </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
 
+                    <!-- History Panel -->
+                    <div x-show="activeTab === 'history'" x-transition class="space-y-8">
+                        <div class="relative py-8 px-4">
+                            <!-- Timeline Line -->
+                            <div class="absolute left-8 top-0 bottom-0 w-1 bg-slate-100 rounded-full"></div>
 
-                                <div class="row form-group">
-
-                                        <div class="col col-md-3"><label for="text-input" class=" form-control-label">Alamat  :</label></div>
-
-                                        <div class="col-12 col-md-9">
-                                            <textarea class="col-12 col-md-12" name="t_alamat_usaha" class="form-control"> <?php echo $rows->alamat; ?></textarea>
-                                            <small class="form-text text-muted">Masukkan alamat </small>
+                            <div class="space-y-12 relative">
+                                <!-- Example Timeline Item -->
+                                <div class="relative pl-12 group">
+                                    <div class="absolute left-[-4px] top-1 h-6 w-6 rounded-full bg-white border-4 border-indigo-600 shadow-sm z-10 transition-transform group-hover:scale-125"></div>
+                                    <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100 group-hover:bg-white group-hover:shadow-xl transition-all duration-300">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                            <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Pendaftaran Awal</span>
+                                            <span class="text-[10px] font-bold text-slate-400 bg-slate-200/50 px-2 py-1 rounded-lg italic">System Default</span>
                                         </div>
-                                
-                                </div>
-                                
-                                
-                                <div class="row form-group">
-                                    <div class="col col-md-3"><label for="text-input" class=" form-control-label">Jenis Kelamin :</label></div>
-                                    <div class="col-12 col-md-9"><input type="radio" id="rdb_jk_karyawan" name="rdb_jk_karyawan" checked="checked" value="1" /> &nbsp; Laki - Laki &nbsp; <input type="radio" id="rdb_jk_karyawan" name="rdb_jk_karyawan"  value="0" /> &nbsp; Perempuan</div>
+                                        <p class="text-sm font-bold text-slate-700">Data karyawan pertama kali dimasukkan ke dalam basis data SPDA Kumtura.</p>
+                                        <p class="mt-4 text-[11px] font-black text-slate-400 uppercase tracking-tighter">
+                                            <i class="bi bi-clock-history mr-1"></i> Data Historis Statis
+                                        </p>
+                                    </div>
                                 </div>
 
-
+                                <div class="text-center py-12">
+                                    <div class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                                        <i class="bi bi-inbox text-2xl text-slate-300"></i>
+                                    </div>
+                                    <p class="text-slate-400 font-bold text-sm tracking-tight italic">Belum ada riwayat aktivitas rekrutmen atau interview yang tercatat.</p>
                                 </div>
-                                
-                      
-                    </div>
-                  <div class="tab-pane fade" id="nav-profile-edit" role="tabpanel" aria-labelledby="nav-profile-tab">
-                      
-                      
-                        <div id="pngg_jawab">
-                            <div class="row">
-
-                            <?php
-                            
-                            foreach($tenaga_kerja as $rows_tek){
-                            $check = "";
-                            
-                            foreach($skill_kerja as $values){
-                                if($values->id_skill == $rows_tek->id_skill_tenaga_kerja){
-                                    $check="checked='checked'";
-                                }
-                            }
-                            
-                            ?>
-                                <div class="col-md-6" style="padding:10px; box-sizing:border-box;"> 
-                                    <input type="checkbox" name="chk_tenaga_kerja[]" id="chk_tenaga_kerja[]" value="<?php echo $rows_tek->id_skill_tenaga_kerja; ?>" style="transform: scale(1.5);" <?php echo $check; ?> /> &nbsp; &nbsp; <?php echo $rows_tek->nama_skill; ?>
-                                </div>
-                            <?php
-                            }
-                            ?>
-                                
-
                             </div>
                         </div>
-                            
-                  </div>
-                  <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">...</div>
-                </div>
-
-                                
-                                
-                            </div>
-                        </div>
-                        
                     </div>
-
-                    <button type="reset" class="btn btn-secondary" style="display:none;" id="btn_reset">Reset</button>
-
-
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    
-                    <button type="submit" class="btn btn-primary">Confirm</button>
-                </div>
-
             </div>
         </div>
-    </form>
+    </div>
 
-</div>
-
-
- <div class="row" id="view_berita_div">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-             
-             <h4 class="card-title">Data Tenaga Kerja</h4>
-
-             <hr />
-
-             <?php
-               // if(Session::get('level') == "2"){
-             ?>
-
-                 <button onclick="openModal_Edit();" style="float:right;" type="button"
-                        class="btn waves-effect waves-light btn-primary"><i class="fas fa-edit"></i> Edit Data Karyawan
-                 </button>
-                 
-                 <br clea"all" />
-
-             <?php
-              //  }
-             ?>
+    <!-- Edit Modal (Legacy Content adapted to Premium UI) -->
+    <template x-teleport="body">
+        <div x-show="showEditModal" 
+             class="fixed inset-0 z-100 overflow-y-auto px-4 py-12 flex items-center justify-center bg-slate-900/60 backdrop-blur-md"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             x-cloak>
             
-             <p></p>
-             
-            <div>
-
-                <div class="row form-group">
-                     <div class="col col-md-3" style="margin-top:30px;"></div>
-
-
-                    <br clear="all" />
-
-                    <div class="col col-md-3" style="margin-top:10px;"></div>
-
-                    <!-- <div class="col-9 col-md-9" style="margin-top:20px;">
-                      <input type="submit"  id="btn_submit_cari" name="btn_submit_cari" value="Cari Data" class="btn-primary" /> 
-                    </div> -->
-
-    <div class="col-12 col-md-12" style="margin-top:20px;">
-        
-        <div class="row">
-            <div class="col col-md-4">
-                <div class="col-md-12" style="position:relative;">
-                    <input type="file" name="f_upload" id="f_upload" style="display:none;" onchange="upload_gambar('<?php echo $rows->id_tenaga_kerja; ?>');" />
-                <div id="logo_usaha_loader" style="position:absolute; top:-25px; left:0; background:rgba(50,50,50,0.8); width:100%; height:110%; z-index:999999; display:none;">
-                    <center>
-                        <div class="lds-ring"  style="margin-top:30%;"><div></div><div></div><div></div><div></div></div>
-                    </center>
-                </div>
-                <div style="position:absolute; top:-20px; padding:0 10px; background:rgba(50,50,50,0.7); color:#FFFFFF; border-radius:5px; right:10px; font-size:21px; cursor:pointer;" onclick="$('#f_upload').click();">
-                    <i class="fas fa-camera"></i>
-                </div>
-                <a id="single_image" href="<?php echo url('storage/karyawan/'.$rows->foto_profile); ?>"><img src="<?php echo url('storage/karyawan/'.$rows->foto_profile); ?>" id="logo_img_icon" class="img-fluid" /></a> <p></p>
-                </div>
-                <div class="col-md-12">
-                <center>
-                    <h2 style="font-size:21px;"><b><span id="div_usaha_nama"><?php echo $rows->nama; ?></span></b></h2>
-                    <h4 style="font-size:14px;"><?php echo $rows->email_karyawan; ?></h4>
-                    <h4 style="font-size:14px;"><?php echo $rows->no_wa; ?></h4>
-                </center>
-                </div>
-            </div>
-            
-            <div class="col col-md-8">
-                
-                <nav>
-                  <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                      
-                    <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">Detail Usaha</a>
-                    <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Skill Kerja</a>
-                    <a class="nav-item nav-link" id="nav-punia-tab" data-toggle="tab" href="#nav-punia" role="tab" aria-controls="nav-punia" aria-selected="false">Status Kerja & History</a>
-                    
-                  </div>
-                </nav>
-                
-                <p>&nbsp;</p>
-                <div class="tab-content" id="nav-tabContent" style="border:1px solid #DDDDDD;">
-                    
-                    <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-                        
-                        <div id="detail_usaha" style="padding:20px;">
-
-
-                            <div class="col-md-12" style="margin-top:10px;">
-                                    <div class="row">
-                                        
-                                    <div class="col-md-3"><b>Alamat</b></div>
-                                    <div class="col-md-1">:</div>
-                                    <div class="col-md-8"><?php echo $rows->alamat; ?>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-12" style="margin-top:10px;">
-                                    <div class="row">
-                                        
-                                    <div class="col-md-3"><b>Jenis kelamin</b></div>
-                                    <div class="col-md-1">:</div>
-                                    <div class="col-md-8"><?php echo Config::get('myconfig.jk_tenaga')[$rows->jenis_kelamin]; //$jk_tenaga($rows->jenis_kelamin); ?>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-12" style="margin-top:10px;">
-                                    <div class="row">
-                                        
-                                    <div class="col-md-3"><b>Umur</b></div>
-                                    <div class="col-md-1">:</div>
-                                    <div class="col-md-8"><?php echo $rows->umur; ?> Tahun
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-12" style="margin-top:10px;">
-                                    <div class="row">
-                                        
-                                    <div class="col-md-3"><b>Status</b></div>
-                                    <div class="col-md-1">:</div>
-                                    <div class="col-md-8"><?php echo Config::get('myconfig.status_tenaga')[$rows->status]; ?>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-12" style="margin-top:40px;">
-                                    <div class="row">
-                                        Download Ijazah & CV :  &nbsp;  &nbsp; 
-                                        <button class="btn btn-success" onclick="window.open('<?php echo url('storage/karyawan/'.$rows->foto_ijazah); ?>');"> &nbsp; <i class="fa fa-download"></i> Download CV & Ijazah</button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                        </div>
-
-                        
-                    
-                    <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                        
-                        <div id="datas_usaha" style="padding:40px 40px 40px 40px; box-sizing:border-box;">
-                            
-                        Berikut adalah beberapa daftar / List Skill yang dimiliki calon pekerja : 
-                        <hr />
-                        <p></p>
-                        <div class="row">
-                            
-                        <?php
-                        $sk = array();
-                            foreach($skill_kerja as $rows_tek){
-                                array_push($sk , $rows_tek->id_skill);
-                            ?>
-                                <div class="col-md-6" style="padding:10px; box-sizing:border-box;"> 
-                                    <i class="fa fa-briefcase"></i> &nbsp; &nbsp; <?php echo $rows_tek->nama_skill; ?>
-                                </div>
-                            <?php
-                            }
-                        ?>    
-                            
-                        </div>
-                            
-                        </div>
-                        
+            <div class="glass-card w-full max-w-4xl rounded-4xl overflow-hidden shadow-2xl relative border-white/20" @click.away="showEditModal = false">
+                <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-linear-to-br from-amber-500/5 to-white">
+                    <div>
+                        <span class="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1 block">Update Informasi</span>
+                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Edit Data Karyawan</h3>
                     </div>
-                    
-                    <div class="tab-pane fade" id="nav-punia" role="tabpanel" aria-labelledby="nav-punia-tab">
-                        
-                        <div id="det_punia_usaha" style="padding:20px 20px 40px 20px;">
-                            
-                        <div class="row">
-
-                        <div class="col-md-12">
-
-                               <div style="text-align:center;"> - Belum Ada History Status Kerja - </div>
-
-                        </div>
-                                
-
-                            </div>
-                    
-                    
-                    </div>
-                    
+                    <button @click="showEditModal = false" class="h-12 w-12 flex items-center justify-center hover:bg-slate-100 rounded-2xl transition-all duration-300 text-slate-400">
+                        <i class="bi bi-x-lg text-xl"></i>
+                    </button>
                 </div>
-                
+
+                <form action="{{ url('administrator/update_post_add_tenagakerja') }}" method="POST" enctype="multipart/form-data" class="p-8 bg-white/30 space-y-8">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="t_hidden_idtext" value="{{ $rows->id_tenaga_kerja }}">
+
+                    <div x-data="{ editTab: 'personal' }">
+                        <div class="flex gap-8 border-b border-slate-100/50 mb-8 pb-1">
+                            <button type="button" @click="editTab = 'personal'" 
+                                    :class="editTab === 'personal' ? 'text-amber-600 border-amber-600' : 'text-slate-400 border-transparent'"
+                                    class="pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all">
+                                <i class="bi bi-person mr-1"></i>Data Diri
+                            </button>
+                            <button type="button" @click="editTab = 'skill'" 
+                                    :class="editTab === 'skill' ? 'text-amber-600 border-amber-600' : 'text-slate-400 border-transparent'"
+                                    class="pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all">
+                                <i class="bi bi-award mr-1"></i>Kompetensi
+                            </button>
+                        </div>
+
+                        <div class="min-h-[400px]">
+                            <div x-show="editTab === 'personal'" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Karyawan</label>
+                                    <input type="text" name="text_title_new" required value="{{ $rows->nama }}"
+                                           class="w-full bg-slate-100/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-amber-500/10 transition-all">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email Address</label>
+                                    <input type="email" name="text_email_usaha_new" required value="{{ $rows->email_karyawan }}"
+                                           class="w-full bg-slate-100/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-amber-500/10 transition-all">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">No. WhatsApp</label>
+                                    <input type="text" name="text_telpkantor_new" required value="{{ $rows->no_wa }}"
+                                           class="w-full bg-slate-100/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-amber-500/10 transition-all">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Umur (Thn)</label>
+                                    <input type="number" name="text_notelp_was" required value="{{ $rows->umur }}"
+                                           class="w-full bg-slate-100/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-amber-500/10 transition-all">
+                                </div>
+                                <div class="col-span-2 space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Tinggal</label>
+                                    <textarea name="t_alamat_usaha" rows="3" required
+                                              class="w-full bg-slate-100/50 border-none rounded-4xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-amber-500/10 transition-all">{{ $rows->alamat }}</textarea>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Jenis Kelamin</label>
+                                    <div class="flex items-center gap-8 py-3">
+                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                            <input type="radio" name="rdb_jk_karyawan" value="1" {{ $rows->jenis_kelamin == 1 ? 'checked' : '' }} class="w-6 h-6 text-amber-600 focus:ring-amber-500/10 border-slate-200">
+                                            <span class="text-sm font-bold text-slate-600 group-hover:text-amber-600 transition-colors">Laki-Laki</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                            <input type="radio" name="rdb_jk_karyawan" value="0" {{ $rows->jenis_kelamin == 0 ? 'checked' : '' }} class="w-6 h-6 text-amber-600 focus:ring-amber-500/10 border-slate-200">
+                                            <span class="text-sm font-bold text-slate-600 group-hover:text-amber-600 transition-colors">Perempuan</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div x-show="editTab === 'skill'" class="space-y-6">
+                                <div class="bg-amber-50/20 p-8 rounded-[2.5rem] border border-amber-100/30">
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        @foreach($tenaga_kerja as $rows_tek)
+                                        @php
+                                            $checked = "";
+                                            foreach($skill_kerja as $values) {
+                                                if($values->id_skill == $rows_tek->id_skill_tenaga_kerja) {
+                                                    $checked = "checked";
+                                                }
+                                            }
+                                        @endphp
+                                        <label class="flex items-center p-4 bg-white rounded-2xl shadow-sm border-2 border-transparent hover:border-amber-200 cursor-pointer transition-all group">
+                                            <input type="checkbox" name="chk_tenaga_kerja[]" value="{{ $rows_tek->id_skill_tenaga_kerja }}" {{ $checked }}
+                                                   class="w-6 h-6 text-amber-600 rounded-lg focus:ring-amber-500/10 border-slate-200">
+                                            <span class="ml-4 text-[13px] font-bold text-slate-600 group-hover:text-slate-900">{{ $rows_tek->nama_skill }}</span>
+                                        </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-4 pt-8 border-t border-slate-100/50">
+                        <button type="button" @click="showEditModal = false" 
+                                class="px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-100 transition-all">Batalkan</button>
+                        <button type="submit" 
+                                class="px-10 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-3xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-amber-100 transition-all transform hover:-translate-y-1 active:scale-95">
+                                Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-            
-    </div>
-
-    </div>
-
-    <div id="div_container_isi">
-                    
-
-    </div>
+    </template>
 
 </div>
 
-        </div>
-    </div>
-</div>
-
-</div>
-                       
-
-    <script type="text/javascript">
-    
-    var table = "";
-    var active_id = "";
-
-    var level_user = "<?php echo Session::get('level'); ?>";
-    
-    $('#ikantable').DataTable();
-    
-    function upload_gambar(index){
-        
-        if($('#f_upload')[0].files[0] != ""){
-            var data = new FormData();
-            data.append('file', $('#f_upload')[0].files[0]);
-            data.append("_token" , "<?php echo csrf_token(); ?>");
-            
-            $("#logo_usaha_loader").show();
-            
-            $.ajax({
-                  url: url_menu_apis+"/"+"upload_gambar_karyawan/"+index,
-                  type: "POST",
-                  data: data,
-                  enctype: 'multipart/form-data',
-                  processData: false,  // tell jQuery not to process the data
-                  contentType: false,
-                  success:function(data){
-                      
-                      $("#logo_img_icon").prop("src" , data);
-                      $("#logo_usaha_loader").fadeOut("slow");
-                      
-                      $('#f_upload').val("");
-                      
-                  }// tell jQuery not to set contentType
-            });
-        }
-    }
-    
-    function bayar_tagihan(index,bulan){
-        
-        $('#largeModal').modal('show');
-        
-        var parseBulan = parseInt(index);
-        
-        var format_bulan = index;
-        
-        if(parseBulan <= 9){
-            format_bulan = "0"+index;
-        }
-        
-        var today = new Date(); 
-        var dd = String(today.getDate());
-        
-        var dateNow = $("#pilih_tahun_subs").val() + "-" + format_bulan + "-" + dd;
-        
-        $("#tanggal_bukti_pembayaran").val(dateNow);
-        
-        $("#sp_bulan_bayar").html(bulan);
-        $("#t_bulan_pembayaran").val(index);
-        $("#sp_usaha_new").html($("#div_usaha_nama").html());
-       // $("#sp_pembayaran_new").html("Rp. 15.000,-");
-        
-    }
-    
-    function open_detail_pembayaran(index){
-        
-        $.ajax({
-            type:'GET',
-            data:"id="+index,
-            url:url_menu_apis+"/"+"get_pembayaran_detail/"+index,
-            dataType:"json",
-            success:function(data){
-                $("#detailModal").modal("show");
-                
-                var bulan = ["bulan","Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-                
-                $("#sp_bulan_bayar_detail").html(bulan[data[0].bulan]);
-                $("#sp_tahun_detail").html(data[0].tahun);
-                
-                $("#img_pembayaran").prop("src",url_menu_asset+"/"+"bukti_pembayaran/"+data[0].bukti_pembayaran);
-                
-                $("#sp_tgl_pembayaran").html(data[0].tanggal_pembayaran);
-                $("#sp_jml_pembayaran").html("Rp. "+data[0].jumlah_dana);
-                $("#sp_extra_pembayaran").html("Rp. "+data[0].charge);
-                $("#sp_punia_pembayaran").html(data[0].metode);
-                
-            }
-        })
-        
-    }
-
-    function submit_pembayaran_form(form){
-
-        var formData = new FormData(document.getElementById('form_maintenance_pembayaran'));
-        formData.append("urutan_id" , active_id);
-
-        //console.log("formdata" , formData);
-
-        //console.log("submits" , );
-        $.ajax({
-            data:formData,
-            url:url_menu_apis+"/"+"post_pembayaran_baru/"+"manual",
-            type:"post",
-            processData: false,
-            contentType: false,
-            dataType:"json",
-            cache: false,
-            success:function(data){
-                //$("#register_user_new").val();
-                var scc = '<div class="col-md-12" style="text-align:right; margin-top:-15px;">'+
-                    '<b>Sudah Bayar</b> <br />'+ data[0].tanggal_pembayaran +
-                    '<br />'+data[0].metode+'</div>'
-                //if(data == "success"){
-                    $("#largeModal").modal("hide");
-                   // $("#btn_reset").click();
-                   $("#div_status_pembayaran_"+data[0].bulan).html(scc);
-                   $("#checks_data_berhasil_"+data[0].bulan).html("<i class='fa fa-check' style='color:green;'></i>")
-                //}
-            }
-        });
-
-        return false;
-
-    }
-
-    function submit_edit_gambar_form(form){
-
-        var formData = new FormData(document.getElementById('form_multi_edit'));
-        formData.append("urutan_id" , active_id);
-
-        //console.log("formdata" , formData);
-
-        //console.log("submits" , );
-        $.ajax({
-            data:formData,
-            url:url_menu_apis+"/"+"post_gambar_baru_edit",
-            type:"post",
-            processData: false,
-            contentType: false,
-            cache: false,
-            success:function(data){
-                //$("#register_user_new").val();
-                if(data == "success"){
-                    $("#largeModal").modal("hide");
-                    $("#btn_reset").click();
-                }
-            }
-        });
-
-        return false;
-
-        }
-
-    jQuery(document).ready(function() {
-
-
-            $('#textinputancari').on('keypress', function (e) {
-                
-                 if(e.which === 13){
-                    //alert("click");
-                    ambil_beritaparam(active_id , $('#textinputancari').val(), $("#chk_cari").val());
-                 }
-
-            });
-
-            $('#btn_submit_cari').on('click', function (e) {
-                 //if(e.which === 13){
-                    //alert("click");
-                
-                    //alert($(".chk_cari:checked").val());
-
-                    ambil_beritaparam(active_id , $('#textinputancari').val(), $(".chk_cari:checked").val());
-                // }
-            });
-
-            jQuery('textarea[name="DSC"]').ckeditor();
-
-            $("#div_container_isi").html("");
-
-            //$("#div_tabs").html("");
-
-            // $.ajax({
-            //     type:"get",
-            //     url:"<?php //echo url('ambil_listberita'); ?>",
-            //     data:"",
-            //     dataType:"json",
-            //     success:function(data){
-            //     //console.log("databerita" , data);
-            //     $.each(data,function(index , element){
-
-            //         var sudah_update = '<a href="javascript:void(0)" onclick="open_detail('+element.id_berita+')" class="btn btn-warning"><i class="fas fa-bullseye"></i>  </a> </div><div style="float:right;"><a href="javascript:void(0)" class="btn btn-success" onclick="editModal('+element.id_berita+')"><i class="fas fa-pencil-alt"></i> Edit</a> &nbsp; <a href="javascript:void(0)" class="btn btn-primary"> <i class="fas fa-trash"></i> Hapus</a></div>';
-
-            //         if(element.sudah_update == "1" && level_user != 3){
-            //             sudah_update = "<i class='fa fa-check' style='color:green;'></i> Berita ini sudah diupdate oleh editor";
-            //         }
-
-            //         if(element.approved == "1"){
-            //             sudah_update = "<i class='fa fa-check' style='color:green;'></i> Di Setujui";
-            //         }
-
-            //         var isi_berita = '<div class="col-lg-6 col-md-6" style="float:left; margin-top:30px; height:800px; overflow:auto;"><div class="card"><img class="card-img-top img-fluid" src="'+element.urlfoto+'" alt="Card image cap"><div class="card-body"><h4 class="card-title">'+element.judul_berita+'</h4><h5 class="card-title" style="text-align:right;"><small>'+element.tanggal+'</small></small></h5><p class="card-text">'+element.isi_berita+'</p><br clear="all" /><h4 class="card-title" style="text-align:left;">'+element.kode_wartawan+'<br clear="all" /> <p></p></h4> <div style="float:left;">'+sudah_update+'</h4></div></div></div>';
-
-            //         $("#div_container_isi").append(isi_berita);
-
-            //     });
-
-            //   }
-            // });
-
-
-            //jQuery('.modal-dialog').draggable();
-
-
-        } );
-
-        function open_detail(id){
-
-            jQuery.ajax({
-                type:"GET",
-                url:url_menu_apis+"/"+"ambil_listslides",
-                dataType:"json",
-                data:"posisi="+id,
-                success:function(data){
-
-                   // $("#view_berita_div").slideUp();
-            
-                    //$("#div_detail_berita").slideDown();
-
-                    //jQuery("#judul_berita").html('<a onclick="openViewdetail()" style="cursor:pointer;"> <i class="fas fa-undo"></i> </a> &nbsp;'+" "+data.judul_berita);
-                    //jQuery("#isi_berita").html(data.isi_berita);
-
-                    jQuery("#img_berita").prop("src" , "<?php echo url('storage/GambarSlides/'); ?>"+"/"+data.image_name);
-
-                    
-
-                    //jQuery("#editdataModal").modal('show');
-                }
-            });
-
-        }
-
-        
-
-
-        function append_kategori(){
-
-            $("#kategoriinputan").html("");
-
-            $.ajax({
-                type:"get",
-                url:"<?php echo url('ambil_listkategori_awal'); ?>",
-                data:"",
-                dataType:"json",
-                success:function(data){
-                //console.log("databerita" , data);
-                var len = data.length;
-                var a = 1;
-                $.each(data,function(index , element){
-
-                    var kategori = '<option value='+element.id_kategori_berita+'>'+element.name+'</option></li>';
-                    a++;
-                    $("#kategoriinputan").append(kategori);
-
-                });
-
-              }
-            });
-
-        }
-
-        function openModal(){
-            $("#largeModal").modal('show');
-        }
-
-        function openModal_Edit(){
-            
-            $("#largeModal_edit").modal('show');
-            
-        }
-        
-        function editedModal(index){
-            $("#editedModal").modal('show');
-
-            $.ajax({
-                type:"GET",
-                data:"id="+index,
-                url:url_menu_apis+"/get_gambar_slide",
-                dataType:"json",
-                success:function(data){
-                    //alert(data.alt);
-                    $("#edit_text_title_new").val(data.title);
-                    $("#edit_text_desc_new").val(data.alt);
-
-                    $("#edit_hidden_textfield").val(data.id_gambar_home);
-                    
-                    $("#edit_desktop_image").prop("src",url_menu_asset+"/GambarSlides/"+data.image_name);
-
-                    $("#edit_mobile_image").prop("src",url_menu_asset+"/GambarSlides/"+data.image_name_mobile);
-                    
-                   
-                }
-            });
-            
-             $("#editedModal").modal('hide');
-
-        }
-
-        function editModal(id){
-
-            append_kategori();
-
-            if(level_user == "3"){
-                $("#btn_submit_approve").html("Submit & Approve");
-            }
-            else{
-                $("#btn_submit_approve").html("Submit");
-            }
-
-            $("#view_berita_div").slideUp();
-            
-            $("#div_form_berita").slideDown();
-
-
-
-            jQuery.ajax({
-                type:"GET",
-                url:"<?php echo url('ambil_berita'); ?>"+"/"+id,
-                dataType:"json",
-                data:"",
-                async:false,
-                success:function(data){
-
-                    $("#view_berita_div").slideUp();
-            
-                    $("#div_form_berita").slideDown();
-
-                    $("#div_foto_berita").show();
-
-                    $("#div_video_berita").show();
-
-                    var tgl = data.tanggal_berita;
-                    var sp_tgl = tgl.split(" ");
-
-                    jQuery("#t_idberita").val(data.id_berita);
-
-                    jQuery("#textinputan").val(data.judul_berita);
-                    jQuery("#hariinput").val(data.hari);
-                    jQuery("#tanggalinput").val(sp_tgl[0]);
-                    jQuery("#waktuinput").val(sp_tgl[1]);
-                    jQuery("#t_aksi_pencarian").val("edit");
-
-                    CKEDITOR.instances['DSC'].setData(data.isi_berita);
-
-                    $("#img_foto_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
-
-                    //jQuery("#img_berita").prop("src" , "<?php echo url('storage/berita/foto/'); ?>"+"/"+data.foto);
-
-                    
-
-                    //jQuery("#editdataModal").modal('show');
-                }
-            });
-
-
-
-        }
-
-        function openView(){
-
-            $("#view_berita_div").slideDown();
-            
-            $("#div_form_berita").slideUp();
-
-        }
-
-        function openViewdetail(){
-
-            $("#view_berita_div").slideDown();
-            
-            $("#div_detail_berita").slideUp();
-
-        }
-
-        function deletedata(value){
-            var conn = confirm("Hapus data ?");
-
-            if(conn == true){
-                jQuery.ajax({
-                    type:"GET",
-                    url:"<?php echo url('hapuskategori/'); ?>",
-                    data:"id="+value,
-                    success:function(data){
-                        table.ajax.reload();
-                    }
-                })
-            }
-        }
-
-        function editdataModal(value){
-            
-            jQuery.ajax({
-                type:"GET",
-                url:"<?php echo url('ambil_kategori'); ?>"+"/"+value,
-                dataType:"json",
-                data:"",
-                success:function(data){
-
-                    jQuery("#iduserinput_edit").val(data.id_kategori_berita);
-                    jQuery("#textinput_edit").val(data.nama_kategori_berita);
-
-                    jQuery("#editdataModal").modal('show');
-                }
-            });
-
-            
-        }
-
-        function submit_edit_form(){
-            var serial = jQuery("#form_multi_edit").serialize();
-
-            jQuery.ajax({
-                type:"POST",
-                url:"<?php echo url('updatekategori'); ?>",
-                data:serial,
-                success:function(data){
-                        jQuery("#editdataModal").modal('hide');
-                        table.ajax.reload();
-                }
-            });
-
-        }
-
-        function tambahdata(){
-
-            //var file_data =  $('#uploadinput').prop('files')[0]; 
-            //var file_video = $('#videoinput').prop('files')[0]; 
-
-            var form_data = new FormData(); 
-
-            console.log("formdata" , form_data);        
-
-            return false; 
-
-            // form_data.append('uploadinput', file_data);
-            // // form_data.append('videoinput', file_video);
-            // form_data.append('hari', $("#hariinput").val());
-            // form_data.append('tanggal', $("#tanggalinput").val());
-            // form_data.append('waktu', $("#waktuinput").val());
-            // form_data.append('judul', $("#textinputan").val());
-            // form_data.append('kategori', $("#kategoriinputan").val());
-            // form_data.append('DSC', CKEDITOR.instances['DSC'].getData());
-            // form_data.append('_token', "<?php //echo csrf_token(); ?>");
-            // form_data.append('t_idberita', $("#t_idberita").val());
-
-            // var url = "<?php //echo url('tambahberita'); ?>";
-
-            // if($('#t_aksi_pencarian').val() == "edit"){
-            //     url = "<?php //echo url('updateberita'); ?>";
-            // }
-
-            // //alert(form_data);                             
-            // $.ajax({
-            //     url: url, // point to server-side PHP script 
-            //     dataType: 'text',  // what to expect back from the PHP script, if anything
-            //     cache: false,
-            //     contentType: false,
-            //     processData: false,
-            //     data: form_data,                         
-            //     type: 'post',
-            //     success: function(response){
-            //        // alert(php_script_response); // display response from the PHP script, if any
-            //         ambil_berita(response);
-
-            //         openView();
-            //     }
-            //  });
-
-
-        }
-
-
-        function submit_form(){
-            var serial = jQuery("#form_multi").serialize();
-
-            jQuery.ajax({
-                type:"POST",
-                url:"<?php echo url('post_kategori'); ?>",
-                data:serial,
-                success:function(data){
-                        jQuery("#largeModal").modal('hide');
-                        table.ajax.reload();
-                }
-            });
-
-        }
-
-    </script>
 @stop

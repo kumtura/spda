@@ -16,8 +16,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/', function () {
-        return view('auth.login');
+        return view('front.pages.home');
     });
+    
+    Route::get('/login', function () {
+        return view('auth.login');
+    })->name('public.login');
 });
 
 Route::get('/dashboard', function () {
@@ -34,7 +38,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 		Route::get('/home', [
 			'as'   => 'home',
 			'uses' => 'Administrator\DashboardController@indexhome',
-		])->middleware('role:1,2,3');
+		])->middleware('role:1,2,3,4');
 
 		Route::get('/get_danapunia_range', [
 			'uses' => 'Administrator\DashboardController@get_danapunia_range',
@@ -54,6 +58,12 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 		Route::get('/detail_usaha/{index}', 'Administrator\UsahaController@get_detailUsaha');
 		Route::post('/post_pembayaran_baru/{index}','Administrator\UsahaController@post_pembayaran_baru');
 		Route::get('/get_pembayaran_detail/{index}','Administrator\UsahaController@get_pembayaran_detail');
+
+        // Unit Usaha Mobile Features
+        Route::group(['middleware' => 'role:3'], function() {
+            Route::get('/usaha/iuran', function() { return view('backend.usaha.iuran'); });
+            Route::get('/usaha/loker', function() { return view('backend.usaha.loker'); });
+        });
 
 		// Karyawan / Tenaga Kerja
 		Route::get('/data_tenagakerja','Administrator\KaryawanController@index');
@@ -79,10 +89,11 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::post('hapusbanjar','Administrator\BanjarController@hapusbanjar');
 		});
 
-		// Bendesa Adat Only (Level 1)
-		Route::group(['middleware' => 'role:1'], function() {
+		// Bendesa Adat & Admin Sistem (Level 1 & 4)
+		Route::group(['middleware' => 'role:1,4'], function() {
 			Route::get('/datauser', function () {
-				return view('admin.pages.data_user.table');
+                $banjar = App\Models\Banjar::where('aktif', '1')->get();
+				return view('admin.pages.data_user.table', compact('banjar'));
 			});
 			Route::get('ambil_listuser','UserController@ambil_listuser');
 			Route::post('post_user','UserController@post_user');
@@ -122,7 +133,23 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::get('data_kategoriberita','Administrator\KategoriBeritaController@index');
 			Route::post('post_kategori_berita','Administrator\KategoriBeritaController@post_kategori_berita');
 			Route::get('hapus_kategori_berita','Administrator\KategoriBeritaController@hapus_kategori_berita');
+
+			// Financial Archives (Reports)
+			Route::get('/data_laporan', function () {
+				return view('admin.pages.data_laporan.table');
+			});
+			Route::get('ambil_listlaporan', 'LaporanController@ambil_listlaporan');
+			Route::post('tambahlaporan', 'LaporanController@tambahlaporan');
+			Route::post('updatelaporan', 'LaporanController@updatelaporan');
+			Route::get('hapuswarta', 'LaporanController@hapus_laporan'); 
 		});
+        
+        // Admin Settings
+        Route::group(['middleware' => 'role:1,4'], function() {
+            Route::get('/settings', 'Administrator\SettingController@index');
+            Route::post('/settings/update_logo', 'Administrator\SettingController@update_logo');
+            Route::post('/settings/update_gallery', 'Administrator\SettingController@update_gallery');
+        });
 
 		// Misc / Legacy
 		Route::get('/laporan_keuangan', function () {

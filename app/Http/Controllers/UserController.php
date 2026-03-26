@@ -122,7 +122,22 @@ class UserController extends BaseController
     }
 
     public function ambil_listuser(Request $request){
-    	$data = User::orderBy('id' , 'desc')->get();
+        $level = Session::get('level');
+        $user = Auth::guard('admin')->user();
+        $id_banjar = $user ? $user->id_banjar : null;
+
+        $query = User::leftJoin('tb_data_banjar', 'tb_data_banjar.id_data_banjar', '=', 'users.id_banjar')
+                    ->select('users.*', 'tb_data_banjar.nama_banjar');
+
+        // Filter based on role
+        if ($level == 2) {
+            // Kelian Adat only sees Unit Usaha in their Banjar
+            $query->where('users.id_banjar', $id_banjar)
+                  ->where('users.id_level', 3);
+        }
+        // Level 1 & 4 see everything.
+
+        $data = $query->orderBy('users.id' , 'desc')->get();
 
     	$dt = array();
     	$no = 1; 
@@ -141,7 +156,10 @@ class UserController extends BaseController
     			$level = "Kelian Adat";
     		}
             else if($lvl == 3){
-                $level = "Unit Usaha";
+                $level = " Unit Usaha";
+            }
+            else if($lvl == 4){
+                $level = "Admin Sistem";
             }
     		else{
     			$level = "Guest";
@@ -153,7 +171,11 @@ class UserController extends BaseController
     		$rows["email"] = $row->email;
     		$rows["no_wa"] = $row->no_wa;
     		$rows["level"] = $level;
-    		$rows["aksi"] = "<a onclick='editdataModal(".$row->id.")' style='cursor:pointer;'><i class='fas fa-pencil-alt'></i> Edit </a> &nbsp; <a onclick='deletedata(".$row->id.")' style='cursor:pointer;'><i class='fa fa-trash'> Delete </i></a>";
+            $rows["id_level"] = $lvl;
+            $rows["id_banjar"] = $row->id_banjar;
+            $rows["nama_banjar"] = $row->nama_banjar ?? '-';
+    		$rows["aksi"] = ""; 
+            $rows["id"] = $row->id;
     		$rows["aktif"] = $row->aktif;
 
     		$dt[] = $rows;
@@ -165,19 +187,33 @@ class UserController extends BaseController
     }
 
     public function post_user(Request $request){
+         $curr_level = Session::get('level');
+         $curr_banjar = Auth::guard('admin')->user()->id_banjar;
+
     	 $list=new User;
 
-		 $list->name=$request->input('textinput');
-		 $list->email=$request->input('emailinput');
-		 $list->password=Hash::make($request->input('passwordinput'));
-		 $list->no_wa=$request->input('nowainput');
+		 $list->name=$request->input('textinput_edit');
+		 $list->email=$request->input('emailinput_edit');
+		 $list->password=Hash::make($request->input('passwordinput_edit'));
+		 $list->no_wa=$request->input('nowainput_edit');
 		 $list->foto_ttd="-";
-		 $list->id_level=$request->input('levelinput');
+         $list->aktif="1";
+
+         if ($curr_level == 1 || $curr_level == 4) {
+             // Bendesa/Admin can set Level and Banjar (usually for creating Kelian)
+             $list->id_level=$request->input('levelinput_edit');
+             $list->id_banjar=$request->input('banjarinput_edit');
+         } else if ($curr_level == 2) {
+             // Kelian can only create Unit Usaha (Level 3) for their own Banjar
+             $list->id_level=3;
+             $list->id_banjar=$curr_banjar;
+         } else {
+             return "error: unauthorized";
+         }
 		
 		 $list->save();
 
 		 echo "success";
-		 //return redirect('view-kategori-barang');
     }
 
     public function ambil_user(Request $request , $index){
@@ -188,14 +224,14 @@ class UserController extends BaseController
     }
 
     public function updateuser(Request $request){
-	//$admin=tb_admin::findOrFail($id);
-		$halaman="tb_customer";
-		//echo $request->input('nama');
-		//$idx = $request->session()->get('id');
 		User::where('id', $request->input('iduserinput_edit'))->update(array(
-	            'name' =>  $request->input('textinput_edit'),'email' =>  $request->input('emailinput_edit'),'id_level' =>  $request->input('levelinput_edit'),'no_wa' =>  $request->input('nowainput_edit')));
+	            'name' =>  $request->input('textinput_edit'),
+                'email' =>  $request->input('emailinput_edit'),
+                'id_level' =>  $request->input('levelinput_edit'),
+                'id_banjar' =>  $request->input('banjarinput_edit'),
+                'no_wa' =>  $request->input('nowainput_edit')
+        ));
 
-		//return redirect('view-kategori-barang');
 		echo "success";
 	}
 

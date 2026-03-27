@@ -75,24 +75,42 @@
             @if($heroSlides->count() > 0)
             <div class="mb-6 space-y-3">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Slide Aktif ({{ $heroSlides->count() }})</p>
-                @foreach($heroSlides as $slide)
-                <div class="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div class="h-16 w-24 rounded-xl overflow-hidden shrink-0 bg-slate-200">
-                        <img src="{{ asset('GambarSlides/'.$slide->image_name) }}" class="h-full w-full object-cover" alt="{{ $slide->title }}">
+                <div class="flex flex-col gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 group">
+                    <div class="flex items-center gap-4">
+                        <div class="h-16 w-24 rounded-xl overflow-hidden shrink-0 bg-slate-200 border border-slate-100">
+                            <img src="{{ asset('GambarSlides/'.$slide->image_name) }}" class="h-full w-full object-cover" alt="{{ $slide->title }}">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Informasi Slide</p>
+                            <p class="text-xs font-bold text-slate-700 truncate">{{ $slide->title ?: 'Tanpa Judul' }}</p>
+                        </div>
+                        <form action="{{ url('administrator/settings/delete_hero_slide') }}" method="POST" onsubmit="return confirm('Hapus slide ini?')">
+                            @csrf
+                            <input type="hidden" name="id" value="{{ $slide->id_gambar_home }}">
+                            <button type="submit" class="h-8 w-8 bg-white border border-rose-200 text-rose-400 rounded-lg flex items-center justify-center hover:bg-rose-50 transition-colors shadow-sm">
+                                <i class="bi bi-trash3 text-sm"></i>
+                            </button>
+                        </form>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs font-bold text-slate-700 truncate">{{ $slide->title ?: 'Hero Slide' }}</p>
-                        <p class="text-[10px] text-slate-400">{{ $slide->created_at ? $slide->created_at->format('d M Y') : '-' }}</p>
-                    </div>
-                    <form action="{{ url('administrator/settings/delete_hero_slide') }}" method="POST" onsubmit="return confirm('Hapus slide ini?')">
+                    
+                    <form action="{{ url('administrator/settings/update_hero_slide_metadata') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-slate-200/50">
                         @csrf
                         <input type="hidden" name="id" value="{{ $slide->id_gambar_home }}">
-                        <button type="submit" class="h-8 w-8 bg-white border border-rose-200 text-rose-400 rounded-lg flex items-center justify-center hover:bg-rose-50 transition-colors">
-                            <i class="bi bi-trash3 text-sm"></i>
-                        </button>
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Judul Slide</label>
+                            <input type="text" name="title" value="{{ $slide->title }}" placeholder="Tulis judul..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[11px] font-bold text-slate-700 focus:border-primary-light outline-none transition-all">
+                        </div>
+                        <div class="space-y-1 relative">
+                            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Deskripsi</label>
+                            <div class="flex gap-2">
+                                <input type="text" name="deskripsi" value="{{ $slide->deskripsi }}" placeholder="Tulis deskripsi..." class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[11px] font-bold text-slate-600 focus:border-primary-light outline-none transition-all">
+                                <button type="submit" title="Simpan Perubahan" class="h-8 w-8 bg-primary-light text-white rounded-lg flex items-center justify-center hover:bg-primary-dark transition-all transform active:scale-90 shadow-lg shadow-blue-100 shrink-0">
+                                    <i class="bi bi-check2"></i>
+                                </button>
+                            </div>
+                        </div>
                     </form>
                 </div>
-                @endforeach
             </div>
             @else
             <div class="mb-6 p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
@@ -108,6 +126,10 @@
                     <div>
                         <label class="block mb-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Judul Slide (Opsional)</label>
                         <input type="text" name="hero_title" placeholder="Mis: Nyepi 2026" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi Singkat / Subtitle</label>
+                        <input type="text" name="hero_deskripsi" placeholder="Teks kecil di bawah judul" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
                     </div>
                     <div>
                         <label class="block mb-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Gambar Slide</label>

@@ -80,7 +80,7 @@
             </a>
         </div>
 
-        <!-- Card 4: Total Iuran -->
+        <!-- Card 4: Total Punia -->
         <div class="glass-card p-6 flex flex-col justify-between group hover:border-primary-light/30 transition-all">
             <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 group-hover:bg-primary-light group-hover:text-white transition-all">
@@ -104,11 +104,11 @@
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h3 class="text-xl font-bold text-slate-800 tracking-tight">Analisis Keuangan</h3>
-                    <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Tren Iuran & Sumbangan Tahun {{ date('Y') }}</p>
+                    <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Tren Punia & Sumbangan Tahun {{ date('Y') }}</p>
                 </div>
                 <div class="flex gap-2">
                     <span class="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-                        <span class="h-2 w-2 rounded-full bg-primary-light"></span> Iuran
+                        <span class="h-2 w-2 rounded-full bg-primary-light"></span> Punia
                     </span>
                     <span class="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
                         <span class="h-2 w-2 rounded-full bg-amber-400"></span> Sumbangan
@@ -124,7 +124,7 @@
                 <p class="text-[10px] font-semibold uppercase tracking-widest opacity-60 mb-4">Capaian Target</p>
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-semibold">Dana Iuran</span>
+                        <span class="text-sm font-semibold">Dana Punia</span>
                         <span class="text-xl font-bold">72%</span>
                     </div>
                     <div class="h-2 w-full bg-white/20 rounded-full overflow-hidden">
@@ -175,7 +175,7 @@
 
             var options = {
                 series: [{
-                    name: 'Dana Iuran',
+                    name: 'Dana Punia',
                     data: total_sumbangan
                 }, {
                     name: 'Dana Sumbangan',

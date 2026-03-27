@@ -29,7 +29,11 @@ class LandingController extends Controller
     {
         $total_punia = Danapunia::where('aktif', '1')->sum('jumlah_dana');
         $village = ['name' => 'SPDA'];
-        return view('front.pages.punia', compact('total_punia', 'village'));
+        $kategori_punia = \App\Models\KategoriPunia::with(['alokasi' => function($q) {
+            $q->where('aktif', '1')->orderBy('tanggal_alokasi', 'desc');
+        }])->where('aktif', '1')->orderBy('nama_kategori', 'asc')->get();
+
+        return view('front.pages.punia', compact('total_punia', 'village', 'kategori_punia'));
     }
 
     public function donasi()
@@ -45,5 +49,15 @@ class LandingController extends Controller
         // Simple submission logic, potentially expanding the Sumbangan model's static method
         $id = Sumbangan::submit_post_add_sumbangan($request);
         return redirect()->route('public.donasi')->with('success', 'Terima kasih atas donasi Anda! Bukti pembayaran akan kami verifikasi.');
+    }
+
+    public function unit_usaha()
+    {
+        $usaha = Usaha::join("tb_detail_usaha" , "tb_detail_usaha.id_detail_usaha" , "=" , "tb_usaha.id_detail_usaha")
+                    ->where("tb_usaha.aktif_status", "1")
+                    ->orderBy("tb_usaha.id_usaha", "desc")
+                    ->paginate(15);
+        $village = ['name' => 'SPDA'];
+        return view('front.pages.unit_usaha', compact('usaha', 'village'));
     }
 }

@@ -16,8 +16,8 @@
                     <div class="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                         <div class="h-40 bg-slate-50 relative overflow-hidden">
                             @if($item->foto)
-                                <img src="{{ asset('berita/'.$item->foto) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="{{ $item->judul_berita }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="w-full h-full items-center justify-center bg-slate-50 absolute inset-0" style="display:none;">
+                                <img src="{{ asset('storage/berita/foto/'.$item->foto) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="{{ $item->judul_berita }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="w-full h-full items-center justify-center bg-slate-50 relative" style="display:none;">
                                     <i class="bi bi-image text-3xl text-slate-200"></i>
                                 </div>
                             @else

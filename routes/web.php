@@ -25,6 +25,7 @@ Route::get('/berita/{id}', [LandingController::class, 'berita_detail'])->name('p
 Route::get('/punia', [LandingController::class, 'punia'])->name('public.punia');
 Route::get('/donasi', [LandingController::class, 'donasi'])->name('public.donasi');
 Route::post('/donasi/submit', [LandingController::class, 'donasi_post'])->name('public.donasi.submit');
+Route::get('/unit-usaha', [LandingController::class, 'unit_usaha'])->name('public.unit_usaha');
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/register_usaha', function () {
@@ -65,10 +66,9 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			'uses' => 'Administrator\DashboardController@indexhome',
 		]);
 
-		Route::get('/home', [
-			'as'   => 'home',
-			'uses' => [DashboardController::class, 'indexhome'],
-		])->middleware('role:1,2,3,4');
+		Route::get('/home', [DashboardController::class, 'indexhome'])
+            ->name('home')
+            ->middleware('role:1,2,3,4');
 
 		Route::get('/get_danapunia_range', [
 			'uses' => 'Administrator\DashboardController@get_danapunia_range',
@@ -111,6 +111,16 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::get('/list_datapunia_wajib/{index}','Administrator\DanaPuniaController@list_datapunia_wajib');
 			Route::get('download_pdf_danapunia','Administrator\DanaPuniaController@download_pdf_danapunia');
 			
+			Route::get('kategori_punia','Administrator\KategoriPuniaController@index');
+			Route::post('kategori_punia/post','Administrator\KategoriPuniaController@store');
+			Route::post('kategori_punia/update','Administrator\KategoriPuniaController@update');
+			Route::get('kategori_punia/hapus/{id}','Administrator\KategoriPuniaController@destroy');
+
+			Route::get('alokasi_punia','Administrator\AlokasiPuniaController@index');
+			Route::post('alokasi_punia/post','Administrator\AlokasiPuniaController@store');
+			Route::post('alokasi_punia/update','Administrator\AlokasiPuniaController@update');
+			Route::get('alokasi_punia/hapus/{id}','Administrator\AlokasiPuniaController@destroy');
+
 			Route::get('/data_usaha','Administrator\UsahaController@ambil_listUsaha');
 			
 			Route::get('/databanjar','Administrator\BanjarController@index');
@@ -144,6 +154,11 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
                 $kategori = App\Models\Kategori_Berita::where('aktif', '1')->get();
 				return view('admin.pages.data_berita.table', compact('kategori'));
 			});
+			Route::get('ambil_listberita_kategori','BeritaController@ambil_listberita_kategori');
+			Route::get('ambil_berita/{index}','BeritaController@ambil_berita');
+			Route::post('post_berita_baru','BeritaController@tambahberita');
+			Route::post('updateberita','BeritaController@updateberita');
+			Route::get('hapusberita','BeritaController@hapusberita');
 			Route::get('/datamenu','Administrator\MenuController@index');
 			Route::get('ambil_listmenu','Administrator\MenuController@ambil_listmenu');
 			Route::post('post_data_menu','Administrator\MenuController@post_data_menu');
@@ -178,6 +193,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/settings', 'Administrator\SettingController@index');
             Route::post('/settings/update_logo', 'Administrator\SettingController@update_logo');
             Route::post('/settings/upload_hero_slide', 'Administrator\SettingController@upload_hero_slide');
+            Route::post('/settings/update_hero_slide_metadata', 'Administrator\SettingController@update_hero_slide_metadata');
             Route::post('/settings/delete_hero_slide', 'Administrator\SettingController@delete_hero_slide');
             Route::post('/settings/update_village', 'Administrator\SettingController@update_village');
         });

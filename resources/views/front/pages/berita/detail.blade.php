@@ -11,8 +11,8 @@
     <!-- Cover Image -->
     @if($berita->foto)
         <div class="h-48 rounded-2xl overflow-hidden bg-slate-100">
-            <img src="{{ asset('berita/'.$berita->foto) }}" class="w-full h-full object-cover" alt="{{ $berita->judul_berita }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <div class="w-full h-full items-center justify-center bg-slate-50 absolute inset-0" style="display:none;">
+            <img src="{{ asset('storage/berita/foto/'.$berita->foto) }}" class="w-full h-full object-cover" alt="{{ $berita->judul_berita }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="w-full h-full items-center justify-center bg-slate-50 relative" style="display:none;">
                 <i class="bi bi-image text-3xl text-slate-200"></i>
             </div>
         </div>
@@ -26,7 +26,7 @@
 
     <!-- Article Content -->
     <div class="prose prose-sm prose-slate max-w-none text-slate-600 leading-relaxed">
-        {!! $berita->berita !!}
+        {!! $berita->isi_berita !!}
     </div>
 
     <div class="h-px w-full bg-slate-100"></div>
@@ -40,7 +40,7 @@
                     <a href="{{ route('public.berita.detail', $recent->id_berita) }}" class="flex gap-3 items-center group">
                         <div class="h-14 w-14 bg-slate-100 rounded-xl overflow-hidden shrink-0">
                             @if($recent->foto)
-                                <img src="{{ asset('berita/'.$recent->foto) }}" class="h-full w-full object-cover" alt="">
+                                <img src="{{ asset('storage/berita/foto/'.$recent->foto) }}" class="h-full w-full object-cover" alt="">
                             @else
                                 <div class="h-full w-full flex items-center justify-center">
                                     <i class="bi bi-image text-slate-200"></i>

@@ -3,7 +3,7 @@
 @section('isi_menu')
 <div class="px-6 py-4 space-y-6">
     <div>
-        <h1 class="text-xl font-black text-slate-800 tracking-tight">Iuran Bulanan</h1>
+        <h1 class="text-xl font-black text-slate-800 tracking-tight">Punia Wajib Bulanan</h1>
         <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Riwayat pembayaran punia wajib</p>
     </div>
 

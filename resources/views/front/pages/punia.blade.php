@@ -28,45 +28,66 @@
     </div>
 
     <!-- Penggunaan Dana -->
-    <div>
+    <div x-data="{ expandedId: null }">
         <h4 class="text-sm font-bold text-slate-800 mb-4">Penggunaan Dana</h4>
         <div class="space-y-3">
-            <div class="bg-white rounded-xl border border-slate-100 p-4 flex items-start gap-3">
-                <div class="h-8 w-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                    <i class="bi bi-building text-[#00a6eb] text-sm"></i>
+            @forelse($kategori_punia as $kat)
+                <div class="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm transition-all text-left w-full cursor-pointer" @click="expandedId === {{ $kat->id_kategori_punia }} ? expandedId = null : expandedId = {{ $kat->id_kategori_punia }}">
+                    <div class="p-4 flex items-center justify-between gap-3 bg-white hover:bg-slate-50/50 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 bg-blue-50/80 rounded-xl flex items-center justify-center shrink-0 border border-blue-100/50">
+                                <i class="bi {{ $kat->ikon ?? 'bi-wallet2' }} text-[#00a6eb] text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">{{ $kat->nama_kategori }}</p>
+                                <p class="text-[10px] font-semibold text-slate-400 mt-0.5">{{ count($kat->alokasi) }} Transaksi Alokasi</p>
+                            </div>
+                        </div>
+                        <div class="h-8 w-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 text-slate-400 transition-transform duration-300" :class="expandedId === {{ $kat->id_kategori_punia }} ? 'rotate-180 bg-[#00a6eb] text-white border-transparent shadow-md shadow-blue-500/20' : ''">
+                            <i class="bi bi-chevron-down text-sm"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Expanded Details -->
+                    <div x-show="expandedId === {{ $kat->id_kategori_punia }}" x-collapse x-cloak>
+                        <div class="px-5 py-4 bg-slate-50/50 border-t border-slate-100">
+                            <p class="text-[11px] text-slate-500 leading-relaxed mb-4">{{ $kat->deskripsi_singkat ?? 'Tidak ada deskripsi untuk kategori ini.' }}</p>
+                            
+                            @if(count($kat->alokasi) > 0)
+                                <div class="space-y-3">
+                                    <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-2">Riwayat Alokasi</h5>
+                                    @foreach($kat->alokasi->take(5) as $alo)
+                                    <div class="flex justify-between items-start pt-1">
+                                        <div>
+                                            <p class="text-xs font-bold text-slate-700">{{ $alo->judul }}</p>
+                                            <p class="text-[9px] font-semibold text-slate-400">{{ \Carbon\Carbon::parse($alo->tanggal_alokasi)->format('d M Y') }}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-xs font-black text-slate-800">Rp {{ number_format($alo->nominal, 0, ',', '.') }}</p>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                    @if(count($kat->alokasi) > 5)
+                                    <div class="pt-2 text-center text-[10px] font-bold text-[#00a6eb]">
+                                        + {{ count($kat->alokasi) - 5 }} Alokasi lainnya
+                                    </div>
+                                    @endif
+                                </div>
+                            @else
+                                <div class="py-3 text-center text-slate-400">
+                                    <i class="bi bi-inbox text-2xl mb-1 block"></i>
+                                    <p class="text-[10px] font-medium">Belum ada alokasi tercatat.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-800">Pembangunan & Renovasi Pura</p>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Perbaikan dan pemeliharaan pura desa serta pelinggih.</p>
+            @empty
+                <div class="p-6 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-100">
+                    <i class="bi bi-clock-history text-2xl mb-2 block"></i>
+                    <p class="text-xs font-medium">Belum ada kategori penggunaan dana yang dipublikasikan.</p>
                 </div>
-            </div>
-            <div class="bg-white rounded-xl border border-slate-100 p-4 flex items-start gap-3">
-                <div class="h-8 w-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                    <i class="bi bi-calendar-event text-[#00a6eb] text-sm"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-800">Upacara & Kegiatan Adat</p>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Pembiayaan piodalan, ngaben massal, dan upacara lainnya.</p>
-                </div>
-            </div>
-            <div class="bg-white rounded-xl border border-slate-100 p-4 flex items-start gap-3">
-                <div class="h-8 w-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                    <i class="bi bi-people text-[#00a6eb] text-sm"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-800">Bantuan Sosial Krama</p>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Santunan bagi krama yang membutuhkan dan bantuan darurat.</p>
-                </div>
-            </div>
-            <div class="bg-white rounded-xl border border-slate-100 p-4 flex items-start gap-3">
-                <div class="h-8 w-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                    <i class="bi bi-tools text-[#00a6eb] text-sm"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-800">Infrastruktur Desa</p>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Perbaikan jalan desa, balai banjar, dan fasilitas umum.</p>
-                </div>
-            </div>
+            @endforelse
         </div>
     </div>
 

@@ -82,7 +82,7 @@
                 
                 <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mt-6">
                     <p class="text-[9px] font-bold text-[#00a6eb] uppercase tracking-widest mb-1">Catatan</p>
-                    <p class="text-[10px] text-slate-600 font-medium">Dengan menekan tombol kirim, Anda menyetujui syarat & ketentuan sistem pengelolaan desa adat.</p>
+                    <p class="text-[10px] text-slate-600 font-medium">Dengan menekan tombol kirim, Anda menyetujui syarat & ketentuan sistem punia desa adat.</p>
                 </div>
 
                 <div class="pt-4 border-t border-slate-100 flex gap-3">

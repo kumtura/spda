@@ -14,7 +14,7 @@ class Usaha extends Model
 {   
     //public $timestamps = false; 
     //
-    protected $fillable = ['id_usaha', 'id_detail_usaha', 'id_penanggung_jawab','aktif'];
+    protected $fillable = ['id_usaha', 'user_id', 'id_detail_usaha', 'id_penanggung_jawab','aktif'];
     protected $table='tb_usaha';
 
     public static function get_datamenu($request){
@@ -30,13 +30,35 @@ class Usaha extends Model
         
         $rows_detail                     = $res_detail;
         
+        // Find the email from detail to create User
+        $detail = Detail_Usaha::where('id_detail_usaha', $rows_detail)->first();
+        $email = $detail->email_usaha ?: $request->text_username_new;
+
+        // Create/Update User account
+        $user = User::where('email', $email)->first();
+        if (!$user) {
+            $user = User::create([
+                'name' => $detail->nama_usaha,
+                'email' => $email,
+                'password' => bcrypt($request->text_password_new),
+                'no_wa' => $detail->no_wa,
+                'id_level' => 3, // Unit Usaha
+            ]);
+        } else {
+            $user->update([
+                'id_level' => 3,
+                'password' => bcrypt($request->text_password_new)
+            ]);
+        }
+
         $res_tgg_jawab                   = Penanggung_Jawab::post_data_pngg_jawab($request);
         
         $data                            = new Usaha;
+        $data->user_id                   = $user->id;
         $data->id_detail_usaha           = $rows_detail;
         $data->id_jenis_usaha            = $request->cmb_kategori_usaha;
         $data->id_penanggung_jawab       = $res_tgg_jawab;
-        $data->username                  = $request->text_username_new;
+        $data->username                  = $email;
         $data->password                  = bcrypt($request->text_password_new);
         
         $data->aktif                     = "1";
@@ -51,11 +73,18 @@ class Usaha extends Model
     
         $res_tgg_jawab                   = Penanggung_Jawab::update_data_pngg_jawab($request);
         
+        $usaha = Usaha::where("id_usaha", $request->tb_hidden_usaha)->first();
+        
         if($request->text_password_new == ""){
             Usaha::where("id_usaha" , $request->tb_hidden_usaha)->update(array("id_jenis_usaha" => $request->cmb_kategori_usaha));
         }
         else{
             Usaha::where("id_usaha" , $request->tb_hidden_usaha)->update(array("id_jenis_usaha" => $request->cmb_kategori_usaha , "password" => bcrypt($request->text_password_new)));
+            
+            // Sync password to User table
+            if ($usaha && $usaha->user_id) {
+                User::where('id', $usaha->user_id)->update(['password' => bcrypt($request->text_password_new)]);
+            }
         }
 
     }

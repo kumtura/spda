@@ -22,6 +22,14 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
+    <!-- CKEditor -->
+    <script src="https://cdn.ckeditor.com/4.25.0-lts/standard/ckeditor.js"></script>
+    <script src="https://cdn.ckeditor.com/4.25.0-lts/adapters/jquery.js"></script>
 
     <style>
         [x-cloak] { display: none !important; }
@@ -38,9 +46,14 @@
               :class="sidebarOpen ? 'lg:ml-64' : 'lg:ml-0'">
             
             <!-- Top Header -->
-            <header class="fixed top-0 right-0 z-30 h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 transition-all duration-300 shadow-sm"
+            <header class="fixed top-0 right-0 left-0 z-30 h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 transition-all duration-300 shadow-sm"
                     :class="sidebarOpen ? 'lg:left-64' : 'lg:left-20'">
                 <div class="flex items-center gap-4">
+                    <!-- Mobile Menu Toggle -->
+                    <button type="button" @click="mobileSidebarOpen = true" class="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100/80 rounded-xl transition-all">
+                        <i class="bi bi-list text-2xl leading-none"></i>
+                    </button>
+                    
                     <div class="hidden sm:block text-left">
                         <h2 class="text-[10px] font-bold text-primary-light/60 uppercase tracking-[0.2em] mb-0.5">Panel Administrasi</h2>
                         <h1 class="text-lg font-black text-slate-800 tracking-tight uppercase">{{ $village['name'] ?? 'SPDA' }}</h1>
@@ -74,7 +87,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-40 lg:hidden bg-slate-900/60 backdrop-blur-sm"
+         class="fixed inset-0 z-40 lg:hidden bg-slate-900/60"
          @click="mobileSidebarOpen = false"
          x-cloak>
     </div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1, user-scalable=0">
-    <title>SPDA - Sistem Pengelolaan Desa Adat</title>
+    <title>SPDA - Sistem Punia Desa Adat</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -59,15 +59,15 @@
             </a>
             <a href="{{ route('public.berita') }}" class="flex flex-col items-center justify-center w-full h-full space-y-0.5 {{ request()->routeIs('public.berita*') ? 'text-[#00a6eb]' : 'text-slate-400' }} transition-colors">
                 <i class="bi bi-journal-text text-xl"></i>
-                <span class="text-[9px] font-medium tracking-wide">Blog</span>
+                <span class="text-[9px] font-medium tracking-wide">Berita</span>
             </a>
             <a href="{{ route('public.donasi') }}" class="flex flex-col items-center justify-center w-full h-full space-y-0.5 {{ request()->routeIs('public.donasi') ? 'text-[#00a6eb]' : 'text-slate-400' }} transition-colors">
                 <i class="bi bi-heart text-xl"></i>
                 <span class="text-[9px] font-medium tracking-wide">Donasi</span>
             </a>
-            <a href="{{ url('/login') }}" class="flex flex-col items-center justify-center w-full h-full space-y-0.5 text-slate-400 hover:text-[#00a6eb] transition-colors">
-                <i class="bi bi-person text-xl"></i>
-                <span class="text-[9px] font-medium tracking-wide">Login</span>
+            <a href="{{ route('public.unit_usaha') }}" class="flex flex-col items-center justify-center w-full h-full space-y-0.5 mt-0.5 {{ request()->routeIs('public.unit_usaha*') ? 'text-[#00a6eb]' : 'text-slate-400 hover:text-[#00a6eb]' }} transition-colors">
+                <i class="bi bi-shop text-xl mb-0.5"></i>
+                <span class="text-[9px] font-medium tracking-wide">Unit Usaha</span>
             </a>
         </nav>
 

@@ -11,7 +11,7 @@
     <!-- Stats Card (Minimalist) -->
     <div class="bg-[#00a6eb] rounded-3xl p-6 text-white mb-8 shadow-lg shadow-[#00a6eb]/20 relative overflow-hidden">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-        <p class="text-xs font-bold text-white/80 uppercase tracking-widest mb-1">Status Iuran Bulanan</p>
+        <p class="text-xs font-bold text-white/80 uppercase tracking-widest mb-1">Status Punia Bulanan</p>
         <h2 class="text-2xl font-black mb-4">Lancar</h2>
         <div class="flex items-center gap-2 text-[10px] font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit">
             <i class="bi bi-calendar-check"></i>
@@ -25,8 +25,8 @@
             <div class="w-12 h-12 bg-blue-50 text-[#00a6eb] rounded-2xl flex items-center justify-center mb-4 transition-colors group-hover:bg-[#00a6eb] group-hover:text-white">
                 <i class="bi bi-wallet2 text-2xl"></i>
             </div>
-            <h3 class="font-bold text-slate-800 text-sm mb-1">Bayar Iuran</h3>
-            <p class="text-slate-400 text-[10px] leading-tight">Lakukan iuran bulanan desa</p>
+            <h3 class="font-bold text-slate-800 text-sm mb-1">Bayar Punia</h3>
+            <p class="text-slate-400 text-[10px] leading-tight">Lakukan punia wajib bulanan desa</p>
         </a>
         <a href="{{ url('administrator/usaha/loker') }}" class="bg-white border border-slate-100 p-5 rounded-3xl shadow-sm hover:shadow-md transition-all group">
             <div class="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mb-4 transition-colors group-hover:bg-emerald-500 group-hover:text-white">

@@ -86,7 +86,7 @@ class BeritaController extends BaseController
     		$rows = array();
 
     		$url_video = url('public/berita/video/'.$row->video);
-    		$img_berita = url('public/berita/foto/'.$row->foto);
+    		$img_berita = url('storage/berita/foto/'.$row->foto);
 
             $huruf = "kmb";
             $kodeWartawan = $huruf .  sprintf("%03s", $row->id_wartawan);
@@ -191,29 +191,41 @@ class BeritaController extends BaseController
     	if($request->cari != "" || $request->cari != null){
             if($session == "2"){
                 if($request->status_update == "3"){
-                    $data = Berita::where('id_kategori_berita' , $request->id)->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->orderBy('id_berita' , 'desc')->where('id_wartawan' , $id_user)->where('approved' , '1')->get();
+                    $data = Berita::with('kategori')->where(function($q) use ($request) {
+                        if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                    })->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->orderBy('id_berita' , 'desc')->where('id_wartawan' , $id_user)->where('approved' , '1')->get();
                 }
                 else{
                     if($request->status_update != "2"){
-                      $data = Berita::where('id_kategori_berita' , $request->id)->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->where('sudah_update' , $request->status_update)->orderBy('id_berita' , 'desc')->where('sudah_update' , $request->status_update)->where('id_wartawan' , $id_user)->get();
+                      $data = Berita::with('kategori')->where(function($q) use ($request) {
+                        if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                    })->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->where('sudah_update' , $request->status_update)->orderBy('id_berita' , 'desc')->where('sudah_update' , $request->status_update)->where('id_wartawan' , $id_user)->get();
                     }
                     else{
-                        $data = Berita::where('id_kategori_berita' , $request->id)->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->orderBy('id_berita' , 'desc')->where('id_wartawan' , $id_user)->get();
+                        $data = Berita::with('kategori')->where(function($q) use ($request) {
+                            if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                        })->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->orderBy('id_berita' , 'desc')->where('id_wartawan' , $id_user)->get();
                     }
                 }
             }
             else{
                  if($request->status_update == "3"){
-                    $data = Berita::where('id_kategori_berita' , $request->id)->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->where('approved' , '1')->orderBy('id_berita' , 'desc')->get();
+                    $data = Berita::where(function($q) use ($request) {
+                        if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                    })->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->where('approved' , '1')->orderBy('id_berita' , 'desc')->get();
                     
                  }
                  else{
                     if($request->status_update != "2"){
-
-            		  $data = Berita::where('id_kategori_berita' , $request->id)->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->where('sudah_update' , $request->status_update)->orderBy('id_berita' , 'desc')->get();
+ 
+            		  $data = Berita::with('kategori')->where(function($q) use ($request) {
+                        if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                    })->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->where('sudah_update' , $request->status_update)->orderBy('id_berita' , 'desc')->get();
                     }
                     else{
-                        $data = Berita::where('id_kategori_berita' , $request->id)->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->orderBy('id_berita' , 'desc')->get();
+                        $data = Berita::with('kategori')->where(function($q) use ($request) {
+                            if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                        })->where('judul_berita' , 'like' , "%".trim($request->cari)."%")->orderBy('id_berita' , 'desc')->get();
                     }
                 }
             }
@@ -222,15 +234,21 @@ class BeritaController extends BaseController
 
             if($session == "2"){
                 if($request->status_update == "3"){
-                    $data = Berita::where('id_kategori_berita' , $request->id)->where('approved' , '1')->orderBy('id_berita' , 'desc')->where('id_wartawan' , $id_user)->get();
+                    $data = Berita::with('kategori')->where(function($q) use ($request) {
+                        if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                    })->where('approved' , '1')->orderBy('id_berita' , 'desc')->where('id_wartawan' , $id_user)->get();
                  }
                  else{
 
                     if($request->status_update != "2" && $request->status_update != ""){
-                      $data = Berita::where('id_kategori_berita' , $request->id)->where('sudah_update' , $request->status_update)->where('id_wartawan' , $id_user)->orderBy('id_berita' , 'desc')->get();
+                      $data = Berita::with('kategori')->where(function($q) use ($request) {
+                        if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                    })->where('sudah_update' , $request->status_update)->where('id_wartawan' , $id_user)->orderBy('id_berita' , 'desc')->get();
                     }
                     else{
-                      $data = Berita::where('id_kategori_berita' , $request->id)->where('id_wartawan' , $id_user)->orderBy('id_berita' , 'desc')->get();
+                      $data = Berita::with('kategori')->where(function($q) use ($request) {
+                        if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                    })->where('id_wartawan' , $id_user)->orderBy('id_berita' , 'desc')->get();
                     }
 
                 }
@@ -238,15 +256,21 @@ class BeritaController extends BaseController
             }
             else{
                 if($request->status_update == "3"){
-                    $data = Berita::where('id_kategori_berita' , $request->id)->where('approved' , '1')->orderBy('id_berita' , 'desc')->get();
+                    $data = Berita::with('kategori')->where(function($q) use ($request) {
+                        if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                    })->where('approved' , '1')->orderBy('id_berita' , 'desc')->get();
                  }
                  else{
 
                 if($request->status_update != "2" && $request->status_update != ""){
-                  $data = Berita::where('id_kategori_berita' , $request->id)->where('sudah_update' , $request->status_update)->orderBy('id_berita' , 'desc')->get();
+                  $data = Berita::where(function($q) use ($request) {
+                    if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                })->where('sudah_update' , $request->status_update)->orderBy('id_berita' , 'desc')->get();
                 }
                 else{
-        		  $data = Berita::where('id_kategori_berita' , $request->id)->orderBy('id_berita' , 'desc')->get();
+        		  $data = Berita::where(function($q) use ($request) {
+                    if($request->id != "") $q->where('id_kategori_berita', $request->id);
+                })->orderBy('id_berita' , 'desc')->get();
                 }
 
                 }
@@ -259,7 +283,7 @@ class BeritaController extends BaseController
     		$rows = array();
 
     		$url_video = url('public/berita/video/'.$row->video);
-    		$img_berita = url('public/berita/foto/'.$row->foto);
+    		$img_berita = url('storage/berita/foto/'.$row->foto);
 
             $huruf = "kmb";
             $kodeWartawan = $huruf. sprintf("%03s", $row->id_wartawan);
@@ -269,6 +293,7 @@ class BeritaController extends BaseController
             $rows["sudah_update"] = $row->sudah_update;
             $rows["approved"] = $row->approved;
     		$rows["judul_berita"] = $row->judul_berita;
+            $rows["nama_kategori_berita"] = $row->kategori->nama_kategori_berita ?? 'Uncategorized';
     		$rows["tanggal"] = $row->hari." , ".$row->tanggal_berita;
     		$rows["slug"] = $row->slug;
 
@@ -332,7 +357,7 @@ class BeritaController extends BaseController
         
         $filename     = str_shuffle("abcdefghijklmnopqrstuvwxyz0123456789").time() . '.' . $profile->guessExtension();
         
-        $profile->move(public_path('berita/foto'), $filename);
+        $profile->move(storage_path('app/public/berita/foto'), $filename);
 
         // $video      = $request->file('videoinput');
         
@@ -513,13 +538,14 @@ class BeritaController extends BaseController
 
     public function destroy(Request $request){
 		$halaman="tb_admin";
-		//$admin_list=tb_admin::findOrFail($id_admin);
-		//$idx = $id;
 		$admin_list=Ikan::where('id_ikan', '=' ,$request->input('id_ikan'))->delete();
-		//$admin_list->delete();
-		//return redirect('admin/merk');
 		echo "success";
 	}
+
+    public function hapusberita(Request $request){
+        Berita::where('id_berita', $request->input('id'))->delete();
+        echo "success";
+    }
 
 
 }

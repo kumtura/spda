@@ -1,6 +1,7 @@
 <aside id="sidebar" 
     x-data="{ 
         openSettings: false, 
+        openPunia: {{ Request::is('administrator/datapunia_wajib*') || Request::is('administrator/kategori_punia*') || Request::is('administrator/alokasi_punia*') ? 'true' : 'false' }},
         openBlog: false,
         openTenaga: false
     }"
@@ -54,11 +55,27 @@
          @if(Session::get('level') == "1" || Session::get('level') == "4")
          <li>
             <a href="{{ url('administrator/datauser') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/datauser*') ? 'bg-white/15' : '' }}">
-               <i class="bi bi-shield-lock-fill w-5 h-5 text-white flex items-center justify-center"></i>
+               <i class="bi bi-people-fill w-5 h-5 text-white flex items-center justify-center"></i>
                <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Data Pengguna</span>
             </a>
          </li>
          @endif
+
+         <!-- Data Banjar (Standalone) -->
+         <li>
+            <a href="{{ url('administrator/databanjar') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/databanjar*') ? 'bg-white/15' : '' }}">
+               <i class="bi bi-houses w-5 h-5 text-white flex items-center justify-center"></i>
+               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Data Banjar</span>
+            </a>
+         </li>
+
+         <!-- Data Usaha -->
+         <li>
+            <a href="{{ url('administrator/data_usaha') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/data_usaha*') ? 'bg-white/15' : '' }}">
+               <i class="bi bi-briefcase-fill w-5 h-5 text-white flex items-center justify-center"></i>
+               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Data Unit Usaha</span>
+            </a>
+         </li>
 
          <!-- Settings Dropdown -->
          <li>
@@ -69,7 +86,6 @@
                   <i class="bi bi-chevron-down w-3 h-3 transition-transform duration-300" :class="openSettings ? 'rotate-180' : ''" x-show="sidebarOpen"></i>
             </button>
             <ul x-show="openSettings && sidebarOpen" x-transition x-cloak class="py-2 space-y-1 ml-4 border-l border-white/10 pl-2">
-                  <li><a href="{{ url('administrator/databanjar') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/databanjar*') ? 'text-white bg-white/5' : '' }}">Data Banjar</a></li>
                   <li><a href="{{ url('administrator/datamenu') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/datamenu*') ? 'text-white bg-white/5' : '' }}">Menu Anggota</a></li>
                   <li><a href="{{ url('administrator/data_laporan') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_laporan*') ? 'text-white bg-white/5' : '' }}">Arsip Laporan</a></li>
                   @if(Session::get('level') == "1" || Session::get('level') == "4")
@@ -81,14 +97,6 @@
 
           <li class="pt-4 mt-4 border-t border-white/20" x-show="sidebarOpen">
             <span class="px-2 text-[10px] font-bold text-yellow-500 uppercase tracking-widest">Data Operasional</span>
-          </li>
-
-          <!-- Data Usaha -->
-          <li>
-            <a href="{{ url('administrator/data_usaha') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/data_usaha*') ? 'bg-white/15' : '' }}">
-               <i class="bi bi-briefcase-fill w-5 h-5 text-white flex items-center justify-center"></i>
-               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Data Unit Usaha</span>
-            </a>
           </li>
 
           <!-- Data Blog Dropdown -->
@@ -106,10 +114,17 @@
           </li>
 
           <li>
-            <a href="{{ url('administrator/datapunia_wajib') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/datapunia_wajib*') ? 'bg-white/15' : '' }}">
-               <i class="bi bi-check2-circle w-5 h-5 text-white flex items-center justify-center"></i>
-               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Punia Wajib</span>
-            </a>
+            <button type="button" @click="openPunia = !openPunia" 
+                    class="flex items-center w-full p-2.5 text-white transition duration-75 rounded-xl group hover:bg-white/10">
+                  <i class="bi bi-wallet2 w-5 h-5 text-white flex items-center justify-center"></i>
+                  <span class="flex-1 ms-3 text-left text-sm font-semibold tracking-tight" x-show="sidebarOpen">Manajemen Punia</span>
+                  <i class="bi bi-chevron-down w-3 h-3 transition-transform duration-300" :class="openPunia ? 'rotate-180' : ''" x-show="sidebarOpen"></i>
+            </button>
+            <ul x-show="openPunia && sidebarOpen" x-transition x-cloak class="py-2 space-y-1 ml-4 border-l border-white/10 pl-2">
+                  <li><a href="{{ url('administrator/datapunia_wajib') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/datapunia_wajib*') ? 'text-white bg-white/5' : '' }}">Penerimaan Punia</a></li>
+                  <li><a href="{{ url('administrator/kategori_punia') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/kategori_punia*') ? 'text-white bg-white/5' : '' }}">Kategori Alokasi</a></li>
+                  <li><a href="{{ url('administrator/alokasi_punia') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/alokasi_punia*') ? 'text-white bg-white/5' : '' }}">Data Alokasi Punia</a></li>
+            </ul>
           </li>
 
           <li>

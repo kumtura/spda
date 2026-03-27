@@ -56,11 +56,32 @@ class SettingController extends Controller
 
         return redirect()->back()->with('error', 'Gagal mengunggah logo.');
     }
+    public function update_hero_slide_metadata(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:tb_gambar_home,id_gambar_home',
+            'title' => 'nullable|string|max:255',
+            'deskripsi' => 'nullable|string|max:500',
+        ]);
+
+        $slide = \App\Models\Gambar\Slides\Slides::find($request->id);
+        if ($slide) {
+            $slide->title = $request->title;
+            $slide->deskripsi = $request->deskripsi;
+            $slide->save();
+
+            return redirect()->back()->with('success', 'Metadata slide berhasil diperbarui!');
+        }
+
+        return redirect()->back()->with('error', 'Slide tidak ditemukan.');
+    }
+
     public function upload_hero_slide(Request $request)
     {
         $request->validate([
             'hero_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
             'hero_title' => 'nullable|string|max:255',
+            'hero_deskripsi' => 'nullable|string|max:500',
         ]);
 
         if ($request->hasFile('hero_image')) {
@@ -77,7 +98,7 @@ class SettingController extends Controller
             $slide = new \App\Models\Gambar\Slides\Slides;
             $slide->image_name = $fileName;
             $slide->title = $request->hero_title ?? 'Hero Slide';
-            $slide->deskripsi = $request->hero_title ?? '';
+            $slide->deskripsi = $request->hero_deskripsi ?? '';
             $slide->alt = $request->hero_title ?? '';
             $slide->url_path = '/GambarSlides/' . $fileName;
             $slide->aktif = '1';

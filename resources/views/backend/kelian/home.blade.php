@@ -54,7 +54,7 @@
                 <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center mb-4 transition-colors group-hover:bg-amber-500 group-hover:text-white">
                     <i class="bi bi-wallet2 text-2xl"></i>
                 </div>
-                <h3 class="font-bold text-slate-800 text-sm mb-1">Cek Iuran</h3>
+                <h3 class="font-bold text-slate-800 text-sm mb-1">Cek Punia</h3>
                 <p class="text-slate-400 text-[10px] leading-tight">Monitor Punia Wajib</p>
             </a>
 

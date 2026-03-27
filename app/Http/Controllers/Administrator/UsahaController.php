@@ -138,7 +138,7 @@ class UsahaController extends BaseController
             $usaha = Usaha::update_data_usaha($request);
             //echo "tes";
             
-            return redirect("administrator/detail_usaha/".$request->tb_hidden_usaha);
+            return redirect("administrator/data_usaha");
            // return view('admin.pages.data_usaha.table',compact('usaha'));
         }
         

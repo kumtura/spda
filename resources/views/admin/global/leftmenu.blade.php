@@ -2,6 +2,7 @@
     x-data="{ 
         openSettings: false, 
         openPunia: {{ Request::is('administrator/datapunia_wajib*') || Request::is('administrator/kategori_punia*') || Request::is('administrator/alokasi_punia*') ? 'true' : 'false' }},
+        openDonasi: {{ Request::is('administrator/datasumbangan*') || Request::is('administrator/kategori_donasi*') || Request::is('administrator/program_donasi*') ? 'true' : 'false' }},
         openBlog: false,
         openTenaga: false
     }"
@@ -128,10 +129,17 @@
           </li>
 
           <li>
-            <a href="{{ url('administrator/datasumbangan') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/datasumbangan*') ? 'bg-white/15' : '' }}">
-               <i class="bi bi-heart-pulse-fill w-5 h-5 text-white flex items-center justify-center"></i>
-               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Data Sumbangan</span>
-            </a>
+            <button type="button" @click="openDonasi = !openDonasi" 
+                    class="flex items-center w-full p-2.5 text-white transition duration-75 rounded-xl group hover:bg-white/10">
+                  <i class="bi bi-heart-pulse-fill w-5 h-5 text-white flex items-center justify-center"></i>
+                  <span class="flex-1 ms-3 text-left text-sm font-semibold tracking-tight" x-show="sidebarOpen">Manajemen Donasi</span>
+                  <i class="bi bi-chevron-down w-3 h-3 transition-transform duration-300" :class="openDonasi ? 'rotate-180' : ''" x-show="sidebarOpen"></i>
+            </button>
+            <ul x-show="openDonasi && sidebarOpen" x-transition x-cloak class="py-2 space-y-1 ml-4 border-l border-white/10 pl-2">
+                  <li><a href="{{ url('administrator/datasumbangan') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/datasumbangan*') ? 'text-white bg-white/5' : '' }}">Penerimaan Donasi</a></li>
+                  <li><a href="{{ url('administrator/kategori_donasi') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/kategori_donasi*') ? 'text-white bg-white/5' : '' }}">Kategori Program</a></li>
+                  <li><a href="{{ url('administrator/program_donasi') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/program_donasi*') ? 'text-white bg-white/5' : '' }}">Data Program</a></li>
+            </ul>
           </li>
 
           <!-- Tenaga Kerja Dropdown -->

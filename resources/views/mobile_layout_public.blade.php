@@ -24,7 +24,7 @@
     </style>
 </head>
 <body class="antialiased font-sans bg-gray-100">
-    <div class="mobile-container overflow-x-hidden pt-16">
+    <div class="mobile-container overflow-x-hidden pt-12">
         <!-- Branded Header Mobile Public -->
         <header class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] h-16 bg-[#00a6eb] flex items-center justify-between px-6 z-50 shadow-md">
             <div class="flex items-center gap-3">

@@ -102,41 +102,35 @@
     <div>
         <div class="flex items-center justify-between mb-4 px-1">
             <h3 class="text-sm font-bold text-slate-800">Program Donasi Berkelanjutan</h3>
-            <a href="{{ route('public.donasi') }}" class="text-[10px] font-black text-[#00a6eb] uppercase tracking-widest hover:underline italic">Lihat Semua</a>
+            <a href="{{ route('public.donasi') }}" class="text-[10px] font-black text-[#00a6eb] tracking-widest hover:underline">Lihat Semua</a>
         </div>
         <div class="space-y-4">
-            <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-                <div class="h-32 bg-slate-50 relative flex items-center justify-center">
-                    <i class="bi bi-image text-3xl text-slate-200"></i>
-                    <span class="absolute top-2 right-2 bg-emerald-500 text-white text-[8px] font-bold px-2 py-1 rounded-sm tracking-widest uppercase">Pembangunan</span>
-                </div>
-                <div class="p-3">
-                    <h4 class="text-xs font-bold text-slate-800 leading-tight mb-2">Bantuan Alat Sarana & Prasarana Pura Desa</h4>
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-[9px] text-slate-400 font-medium mb-0.5">Terkumpul</p>
-                            <p class="text-[11px] font-bold text-[#00a6eb]">Rp 15.000.000</p>
-                        </div>
-                        <a href="{{ route('public.donasi') }}" class="bg-slate-50 text-slate-600 hover:bg-[#00a6eb] hover:text-white transition-colors px-4 py-1.5 rounded-full text-[10px] border border-slate-200 font-bold shadow-sm">Donasi</a>
+            @forelse($programs as $prog)
+                <a href="{{ route('public.donasi.detail', $prog->id_program_donasi) }}" class="block bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all group">
+                    <div class="h-32 bg-slate-50 relative flex items-center justify-center overflow-hidden">
+                        @if($prog->foto)
+                            <img src="{{ asset('storage/program_donasi/'.$prog->foto) }}" class="w-full h-full object-cover" alt="{{ $prog->nama_program }}">
+                        @else
+                            <i class="bi bi-image text-3xl text-slate-200"></i>
+                        @endif
+                        <span class="absolute top-2 right-2 bg-emerald-500 text-white text-[8px] font-bold px-2 py-1 rounded-sm tracking-widest uppercase">{{ $prog->kategori->nama_kategori ?? 'Umum' }}</span>
                     </div>
-                </div>
-            </div>
-            <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-                <div class="h-32 bg-slate-50 relative flex items-center justify-center">
-                    <i class="bi bi-image text-3xl text-slate-200"></i>
-                    <span class="absolute top-2 right-2 bg-red-500 text-white text-[8px] font-bold px-2 py-1 rounded-sm tracking-widest uppercase">Mendesak</span>
-                </div>
-                <div class="p-3">
-                    <h4 class="text-xs font-bold text-slate-800 leading-tight mb-2">Donasi Bantuan Bencana Alam Lokal</h4>
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-[9px] text-slate-400 font-medium mb-0.5">Terkumpul</p>
-                            <p class="text-[11px] font-bold text-[#00a6eb]">Rp 4.500.000</p>
+                    <div class="p-3">
+                        <h4 class="text-xs font-bold text-slate-800 leading-tight mb-2 group-hover:text-[#00a6eb] transition-colors">{{ $prog->nama_program }}</h4>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-medium mb-0.5">Terkumpul</p>
+                                <p class="text-[11px] font-bold text-[#00a6eb]">Rp {{ number_format($prog->terkumpul, 0, ',', '.') }}</p>
+                            </div>
+                            <span class="bg-slate-50 text-slate-600 group-hover:bg-[#00a6eb] group-hover:text-white transition-colors px-4 py-1.5 rounded-full text-[10px] border border-slate-200 font-bold shadow-sm">Donasi</span>
                         </div>
-                        <a href="{{ route('public.donasi') }}" class="bg-slate-50 text-slate-600 hover:bg-[#00a6eb] hover:text-white transition-colors px-4 py-1.5 rounded-full text-[10px] border border-slate-200 font-bold shadow-sm">Donasi</a>
                     </div>
+                </a>
+            @empty
+                <div class="bg-slate-50 rounded-2xl border border-slate-100 border-dashed p-6 text-center">
+                    <p class="text-xs font-bold text-slate-400">Belum ada program aktif.</p>
                 </div>
-            </div>
+            @endforelse
         </div>
     </div>
 

@@ -28,60 +28,27 @@
     </div>
 
     <!-- Penggunaan Dana -->
-    <div x-data="{ expandedId: null }">
+    <div>
         <h4 class="text-sm font-bold text-slate-800 mb-4">Penggunaan Dana</h4>
         <div class="space-y-3">
             @forelse($kategori_punia as $kat)
-                <div class="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm transition-all text-left w-full cursor-pointer" @click="expandedId === {{ $kat->id_kategori_punia }} ? expandedId = null : expandedId = {{ $kat->id_kategori_punia }}">
-                    <div class="p-4 flex items-center justify-between gap-3 bg-white hover:bg-slate-50/50 transition-colors">
+                <a href="{{ route('public.punia.penggunaan', $kat->id_kategori_punia) }}" 
+                   class="block bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all group">
+                    <div class="p-4 flex items-center justify-between gap-3">
                         <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 bg-blue-50/80 rounded-xl flex items-center justify-center shrink-0 border border-blue-100/50">
-                                <i class="bi {{ $kat->ikon ?? 'bi-wallet2' }} text-[#00a6eb] text-lg"></i>
+                            <div class="h-10 w-10 bg-blue-50/80 rounded-xl flex items-center justify-center shrink-0 border border-blue-100/50 group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb] transition-colors">
+                                <i class="bi {{ $kat->ikon ?? 'bi-wallet2' }} text-[#00a6eb] text-lg group-hover:text-white transition-colors"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-slate-800">{{ $kat->nama_kategori }}</p>
-                                <p class="text-[10px] font-semibold text-slate-400 mt-0.5">{{ count($kat->alokasi) }} Transaksi Alokasi</p>
+                                <p class="text-sm font-bold text-slate-800 group-hover:text-[#00a6eb] transition-colors">{{ $kat->nama_kategori }}</p>
+                                <p class="text-[10px] font-semibold text-slate-400 mt-0.5">{{ count($kat->alokasi) }} Transaksi • Rp {{ number_format($kat->alokasi->sum('nominal'), 0, ',', '.') }}</p>
                             </div>
                         </div>
-                        <div class="h-8 w-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 text-slate-400 transition-transform duration-300" :class="expandedId === {{ $kat->id_kategori_punia }} ? 'rotate-180 bg-[#00a6eb] text-white border-transparent shadow-md shadow-blue-500/20' : ''">
-                            <i class="bi bi-chevron-down text-sm"></i>
+                        <div class="h-8 w-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 text-slate-400 group-hover:bg-[#00a6eb] group-hover:text-white group-hover:border-[#00a6eb] transition-all">
+                            <i class="bi bi-arrow-right text-sm"></i>
                         </div>
                     </div>
-                    
-                    <!-- Expanded Details -->
-                    <div x-show="expandedId === {{ $kat->id_kategori_punia }}" x-collapse x-cloak>
-                        <div class="px-5 py-4 bg-slate-50/50 border-t border-slate-100">
-                            <p class="text-[11px] text-slate-500 leading-relaxed mb-4">{{ $kat->deskripsi_singkat ?? 'Tidak ada deskripsi untuk kategori ini.' }}</p>
-                            
-                            @if(count($kat->alokasi) > 0)
-                                <div class="space-y-3">
-                                    <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-2">Riwayat Alokasi</h5>
-                                    @foreach($kat->alokasi->take(5) as $alo)
-                                    <div class="flex justify-between items-start pt-1">
-                                        <div>
-                                            <p class="text-xs font-bold text-slate-700">{{ $alo->judul }}</p>
-                                            <p class="text-[9px] font-semibold text-slate-400">{{ \Carbon\Carbon::parse($alo->tanggal_alokasi)->format('d M Y') }}</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <p class="text-xs font-black text-slate-800">Rp {{ number_format($alo->nominal, 0, ',', '.') }}</p>
-                                        </div>
-                                    </div>
-                                    @endforeach
-                                    @if(count($kat->alokasi) > 5)
-                                    <div class="pt-2 text-center text-[10px] font-bold text-[#00a6eb]">
-                                        + {{ count($kat->alokasi) - 5 }} Alokasi lainnya
-                                    </div>
-                                    @endif
-                                </div>
-                            @else
-                                <div class="py-3 text-center text-slate-400">
-                                    <i class="bi bi-inbox text-2xl mb-1 block"></i>
-                                    <p class="text-[10px] font-medium">Belum ada alokasi tercatat.</p>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
+                </a>
             @empty
                 <div class="p-6 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-100">
                     <i class="bi bi-clock-history text-2xl mb-2 block"></i>
@@ -92,16 +59,103 @@
     </div>
 
     <!-- CTA -->
-    <a href="{{ route('public.donasi') }}" class="block w-full bg-white border border-[#00a6eb]/20 rounded-2xl p-4 shadow-sm group hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between">
-            <div>
-                <span class="text-[9px] font-bold text-[#00a6eb] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded border border-blue-100 mb-1 inline-block">Punia</span>
-                <h3 class="text-slate-800 font-bold text-sm leading-tight mt-1">Salurkan Dana Punia Sekarang</h3>
+    <div x-data="{ showModal: false }">
+        <button @click="showModal = true" type="button" class="block w-full bg-white border border-[#00a6eb]/20 rounded-2xl p-4 shadow-sm group hover:shadow-md transition-shadow text-left">
+            <div class="flex items-center gap-3">
+                <span class="text-[9px] font-bold text-[#00a6eb] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded border border-blue-100">Punia</span>
+                <h3 class="text-slate-800 font-bold text-sm leading-tight flex-1">Salurkan Dana Punia Sekarang</h3>
+                <div class="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-[#00a6eb] border border-blue-100 group-hover:bg-[#00a6eb] group-hover:text-white transition-colors shrink-0">
+                    <i class="bi bi-arrow-right text-sm"></i>
+                </div>
             </div>
-            <div class="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-[#00a6eb] border border-blue-100 group-hover:bg-[#00a6eb] group-hover:text-white transition-colors">
-                <i class="bi bi-arrow-right text-sm"></i>
+        </button>
+
+        <!-- Modal -->
+        <div x-show="showModal" 
+             x-cloak
+             @click.self="showModal = false"
+             @keydown.escape.window="showModal = false"
+             class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            
+            <div @click.stop 
+                 class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-90"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-90">
+                
+                <!-- Header -->
+                <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] p-6 text-white relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                    <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+                    <button @click="showModal = false" type="button" class="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
+                        <i class="bi bi-x text-xl"></i>
+                    </button>
+                    <div class="relative">
+                        <h3 class="text-xl font-black">Salurkan Dana Punia</h3>
+                        <p class="text-white/80 text-xs font-medium mt-1">Pilih kategori Anda untuk melanjutkan</p>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="p-6 space-y-3">
+                    <!-- Masyarakat Umum Option -->
+                    <a href="{{ route('public.punia.pembayaran') }}" 
+                       class="block bg-gradient-to-br from-blue-50 to-blue-50/50 border-2 border-blue-100 rounded-2xl p-5 hover:border-[#00a6eb] hover:shadow-lg transition-all group">
+                        <div class="flex items-start gap-4">
+                            <div class="h-12 w-12 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                                <i class="bi bi-people-fill text-[#00a6eb] text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-black text-slate-800 mb-1">Masyarakat Umum</h4>
+                                <p class="text-[10px] text-slate-500 leading-relaxed">Untuk krama desa dan masyarakat umum yang ingin berkontribusi</p>
+                                <div class="mt-3 flex items-center gap-2 text-[#00a6eb]">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider">Bayar Sekarang</span>
+                                    <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Unit Usaha Option -->
+                    <a href="{{ route('login') }}" 
+                       class="block bg-gradient-to-br from-emerald-50 to-emerald-50/50 border-2 border-emerald-100 rounded-2xl p-5 hover:border-emerald-500 hover:shadow-lg transition-all group">
+                        <div class="flex items-start gap-4">
+                            <div class="h-12 w-12 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                                <i class="bi bi-shop text-emerald-600 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-black text-slate-800 mb-1">Unit Usaha</h4>
+                                <p class="text-[10px] text-slate-500 leading-relaxed">Untuk unit usaha terdaftar yang ingin menyalurkan dana punia</p>
+                                <div class="mt-3 flex items-center gap-2 text-emerald-600">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider">Login Terlebih Dahulu</span>
+                                    <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 pb-6">
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                        <div class="flex items-start gap-3">
+                            <i class="bi bi-info-circle text-slate-400 text-lg shrink-0"></i>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">Penggunaan dana punia akan ditampilkan secara transparan untuk akuntabilitas kepada masyarakat.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </a>
+    </div>
 </div>
 @endsection

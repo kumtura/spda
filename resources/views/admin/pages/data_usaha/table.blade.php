@@ -113,7 +113,7 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                            <div class="flex items-center justify-end gap-1.5 transition-all duration-300">
                                 <a href="{{ url('administrator/detail_usaha/'.$rows->id_usaha) }}" 
                                    class="h-8 w-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary-light hover:border-primary-light transition-all shadow-sm" title="Profil Lengkap">
                                     <i class="bi bi-eye"></i>

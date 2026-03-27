@@ -30,8 +30,18 @@ class AlokasiPuniaController extends Controller
             'judul' => 'required|string|max:150',
             'deskripsi' => 'nullable|string',
             'nominal' => 'required|numeric|min:0',
-            'tanggal_alokasi' => 'required|date'
+            'tanggal_alokasi' => 'required|date',
+            'foto.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
+
+        $fotoPaths = [];
+        if ($request->hasFile('foto')) {
+            foreach ($request->file('foto') as $file) {
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('storage/alokasi_punia'), $filename);
+                $fotoPaths[] = 'storage/alokasi_punia/' . $filename;
+            }
+        }
 
         AlokasiPunia::create([
             'id_kategori_punia' => $request->id_kategori_punia,
@@ -39,6 +49,7 @@ class AlokasiPuniaController extends Controller
             'deskripsi' => $request->deskripsi,
             'nominal' => $request->nominal,
             'tanggal_alokasi' => $request->tanggal_alokasi,
+            'foto' => !empty($fotoPaths) ? $fotoPaths : null,
             'aktif' => '1'
         ]);
 
@@ -53,16 +64,28 @@ class AlokasiPuniaController extends Controller
             'judul' => 'required|string|max:150',
             'deskripsi' => 'nullable|string',
             'nominal' => 'required|numeric|min:0',
-            'tanggal_alokasi' => 'required|date'
+            'tanggal_alokasi' => 'required|date',
+            'foto.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $alokasi = AlokasiPunia::findOrFail($request->id_alokasi_punia);
+        
+        $fotoPaths = $alokasi->foto ?? [];
+        if ($request->hasFile('foto')) {
+            foreach ($request->file('foto') as $file) {
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('storage/alokasi_punia'), $filename);
+                $fotoPaths[] = 'storage/alokasi_punia/' . $filename;
+            }
+        }
+
         $alokasi->update([
             'id_kategori_punia' => $request->id_kategori_punia,
             'judul' => $request->judul,
             'deskripsi' => $request->deskripsi,
             'nominal' => $request->nominal,
-            'tanggal_alokasi' => $request->tanggal_alokasi
+            'tanggal_alokasi' => $request->tanggal_alokasi,
+            'foto' => !empty($fotoPaths) ? $fotoPaths : null
         ]);
 
         return redirect()->back()->with('success', 'Alokasi Punia berhasil diperbarui!');

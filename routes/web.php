@@ -16,14 +16,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('front.pages.home');
-})->name('public.home');
+Route::get('/', [LandingController::class, 'home'])->name('public.home');
 
 Route::get('/berita', [LandingController::class, 'berita'])->name('public.berita');
 Route::get('/berita/{id}', [LandingController::class, 'berita_detail'])->name('public.berita.detail');
+Route::post('/berita/{id}/komentar', [LandingController::class, 'berita_komentar'])->name('public.berita.komentar');
 Route::get('/punia', [LandingController::class, 'punia'])->name('public.punia');
+Route::get('/punia/pembayaran', [LandingController::class, 'punia_pembayaran'])->name('public.punia.pembayaran');
+Route::post('/punia/pembayaran/submit', [LandingController::class, 'punia_pembayaran_submit'])->name('public.punia.pembayaran.submit');
+Route::get('/punia/penggunaan/{id}', [LandingController::class, 'punia_penggunaan_detail'])->name('public.punia.penggunaan');
 Route::get('/donasi', [LandingController::class, 'donasi'])->name('public.donasi');
+Route::get('/donasi/{id}', [LandingController::class, 'donasi_detail'])->name('public.donasi.detail');
 Route::post('/donasi/submit', [LandingController::class, 'donasi_post'])->name('public.donasi.submit');
 Route::get('/unit-usaha', [LandingController::class, 'unit_usaha'])->name('public.unit_usaha');
 
@@ -66,9 +69,10 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			'uses' => 'Administrator\DashboardController@indexhome',
 		]);
 
-		Route::get('/home', [DashboardController::class, 'indexhome'])
-            ->name('home')
-            ->middleware('role:1,2,3,4');
+		Route::get('/home', [
+			'as'   => 'home',
+			'uses' => [DashboardController::class, 'indexhome'],
+		])->middleware('role:1,2,3,4');
 
 		Route::get('/get_danapunia_range', [
 			'uses' => 'Administrator\DashboardController@get_danapunia_range',
@@ -111,16 +115,18 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::get('/list_datapunia_wajib/{index}','Administrator\DanaPuniaController@list_datapunia_wajib');
 			Route::get('download_pdf_danapunia','Administrator\DanaPuniaController@download_pdf_danapunia');
 			
-			Route::get('kategori_punia','Administrator\KategoriPuniaController@index');
-			Route::post('kategori_punia/post','Administrator\KategoriPuniaController@store');
-			Route::post('kategori_punia/update','Administrator\KategoriPuniaController@update');
-			Route::get('kategori_punia/hapus/{id}','Administrator\KategoriPuniaController@destroy');
-
-			Route::get('alokasi_punia','Administrator\AlokasiPuniaController@index');
-			Route::post('alokasi_punia/post','Administrator\AlokasiPuniaController@store');
-			Route::post('alokasi_punia/update','Administrator\AlokasiPuniaController@update');
-			Route::get('alokasi_punia/hapus/{id}','Administrator\AlokasiPuniaController@destroy');
-
+			// Kategori Punia Routes
+			Route::get('/kategori_punia','Administrator\KategoriPuniaController@index');
+			Route::post('/kategori_punia/post','Administrator\KategoriPuniaController@store');
+			Route::post('/kategori_punia/update','Administrator\KategoriPuniaController@update');
+			Route::get('/kategori_punia/hapus/{id}','Administrator\KategoriPuniaController@destroy');
+			
+			// Alokasi Punia Routes
+			Route::get('/alokasi_punia','Administrator\AlokasiPuniaController@index');
+			Route::post('/alokasi_punia/post','Administrator\AlokasiPuniaController@store');
+			Route::post('/alokasi_punia/update','Administrator\AlokasiPuniaController@update');
+			Route::get('/alokasi_punia/hapus/{id}','Administrator\AlokasiPuniaController@destroy');
+			
 			Route::get('/data_usaha','Administrator\UsahaController@ambil_listUsaha');
 			
 			Route::get('/databanjar','Administrator\BanjarController@index');
@@ -159,6 +165,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::post('post_berita_baru','BeritaController@tambahberita');
 			Route::post('updateberita','BeritaController@updateberita');
 			Route::get('hapusberita','BeritaController@hapusberita');
+			
 			Route::get('/datamenu','Administrator\MenuController@index');
 			Route::get('ambil_listmenu','Administrator\MenuController@ambil_listmenu');
 			Route::post('post_data_menu','Administrator\MenuController@post_data_menu');
@@ -167,6 +174,18 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::get('datasumbangan','Administrator\SumbanganController@index');
 			Route::post('submit_post_add_sumbangan','Administrator\SumbanganController@submit_post_add_sumbangan');
 			Route::get('download_pdf_sumbangan','Administrator\SumbanganController@download_pdf_sumbangan');
+
+			// Kategori Donasi Routes
+			Route::get('/kategori_donasi','Administrator\KategoriDonasiController@index');
+			Route::post('/kategori_donasi/post','Administrator\KategoriDonasiController@store');
+			Route::post('/kategori_donasi/update','Administrator\KategoriDonasiController@update');
+			Route::get('/kategori_donasi/hapus/{id}','Administrator\KategoriDonasiController@destroy');
+			
+			// Program Donasi Routes
+			Route::get('/program_donasi','Administrator\ProgramDonasiController@index');
+			Route::post('/program_donasi/post','Administrator\ProgramDonasiController@store');
+			Route::post('/program_donasi/update','Administrator\ProgramDonasiController@update');
+			Route::get('/program_donasi/hapus/{id}','Administrator\ProgramDonasiController@destroy');
 
 			Route::get('data_kategoriberita','Administrator\KategoriBeritaController@index');
 			Route::post('post_kategori_berita','Administrator\KategoriBeritaController@post_kategori_berita');
@@ -193,7 +212,6 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/settings', 'Administrator\SettingController@index');
             Route::post('/settings/update_logo', 'Administrator\SettingController@update_logo');
             Route::post('/settings/upload_hero_slide', 'Administrator\SettingController@upload_hero_slide');
-            Route::post('/settings/update_hero_slide_metadata', 'Administrator\SettingController@update_hero_slide_metadata');
             Route::post('/settings/delete_hero_slide', 'Administrator\SettingController@delete_hero_slide');
             Route::post('/settings/update_village', 'Administrator\SettingController@update_village');
         });

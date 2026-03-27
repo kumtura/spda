@@ -91,7 +91,13 @@ class Usaha extends Model
 
     public static function get_dataUsaha($request){
 
-        $data = Usaha::join("tb_detail_usaha" , "tb_detail_usaha.id_detail_usaha" , "tb_usaha.id_detail_usaha")->join("tb_penanggung_jawab","tb_penanggung_jawab.id_penanggung_jawab",'tb_usaha.id_penanggung_jawab')->orderBy("id_usaha","desc")->get();
+        $data = Usaha::join("tb_detail_usaha" , "tb_detail_usaha.id_detail_usaha" , "tb_usaha.id_detail_usaha")
+                     ->join("tb_penanggung_jawab","tb_penanggung_jawab.id_penanggung_jawab",'tb_usaha.id_penanggung_jawab')
+                     ->leftJoin("tb_data_banjar", "tb_data_banjar.id_data_banjar", "=", "tb_detail_usaha.id_banjar")
+                     ->leftJoin("tb_kategori_usaha", "tb_kategori_usaha.id_kategori_usaha", "=", "tb_usaha.id_jenis_usaha")
+                     ->select('tb_usaha.*', 'tb_detail_usaha.*', 'tb_penanggung_jawab.*', 'tb_data_banjar.nama_banjar', 'tb_kategori_usaha.nama_kategori_usaha')
+                     ->orderBy("id_usaha","desc")
+                     ->get();
 
         return $data;
 

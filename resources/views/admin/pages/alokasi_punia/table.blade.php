@@ -119,7 +119,7 @@
                     </button>
                 </div>
 
-                <form :action="isEdit ? '{{ url('administrator/alokasi_punia/update') }}' : '{{ url('administrator/alokasi_punia/post') }}'" method="POST" class="p-6 space-y-6">
+                <form :action="isEdit ? '{{ url('administrator/alokasi_punia/update') }}' : '{{ url('administrator/alokasi_punia/post') }}'" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
                     @csrf
                     <input type="hidden" name="id_alokasi_punia" x-model="form.id_alokasi_punia">
                     
@@ -150,6 +150,11 @@
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Catatan/Keterangan</label>
                             <textarea name="deskripsi" rows="3" x-model="form.deskripsi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all"></textarea>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Foto Dokumentasi (Multiple)</label>
+                            <input type="file" name="foto[]" multiple accept="image/*" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-600 hover:file:bg-emerald-100">
+                            <p class="text-[9px] text-slate-400 mt-1 px-1">Upload multiple gambar (JPG, PNG, GIF, max 2MB per file)</p>
                         </div>
                     </div>
 

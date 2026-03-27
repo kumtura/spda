@@ -41,5 +41,11 @@ class Berita extends Model
     {
         return $this->belongsTo(Kategori_Berita::class, 'id_kategori_berita', 'id_kategori_berita');
     }
+
+    public function komentar()
+    {
+        return $this->hasMany(KomentarBerita::class, 'id_berita', 'id_berita')->orderBy('created_at', 'desc');
+    }
+
     
 }

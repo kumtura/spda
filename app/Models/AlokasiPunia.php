@@ -15,7 +15,12 @@ class AlokasiPunia extends Model
         'deskripsi',
         'nominal',
         'tanggal_alokasi',
+        'foto',
         'aktif'
+    ];
+
+    protected $casts = [
+        'foto' => 'array'
     ];
 
     public function kategori()

@@ -75,6 +75,7 @@
             @if($heroSlides->count() > 0)
             <div class="mb-6 space-y-3">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Slide Aktif ({{ $heroSlides->count() }})</p>
+                @foreach($heroSlides as $slide)
                 <div class="flex flex-col gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 group">
                     <div class="flex items-center gap-4">
                         <div class="h-16 w-24 rounded-xl overflow-hidden shrink-0 bg-slate-200 border border-slate-100">
@@ -111,6 +112,7 @@
                         </div>
                     </form>
                 </div>
+                @endforeach
             </div>
             @else
             <div class="mb-6 p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">

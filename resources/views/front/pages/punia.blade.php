@@ -95,8 +95,8 @@
     <a href="{{ route('public.donasi') }}" class="block w-full bg-white border border-[#00a6eb]/20 rounded-2xl p-4 shadow-sm group hover:shadow-md transition-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <span class="text-[9px] font-bold text-[#00a6eb] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded border border-blue-100 mb-1 inline-block">Donasi</span>
-                <h3 class="text-slate-800 font-bold text-sm leading-tight mt-1">Salurkan Bantuan Sekarang</h3>
+                <span class="text-[9px] font-bold text-[#00a6eb] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded border border-blue-100 mb-1 inline-block">Punia</span>
+                <h3 class="text-slate-800 font-bold text-sm leading-tight mt-1">Salurkan Dana Punia Sekarang</h3>
             </div>
             <div class="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-[#00a6eb] border border-blue-100 group-hover:bg-[#00a6eb] group-hover:text-white transition-colors">
                 <i class="bi bi-arrow-right text-sm"></i>

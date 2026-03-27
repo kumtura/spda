@@ -87,7 +87,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-40 lg:hidden bg-slate-900/60"
+         class="fixed inset-0 z-40 lg:hidden bg-slate-900/20"
          @click="mobileSidebarOpen = false"
          x-cloak>
     </div>

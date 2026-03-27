@@ -10,13 +10,13 @@
     </div>
 
     <!-- Total Stats -->
-    <div class="bg-blue-50 rounded-2xl p-5 border border-blue-100 flex items-center justify-between">
+    <div class="bg-[#00a6eb] rounded-2xl p-6 text-white shadow-lg flex items-center justify-between">
         <div>
-            <p class="text-[9px] font-bold text-[#00a6eb] uppercase tracking-widest mb-1">Total Terkumpul</p>
-            <h3 class="text-2xl font-black text-slate-800">Rp {{ number_format($total_sumbangan, 0, ',', '.') }}</h3>
+            <p class="text-[9px] font-bold text-white/60 uppercase tracking-widest mb-1">Total Dana Donasi</p>
+            <h3 class="text-3xl font-black tracking-tight text-white">Rp {{ number_format($total_sumbangan, 0, ',', '.') }}</h3>
         </div>
-        <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center text-[#00a6eb] border border-blue-100 shadow-sm">
-            <i class="bi bi-gift-fill"></i>
+        <div class="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center text-white border border-white/20 shadow-sm">
+            <i class="bi bi-gift-fill text-lg"></i>
         </div>
     </div>
 

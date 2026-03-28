@@ -61,15 +61,14 @@
         <!-- Payment Instructions -->
         <div id="instructionsView" class="{{ $record->status_pembayaran === 'completed' ? 'hidden' : '' }} space-y-4">
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
-                <!-- Status & Amount -->
-                <div class="bg-gradient-to-br from-slate-50 to-white p-6 text-center border-b border-slate-100">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-bold mb-4">
-                        <span class="h-1.5 w-1.5 bg-amber-500 rounded-full animate-pulse"></span>
+                <div class="p-8 text-center border-b border-slate-100 bg-white">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 text-slate-500 border border-slate-200 rounded-full text-[10px] font-bold mb-4">
                         Menunggu Pembayaran
                     </div>
                     <div>
                         <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Total Pembayaran</p>
                         <h2 class="text-3xl font-black text-slate-800">Rp {{ number_format($record->nominal ?? $record->jumlah_dana, 0, ',', '.') }}</h2>
+                        <p class="text-[11px] text-slate-500 mt-2">Bayar sebelum <span class="font-bold text-slate-700">{{ isset($payment_data['expiration_date']) ? \Carbon\Carbon::parse($payment_data['expiration_date'])->translatedFormat('d M Y, H:i') : '24 jam ke depan' }}</span></p>
                     </div>
                 </div>
 
@@ -87,13 +86,15 @@
                         </div>
 
                         @if(str_contains($method, '_VA'))
-                        <div class="bg-white rounded-xl p-4 border border-slate-200 flex items-center justify-between cursor-pointer hover:border-[#00a6eb] transition-all" onclick="copyToClipboard('{{ $payment_data['account_number'] }}')">
+                        <div x-data="{ copied: false }" class="bg-white rounded-xl p-4 border border-slate-200 flex items-center justify-between cursor-pointer hover:border-[#00a6eb] transition-all" 
+                             @click="copyToClipboard('{{ $payment_data['account_number'] }}'); copied = true; setTimeout(() => copied = false, 2000)">
                             <div>
                                 <p class="text-[9px] text-slate-400 uppercase tracking-wider mb-1">Nomor Virtual Account</p>
                                 <span class="text-lg font-black text-slate-800">{{ $payment_data['account_number'] }}</span>
                             </div>
-                            <div class="h-10 w-10 bg-blue-50 text-[#00a6eb] rounded-lg flex items-center justify-center">
-                                <i class="bi bi-files"></i>
+                            <div class="h-10 w-10 rounded-lg flex items-center justify-center transition-colors"
+                                 :class="copied ? 'bg-emerald-50 text-emerald-500' : 'bg-blue-50 text-[#00a6eb]'">
+                                <i class="bi" :class="copied ? 'bi-check-lg text-lg' : 'bi-files'"></i>
                             </div>
                         </div>
                         @elseif($method === 'QRIS' || isset($payment_data['qr_string']))
@@ -156,15 +157,11 @@
                         @endforeach
                     </div>
 
-                    <!-- Expiry -->
-                    <div class="bg-rose-50 border border-rose-100 rounded-xl p-3 flex items-center gap-3">
-                        <i class="bi bi-clock text-rose-500"></i>
-                        <p class="text-[10px] text-rose-700">Bayar sebelum {{ isset($payment_data['expiration_date']) ? \Carbon\Carbon::parse($payment_data['expiration_date'])->translatedFormat('d M Y, H:i') : '24 jam' }} WIB</p>
-                    </div>
+                    <!-- Instructions -->
                 </div>
             </div>
 
-            <a href="{{ route('public.home') }}" class="block w-full text-center py-4 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600">
+            <a href="{{ route('public.home') }}" class="block w-full text-center py-4 bg-[#00a6eb] text-white rounded-xl text-xs font-bold shadow-sm hover:bg-[#0090d0] transition-colors">
                 Kembali ke Beranda
             </a>
         </div>
@@ -174,9 +171,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            alert('Nomor Virtual Account berhasil disalin!');
-        });
+        navigator.clipboard.writeText(text);
     }
 
     function checkPaymentStatus() {

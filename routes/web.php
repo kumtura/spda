@@ -26,6 +26,7 @@ Route::get('/punia', [LandingController::class, 'punia'])->name('public.punia');
 Route::get('/punia/pembayaran', [LandingController::class, 'punia_pembayaran'])->name('public.punia.pembayaran');
 Route::post('/punia/pembayaran/submit', [LandingController::class, 'punia_pembayaran_submit'])->name('public.punia.pembayaran.submit');
 Route::get('/punia/penggunaan/{id}', [LandingController::class, 'punia_penggunaan_detail'])->name('public.punia.penggunaan');
+Route::get('/punia/download-laporan', [LandingController::class, 'punia_download_laporan'])->name('public.punia.download');
 Route::get('/donasi', [LandingController::class, 'donasi'])->name('public.donasi');
 Route::get('/donasi/pembayaran/{id}', [LandingController::class, 'donasi_pembayaran'])->name('public.donasi.pembayaran');
 Route::get('/donasi/{id}', [LandingController::class, 'donasi_detail'])->name('public.donasi.detail');

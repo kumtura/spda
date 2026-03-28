@@ -82,11 +82,11 @@
             </div>
             <span class="text-[10px] text-slate-500 font-bold">Donasi</span>
         </a>
-        <a href="#" class="flex flex-col items-center gap-2 group opacity-50 cursor-not-allowed">
-            <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white">
-                <i class="bi bi-people text-2xl text-[#00a6eb]"></i>
+        <a href="{{ route('public.unit_usaha') }}" class="flex flex-col items-center gap-2 group">
+            <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">
+                <i class="bi bi-shop text-2xl text-[#00a6eb]"></i>
             </div>
-            <span class="text-[10px] text-slate-500 font-bold">Karyawan</span>
+            <span class="text-[10px] text-slate-500 font-bold">Unit Usaha</span>
         </a>
         <a href="{{ route('public.berita') }}" class="flex flex-col items-center gap-2 group">
             <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">
@@ -96,52 +96,81 @@
         </a>
     </div>
 
-
-
-    <!-- Donasi Cards -->
+    <!-- Donasi Cards - Horizontal Scroll -->
     <div>
         <div class="flex items-center justify-between mb-4 px-1">
-            <h3 class="text-sm font-bold text-slate-800">Program Donasi Berkelanjutan</h3>
-            <a href="{{ route('public.donasi') }}" class="text-[10px] font-black text-[#00a6eb] tracking-widest hover:underline">Lihat Semua</a>
+            <h3 class="text-sm font-bold text-slate-800">Program Donasi</h3>
+            <a href="{{ route('public.donasi') }}" class="text-[10px] font-bold text-[#00a6eb] hover:underline">Lihat Semua</a>
         </div>
-        <div class="space-y-4">
+        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
             @forelse($programs as $prog)
-                <a href="{{ route('public.donasi.detail', $prog->id_program_donasi) }}" class="block bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all group">
+                <a href="{{ route('public.donasi.detail', $prog->id_program_donasi) }}" class="flex-shrink-0 w-64 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all group">
                     <div class="h-32 bg-slate-50 relative flex items-center justify-center overflow-hidden">
                         @if($prog->foto)
                             <img src="{{ asset('storage/program_donasi/'.$prog->foto) }}" class="w-full h-full object-cover" alt="{{ $prog->nama_program }}">
                         @else
                             <i class="bi bi-image text-3xl text-slate-200"></i>
                         @endif
-                        <span class="absolute top-2 right-2 bg-emerald-500 text-white text-[8px] font-bold px-2 py-1 rounded-sm tracking-widest uppercase">{{ $prog->kategori->nama_kategori ?? 'Umum' }}</span>
+                        <span class="absolute top-2 right-2 bg-emerald-500 text-white text-[8px] font-bold px-2 py-1 rounded-sm uppercase">{{ $prog->kategori->nama_kategori ?? 'Umum' }}</span>
                     </div>
                     <div class="p-3">
-                        <h4 class="text-xs font-bold text-slate-800 leading-tight mb-2 group-hover:text-[#00a6eb] transition-colors">{{ $prog->nama_program }}</h4>
+                        <h4 class="text-xs font-bold text-slate-800 leading-tight mb-2 group-hover:text-[#00a6eb] transition-colors line-clamp-2">{{ $prog->nama_program }}</h4>
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-[9px] text-slate-400 font-medium mb-0.5">Terkumpul</p>
+                                <p class="text-[9px] text-slate-400 mb-0.5">Terkumpul</p>
                                 <p class="text-[11px] font-bold text-[#00a6eb]">Rp {{ number_format($prog->terkumpul, 0, ',', '.') }}</p>
                             </div>
-                            <span class="bg-slate-50 text-slate-600 group-hover:bg-[#00a6eb] group-hover:text-white transition-colors px-4 py-1.5 rounded-full text-[10px] border border-slate-200 font-bold shadow-sm">Donasi</span>
+                            <span class="bg-slate-50 text-slate-600 group-hover:bg-[#00a6eb] group-hover:text-white transition-colors px-3 py-1.5 rounded-full text-[10px] font-bold">Donasi</span>
                         </div>
                     </div>
                 </a>
             @empty
-                <div class="bg-slate-50 rounded-2xl border border-slate-100 border-dashed p-6 text-center">
+                <div class="flex-shrink-0 w-full bg-slate-50 rounded-2xl border border-slate-100 border-dashed p-6 text-center">
                     <p class="text-xs font-bold text-slate-400">Belum ada program aktif.</p>
                 </div>
             @endforelse
         </div>
     </div>
 
-    <div class="h-1.5 w-full bg-slate-100 rounded-full"></div>
+    <!-- Berita - Horizontal Scroll -->
+    <div>
+        <div class="flex items-center justify-between mb-4 px-1">
+            <h3 class="text-sm font-bold text-slate-800">Berita Terkini</h3>
+            <a href="{{ route('public.berita') }}" class="text-[10px] font-bold text-[#00a6eb] hover:underline">Lihat Semua</a>
+        </div>
+        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
+            @forelse($berita as $news)
+                <a href="{{ route('public.berita.detail', $news->id_berita) }}" class="flex-shrink-0 w-72 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all group">
+                    <div class="h-40 bg-slate-50 relative flex items-center justify-center overflow-hidden">
+                        @if($news->foto)
+                            <img src="{{ asset('storage/berita/foto/'.$news->foto) }}" class="w-full h-full object-cover" alt="{{ $news->judul_berita }}">
+                        @else
+                            <i class="bi bi-newspaper text-3xl text-slate-200"></i>
+                        @endif
+                    </div>
+                    <div class="p-3">
+                        <h4 class="text-xs font-bold text-slate-800 leading-tight mb-2 group-hover:text-[#00a6eb] transition-colors line-clamp-2">{{ $news->judul_berita }}</h4>
+                        <p class="text-[10px] text-slate-500 line-clamp-2 mb-2">{{ strip_tags($news->isi_berita) }}</p>
+                        <div class="flex items-center justify-between text-[9px] text-slate-400">
+                            <span><i class="bi bi-calendar3"></i> {{ \Carbon\Carbon::parse($news->tanggal_berita)->translatedFormat('d M Y') }}</span>
+                            <span class="text-[#00a6eb] font-bold">Baca →</span>
+                        </div>
+                    </div>
+                </a>
+            @empty
+                <div class="flex-shrink-0 w-full bg-slate-50 rounded-2xl border border-slate-100 border-dashed p-6 text-center">
+                    <p class="text-xs font-bold text-slate-400">Belum ada berita.</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
 
     <!-- Lowongan Kerja (Loker) -->
     <div>
         <div class="flex items-center justify-between mb-4 px-1">
-            <h3 class="text-sm font-bold text-slate-800">Lowongan Kerja (Loker)</h3>
+            <h3 class="text-sm font-bold text-slate-800">Lowongan Kerja</h3>
             @if(count($lokers) > 0)
-                <span class="text-[9px] font-bold text-[#00a6eb] uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">{{ count($lokers) }} Aktif</span>
+                <span class="text-[9px] font-bold text-[#00a6eb] uppercase bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">{{ count($lokers) }} Aktif</span>
             @endif
         </div>
 
@@ -161,10 +190,10 @@
                             <p class="text-[10px] text-slate-500 font-medium mb-3">{{ $loker->usaha->title ?? 'SPDA Unit Usaha' }}</p>
                             
                             <div class="flex items-center justify-between">
-                                <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 uppercase tracking-widest">
+                                <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 uppercase">
                                     <i class="bi bi-circle-fill text-[5px] mr-1 align-middle"></i> Buka
                                 </span>
-                                <a href="{{ url('login') }}" class="text-[9px] font-black text-[#00a6eb] uppercase tracking-widest hover:underline flex items-center gap-1">Lamar <i class="bi bi-arrow-right"></i></a>
+                                <a href="{{ url('login') }}" class="text-[9px] font-bold text-[#00a6eb] uppercase hover:underline flex items-center gap-1">Lamar <i class="bi bi-arrow-right"></i></a>
                             </div>
                         </div>
                     </div>
@@ -179,4 +208,9 @@
         @endif
     </div>
 </div>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
 @endsection

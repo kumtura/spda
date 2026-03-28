@@ -60,14 +60,15 @@ public function initiate(Request $request)
             $bank_code = str_replace('_VA', '', $method); 
             $response = $this->xendit->createVA($external_id, $bank_code, $record->nama ?? 'Anonim', $amount);
             
-        } elseif (in_array($method, ['ID_OVO', 'ID_DANA', 'ID_SHOPEEPAY', 'ID_LINKAJA'])) {
+        } elseif (in_array($method, ['ID_OVO', 'ID_DANA', 'ID_SHOPEEPAY', 'ID_LINKAJA', 'ID_GOPAY'])) {
             $response = $this->xendit->createEWalletCharge($external_id, $amount, $method, $order_id);
             
-        } elseif ($method === 'QRIS') {
+        } elseif (in_array($method, ['QRIS', 'ID_QRIS'])) {
             $response = $this->xendit->createQRCode($external_id, $amount);
             
         } else {
             // Jika method aneh/tidak dikenali, tolak!
+            Log::warning("Metode pembayaran tidak valid: {$method}", ['order_id' => $order_id, 'type' => $type]);
             return redirect()->back()->with('error', 'Metode pembayaran tidak valid.');
         }
 

@@ -61,7 +61,7 @@
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email</label>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email <span class="font-medium text-slate-400 normal-case tracking-normal">(Opsional)</span></label>
                     <input type="email" name="text_email_usaha_new" 
                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-[#00a6eb]/10 transition-all"
                            placeholder="email@example.com">

@@ -8,6 +8,7 @@ use App\Models\Danapunia;
 use App\Models\Usaha;
 use App\Models\PaymentChannel;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LandingController extends Controller
 {
@@ -81,7 +82,32 @@ class LandingController extends Controller
             $q->where('aktif', '1')->orderBy('tanggal_alokasi', 'desc');
         }])->where('aktif', '1')->orderBy('nama_kategori', 'asc')->get();
 
-        return view('front.pages.punia', compact('total_punia', 'village', 'kategori_punia'));
+        // Calculate total pengeluaran
+        $total_pengeluaran = \App\Models\AlokasiPunia::where('aktif', '1')->sum('nominal');
+        
+        // Get recent pemasukan (income)
+        $pemasukan = Danapunia::where('aktif', '1')
+            ->orderBy('tanggal_pembayaran', 'desc')
+            ->take(10)
+            ->get();
+        
+        // Get recent pengeluaran (expenses)
+        $pengeluaran = \App\Models\AlokasiPunia::with('kategori')
+            ->where('aktif', '1')
+            ->orderBy('tanggal_alokasi', 'desc')
+            ->take(10)
+            ->get();
+        
+        // Prepare chart data by category
+        $chart_data = $kategori_punia->map(function($kat) {
+            return [
+                'label' => $kat->nama_kategori,
+                'value' => $kat->alokasi->sum('nominal'),
+                'color' => $kat->warna ?? '#00a6eb'
+            ];
+        });
+
+        return view('front.pages.punia', compact('total_punia', 'village', 'kategori_punia', 'total_pengeluaran', 'pemasukan', 'pengeluaran', 'chart_data'));
     }
 
     public function punia_pembayaran()
@@ -104,7 +130,7 @@ class LandingController extends Controller
         if (!$isAnonymous) {
             $rules['nama'] = 'required|string|max:100';
             $rules['email'] = 'nullable|email|max:100';
-            $rules['no_wa'] = 'required|string|max:20';
+            $rules['no_wa'] = 'nullable|string|max:20';
         }
         
         $request->validate($rules);
@@ -153,6 +179,48 @@ class LandingController extends Controller
         $village = $this->getVillageData();
         
         return view('front.pages.punia_penggunaan_detail', compact('kategori', 'village'));
+    }
+
+    public function punia_download_laporan(Request $request)
+    {
+        $month = $request->get('month', date('m'));
+        $year = $request->get('year', date('Y'));
+        
+        // Get village data
+        $village = $this->getVillageData();
+        
+        // Get pemasukan for the month
+        $pemasukan = Danapunia::where('aktif', '1')
+            ->whereMonth('tanggal_pembayaran', $month)
+            ->whereYear('tanggal_pembayaran', $year)
+            ->orderBy('tanggal_pembayaran', 'asc')
+            ->get();
+        
+        // Get pengeluaran for the month
+        $pengeluaran = \App\Models\AlokasiPunia::with('kategori')
+            ->where('aktif', '1')
+            ->whereMonth('tanggal_alokasi', $month)
+            ->whereYear('tanggal_alokasi', $year)
+            ->orderBy('tanggal_alokasi', 'asc')
+            ->get();
+        
+        // Calculate totals
+        $total_pemasukan = $pemasukan->sum('jumlah_dana');
+        $total_pengeluaran = $pengeluaran->sum('nominal');
+        $saldo = $total_pemasukan - $total_pengeluaran;
+        
+        // Month name
+        $months = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        $month_name = $months[(int)$month];
+        
+        $data = compact('village', 'pemasukan', 'pengeluaran', 'total_pemasukan', 'total_pengeluaran', 'saldo', 'month_name', 'year');
+        
+        $pdf = Pdf::loadView('pdf.laporan_punia', $data);
+        return $pdf->download('Laporan_Punia_' . $month_name . '_' . $year . '.pdf');
     }
 
 

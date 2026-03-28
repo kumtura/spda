@@ -91,6 +91,7 @@
                   <li><a href="{{ url('administrator/data_laporan') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_laporan*') ? 'text-white bg-white/5' : '' }}">Arsip Laporan</a></li>
                   @if(Session::get('level') == "1" || Session::get('level') == "4")
                   <li><a href="{{ url('administrator/settings') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/settings*') ? 'text-white bg-white/5' : '' }}">Pengaturan Website</a></li>
+                  <li><a href="{{ route('administrator.settings.payment_gateway') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/settings/payment_gateway*') ? 'text-white bg-white/5' : '' }}">Payment Gateway</a></li>
                   @endif
                   
             </ul>

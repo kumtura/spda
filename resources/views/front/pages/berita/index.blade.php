@@ -8,6 +8,7 @@
         <p class="text-[10px] text-slate-400 font-bold mt-1">Informasi terbaru seputar kegiatan dan pembangunan desa adat.</p>
     </div>
 
+
     <div class="space-y-8">
         @if(count($berita) > 0)
             @php $featured = $berita->first(); @endphp
@@ -55,6 +56,23 @@
                 <div class="flex items-center justify-between px-1">
                     <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kabar Desa</h3>
                 </div>
+
+                <!-- Category Filter Pills -->
+                @if($kategori_berita->count() > 0)
+                <div class="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-0">
+                    <a href="{{ route('public.berita') }}"
+                       class="shrink-0 px-4 py-2 rounded-full text-[10px] font-bold border transition-all active:scale-95 {{ !isset($current_category) ? 'bg-[#00a6eb] text-white border-[#00a6eb] shadow-md shadow-blue-200/50' : 'bg-white text-slate-500 border-slate-200 hover:border-[#00a6eb]/30' }}">
+                        Semua
+                    </a>
+                    @foreach($kategori_berita as $kat)
+                    <a href="{{ route('public.berita.kategori', $kat->id_kategori_berita) }}"
+                       class="shrink-0 px-4 py-2 rounded-full text-[10px] font-bold border transition-all active:scale-95 flex items-center gap-1.5 {{ isset($current_category) && $current_category->id_kategori_berita == $kat->id_kategori_berita ? 'bg-[#00a6eb] text-white border-[#00a6eb] shadow-md shadow-blue-200/50' : 'bg-white text-slate-500 border-slate-200 hover:border-[#00a6eb]/30' }}">
+                        {{ $kat->nama_kategori_berita }}
+                    </a>
+                    @endforeach
+                </div>
+                @endif
+
                 <div class="grid grid-cols-1 gap-8">
                     @foreach($berita->skip(1) as $item)
                         <a href="{{ route('public.berita.detail', $item->id_berita) }}" class="group block py-2">

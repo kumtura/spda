@@ -12,7 +12,28 @@ class Sumbangan extends Model
 {   
     //public $timestamps = false; 
     //
-    protected $fillable = ['id_sumbangan_sukarela', 'id_usaha', 'id_karyawan','aktif'];
+    protected $fillable = [
+        'id_sumbangan_sukarela', 
+        'id_usaha', 
+        'id_karyawan',
+        'id_program_donasi',
+        'status_donatur',
+        'nama',
+        'alamat',
+        'nominal',
+        'deskripsi',
+        'metode',
+        'id_bank',
+        'bukti_pembayaran',
+        'tanggal',
+        'path_foto',
+        'profile',
+        'aktif',
+        'xendit_id',
+        'status_pembayaran',
+        'payment_data'
+    ];
+    protected $primaryKey = 'id_sumbangan_sukarela';
     protected $table='tb_sumbangan_sukarela';
 
     public static function get_datasumbangan($request){
@@ -188,7 +209,7 @@ class Sumbangan extends Model
         $data->status_donatur            = $request->cmb_kategori_sumbangan;
         $data->nominal                   = $request->text_minimal_pembayaran;
         $data->alamat                    = $alamat_penyumbang;
-        $data->deskripsi                 = $request->text_email_usaha_new;
+        $data->deskripsi                 = $request->text_email_usaha_new ?? '';
         $data->id_bank                   = "2";
         $data->metode                    = $request->text_namapngg_new;
         $data->bukti_pembayaran          = $menu_name;

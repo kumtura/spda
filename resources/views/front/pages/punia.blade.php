@@ -110,16 +110,16 @@
                 <div class="p-6 space-y-3">
                     <!-- Masyarakat Umum Option -->
                     <a href="{{ route('public.punia.pembayaran') }}" 
-                       class="block bg-gradient-to-br from-blue-50 to-blue-50/50 border-2 border-blue-100 rounded-2xl p-5 hover:border-[#00a6eb] hover:shadow-lg transition-all group">
+                       class="block bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
                         <div class="flex items-start gap-4">
-                            <div class="h-12 w-12 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
-                                <i class="bi bi-people-fill text-[#00a6eb] text-xl"></i>
+                            <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
+                                <i class="bi bi-people-fill text-slate-400 text-xl group-hover:text-white"></i>
                             </div>
                             <div class="flex-1">
                                 <h4 class="text-sm font-black text-slate-800 mb-1">Masyarakat Umum</h4>
                                 <p class="text-[10px] text-slate-500 leading-relaxed">Untuk krama desa dan masyarakat umum yang ingin berkontribusi</p>
-                                <div class="mt-3 flex items-center gap-2 text-[#00a6eb]">
-                                    <span class="text-[9px] font-bold uppercase tracking-wider">Bayar Sekarang</span>
+                                <div class="mt-3 flex items-center gap-2 text-slate-400 group-hover:text-[#00a6eb]">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider transition-colors">Bayar Sekarang</span>
                                     <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                                 </div>
                             </div>
@@ -128,16 +128,16 @@
 
                     <!-- Unit Usaha Option -->
                     <a href="{{ route('login') }}" 
-                       class="block bg-gradient-to-br from-emerald-50 to-emerald-50/50 border-2 border-emerald-100 rounded-2xl p-5 hover:border-emerald-500 hover:shadow-lg transition-all group">
+                       class="block bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
                         <div class="flex items-start gap-4">
-                            <div class="h-12 w-12 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
-                                <i class="bi bi-shop text-emerald-600 text-xl"></i>
+                            <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
+                                <i class="bi bi-shop text-slate-400 text-xl group-hover:text-white"></i>
                             </div>
                             <div class="flex-1">
                                 <h4 class="text-sm font-black text-slate-800 mb-1">Unit Usaha</h4>
                                 <p class="text-[10px] text-slate-500 leading-relaxed">Untuk unit usaha terdaftar yang ingin menyalurkan dana punia</p>
-                                <div class="mt-3 flex items-center gap-2 text-emerald-600">
-                                    <span class="text-[9px] font-bold uppercase tracking-wider">Login Terlebih Dahulu</span>
+                                <div class="mt-3 flex items-center gap-2 text-slate-400 group-hover:text-[#00a6eb]">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider transition-colors">Login Terlebih Dahulu</span>
                                     <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                                 </div>
                             </div>

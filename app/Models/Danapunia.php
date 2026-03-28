@@ -10,7 +10,24 @@ class Danapunia extends Model
 {   
     //public $timestamps = false; 
     //
-    protected $fillable = ['id_dana_punia', 'id_usaha', 'jumlah_dana','aktif'];
+    protected $fillable = [
+        'id_dana_punia', 
+        'id_usaha', 
+        'jumlah_dana', 
+        'aktif', 
+        'nama_donatur', 
+        'email', 
+        'no_wa', 
+        'is_anonymous', 
+        'tanggal_pembayaran', 
+        'bulan', 
+        'tahun',
+        'xendit_id',
+        'status_pembayaran',
+        'payment_data',
+        'metode'
+    ];
+    protected $primaryKey = 'id_dana_punia';
     protected $table='tb_dana_punia';
 
     public static function get_dataPunia($request){

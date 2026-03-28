@@ -56,6 +56,9 @@
                         </div>
                         <ul class="py-1" role="none">
                             <li><a href="{{ url('administrator/userprofile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">My Profile</a></li>
+                            @if(in_array(Session::get('level'), [1, 4]))
+                            <li><a href="{{ route('administrator.settings.payment_gateway') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Payment Gateway</a></li>
+                            @endif
                             <li><a href="{{ url('administrator/databerita') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">View Profile</a></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">

@@ -11,6 +11,7 @@ class Kategori_Berita extends Model
     //
     public $timestamps = false; 
     //
+    protected $primaryKey = 'id_kategori_berita';
     protected $fillable = ['id_kategori_berita', 'nama_kategori_berita','aktif'];
     protected $table='tb_kategori_berita';
 

@@ -6,6 +6,7 @@ use App\Models\Berita;
 use App\Models\Sumbangan;
 use App\Models\Danapunia;
 use App\Models\Usaha;
+use App\Models\PaymentChannel;
 use Illuminate\Http\Request;
 
 class LandingController extends Controller
@@ -22,8 +23,18 @@ class LandingController extends Controller
     public function berita()
     {
         $berita = Berita::where('aktif', '1')->orderBy('id_berita', 'desc')->paginate(10);
+        $kategori_berita = \App\Models\Kategori_Berita::where('aktif', '1')->get();
         $village = $this->getVillageData();
-        return view('front.pages.berita.index', compact('berita', 'village'));
+        return view('front.pages.berita.index', compact('berita', 'village', 'kategori_berita'));
+    }
+
+    public function berita_kategori($id)
+    {
+        $berita = Berita::where('aktif', '1')->where('id_kategori_berita', $id)->orderBy('id_berita', 'desc')->paginate(10);
+        $kategori_berita = \App\Models\Kategori_Berita::where('aktif', '1')->get();
+        $village = $this->getVillageData();
+        $current_category = \App\Models\Kategori_Berita::find($id);
+        return view('front.pages.berita.index', compact('berita', 'village', 'kategori_berita', 'current_category'));
     }
     
     public function home()
@@ -90,7 +101,6 @@ class LandingController extends Controller
             'is_anonymous' => 'nullable|in:0,1'
         ];
         
-        // Only require personal info if not anonymous
         if (!$isAnonymous) {
             $rules['nama'] = 'required|string|max:100';
             $rules['email'] = 'nullable|email|max:100';
@@ -99,10 +109,8 @@ class LandingController extends Controller
         
         $request->validate($rules);
 
-        // If anonymous, use "Anonim" as name
         $nama = $isAnonymous ? 'Anonim' : $request->nama;
 
-        // Create dana punia record
         $danapunia = Danapunia::create([
             'nama_donatur' => $nama,
             'email' => $isAnonymous ? null : $request->email,
@@ -115,10 +123,25 @@ class LandingController extends Controller
             'aktif' => '1'
         ]);
 
-        // TODO: Integrate with payment gateway (Midtrans/Xendit/Duitku)
-        // Redirect to payment gateway page
-        // For now, redirect back with message
-        return redirect()->route('public.punia')->with('success', 'Terima kasih! Pembayaran akan segera diproses.');
+        return redirect()->route('public.payment_methods', [
+            'amount' => $request->jumlah_dana,
+            'order_id' => 'PN-' . $danapunia->id_dana_punia,
+            'type' => 'punia'
+        ]);
+    }
+
+    public function payment_methods(Request $request)
+    {
+        $amount = $request->amount;
+        $order_id = $request->order_id;
+        $type = $request->type;
+        $village = $this->getVillageData();
+
+        $xendit = new \App\Services\XenditService();
+        $is_configured = $xendit->isConfigured();
+        $channels = PaymentChannel::where('is_active', true)->get();
+
+        return view('front.pages.payment_methods', compact('amount', 'order_id', 'type', 'village', 'is_configured', 'channels'));
     }
 
     public function punia_penggunaan_detail($id)
@@ -135,8 +158,14 @@ class LandingController extends Controller
 
     public function donasi()
     {
-        $sumbangan = Sumbangan::where('aktif', '1')->orderBy('id_sumbangan_sukarela', 'desc')->take(10)->get();
-        $total_sumbangan = Sumbangan::where('aktif', '1')->sum('nominal');
+        $sumbangan = Sumbangan::where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->orderBy('id_sumbangan_sukarela', 'desc')
+            ->take(10)->get();
+            
+        $total_sumbangan = Sumbangan::where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->sum('nominal');
         $village = $this->getVillageData();
 
         // Get kategori donasi and program donasi
@@ -159,6 +188,7 @@ class LandingController extends Controller
         // Get recent donors for this program
         $donatur = Sumbangan::where('id_program_donasi', $id)
             ->where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
             ->orderBy('id_sumbangan_sukarela', 'desc')
             ->take(10)
             ->get();
@@ -166,12 +196,38 @@ class LandingController extends Controller
         return view('front.pages.donasi_detail', compact('program', 'village', 'recent_programs', 'donatur'));
     }
 
+    public function donasi_pembayaran($id)
+    {
+        $program = \App\Models\ProgramDonasi::with('kategori')->where('id_program_donasi', $id)->firstOrFail();
+        $village = $this->getVillageData();
+        
+        return view('front.pages.donasi_pembayaran', compact('program', 'village'));
+    }
+
 
     public function donasi_post(Request $request)
     {
-        // Simple submission logic, potentially expanding the Sumbangan model's static method
-        $id = Sumbangan::submit_post_add_sumbangan($request);
-        return redirect()->route('public.donasi')->with('success', 'Terima kasih atas donasi Anda! Bukti pembayaran akan kami verifikasi.');
+        $isAnonymous = $request->cmb_kategori_sumbangan == '1';
+        $request->validate([
+            'text_minimal_pembayaran' => 'required|numeric|min:10000',
+            'id_program_donasi' => 'required|exists:tb_program_donasi,id_program_donasi'
+        ]);
+
+        $id = Sumbangan::create([
+            'id_program_donasi' => $request->id_program_donasi,
+            'nama' => $isAnonymous ? 'Anonim' : $request->text_title_new,
+            'status_donatur' => $request->cmb_kategori_sumbangan,
+            'nominal' => $request->text_minimal_pembayaran,
+            'deskripsi' => $request->text_pesan ?? '',
+            'tanggal' => now(),
+            'aktif' => '1'
+        ])->id_sumbangan_sukarela;
+
+        return redirect()->route('public.payment_methods', [
+            'amount' => $request->text_minimal_pembayaran,
+            'order_id' => 'DN-' . $id,
+            'type' => 'donasi'
+        ]);
     }
 
     public function unit_usaha()

@@ -51,6 +51,18 @@
                 <i class="bi bi-person-circle text-lg"></i>
                 Profil Saya
             </a>
+
+            @if(in_array(Session::get('level'), [1, 4]))
+            <a href="{{ route('administrator.settings.payment_gateway') }}" class="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-blue-50 hover:text-primary-light transition-colors mx-1.5 rounded-lg">
+                <i class="bi bi-credit-card-2-front text-lg"></i>
+                Payment Gateway
+            </a>
+
+            <a href="{{ url('administrator/settings') }}" class="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-blue-50 hover:text-primary-light transition-colors mx-1.5 rounded-lg">
+                <i class="bi bi-gear text-lg"></i>
+                Pengaturan Website
+            </a>
+            @endif
             
             <div class="h-px bg-slate-100 my-1 mx-3"></div>
 

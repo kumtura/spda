@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [LandingController::class, 'home'])->name('public.home');
 
 Route::get('/berita', [LandingController::class, 'berita'])->name('public.berita');
+Route::get('/berita/kategori/{id}', [LandingController::class, 'berita_kategori'])->name('public.berita.kategori');
 Route::get('/berita/{id}', [LandingController::class, 'berita_detail'])->name('public.berita.detail');
 Route::post('/berita/{id}/komentar', [LandingController::class, 'berita_komentar'])->name('public.berita.komentar');
 Route::get('/punia', [LandingController::class, 'punia'])->name('public.punia');
@@ -26,8 +27,14 @@ Route::get('/punia/pembayaran', [LandingController::class, 'punia_pembayaran'])-
 Route::post('/punia/pembayaran/submit', [LandingController::class, 'punia_pembayaran_submit'])->name('public.punia.pembayaran.submit');
 Route::get('/punia/penggunaan/{id}', [LandingController::class, 'punia_penggunaan_detail'])->name('public.punia.penggunaan');
 Route::get('/donasi', [LandingController::class, 'donasi'])->name('public.donasi');
+Route::get('/donasi/pembayaran/{id}', [LandingController::class, 'donasi_pembayaran'])->name('public.donasi.pembayaran');
 Route::get('/donasi/{id}', [LandingController::class, 'donasi_detail'])->name('public.donasi.detail');
 Route::post('/donasi/submit', [LandingController::class, 'donasi_post'])->name('public.donasi.submit');
+Route::get('/pembayaran/metode', [LandingController::class, 'payment_methods'])->name('public.payment_methods');
+Route::post('/pembayaran/proses', [\App\Http\Controllers\PaymentController::class, 'initiate'])->name('public.payment_initiate');
+Route::get('/pembayaran/hasil', [\App\Http\Controllers\PaymentController::class, 'showResult'])->name('public.payment_result');
+Route::post('/pembayaran/simulate', [\App\Http\Controllers\PaymentController::class, 'simulate'])->name('public.payment_simulate');
+Route::get('/pembayaran/status/{order_id}', [\App\Http\Controllers\PaymentController::class, 'checkStatus'])->name('public.payment_status');
 Route::get('/unit-usaha', [LandingController::class, 'unit_usaha'])->name('public.unit_usaha');
 
 Route::middleware(['guest'])->group(function () {
@@ -69,10 +76,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			'uses' => 'Administrator\DashboardController@indexhome',
 		]);
 
-		Route::get('/home', [
-			'as'   => 'home',
-			'uses' => [DashboardController::class, 'indexhome'],
-		])->middleware('role:1,2,3,4');
+		Route::get('/home', [DashboardController::class, 'indexhome'])->name('home')->middleware('role:1,2,3,4');
 
 		Route::get('/get_danapunia_range', [
 			'uses' => 'Administrator\DashboardController@get_danapunia_range',
@@ -214,6 +218,11 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/settings/upload_hero_slide', 'Administrator\SettingController@upload_hero_slide');
             Route::post('/settings/delete_hero_slide', 'Administrator\SettingController@delete_hero_slide');
             Route::post('/settings/update_village', 'Administrator\SettingController@update_village');
+            
+            // Payment Gateway Settings
+            Route::get('/settings/payment_gateway', 'Administrator\PaymentGatewayController@index')->name('settings.payment_gateway');
+            Route::post('/settings/payment_gateway/post', 'Administrator\PaymentGatewayController@store')->name('settings.payment_gateway.post');
+            Route::post('/settings/payment_gateway/channel/{id}', 'Administrator\PaymentGatewayController@updateChannel')->name('settings.payment_gateway.channel.update');
         });
 
 		// Misc / Legacy

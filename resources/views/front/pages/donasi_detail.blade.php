@@ -125,65 +125,76 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm"
-             x-cloak>
+             class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+             x-cloak
+             @click.self="showDonateModal = false">
             
-            <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
-                 @click.away="showDonateModal = false"
+            <div @click.stop 
+                 class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
                  x-transition:enter="transition ease-out duration-300 transform"
-                 x-transition:enter-start="translate-y-full sm:scale-95"
-                 x-transition:enter-end="translate-y-0 sm:scale-100">
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-8"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0">
                 
-                <!-- Modal Header -->
-                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 bg-[#00a6eb] text-white rounded-xl flex items-center justify-center shadow-lg">
-                            <i class="bi bi-heart-fill"></i>
-                        </div>
-                        <div>
-                            <p class="text-[9px] font-black text-[#00a6eb] uppercase tracking-widest">Kirim Donasi</p>
-                            <h3 class="text-sm font-black text-slate-800 truncate max-w-[200px]">{{ $program->nama_program }}</h3>
-                        </div>
-                    </div>
-                    <button @click="showDonateModal = false" class="text-slate-400 hover:text-rose-500 p-2">
-                        <i class="bi bi-x-lg"></i>
+                <!-- Header -->
+                <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] p-6 text-white relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                    <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+                    <button @click="showDonateModal = false" type="button" class="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
+                        <i class="bi bi-x text-xl"></i>
                     </button>
+                    <div class="relative">
+                        <h3 class="text-xl font-black">Salurkan Donasi</h3>
+                        <p class="text-white/80 text-xs font-medium mt-1">Pilih kategori Anda untuk melanjutkan</p>
+                    </div>
                 </div>
 
-                <!-- Form -->
-                <div class="overflow-y-auto p-6 no-scrollbar">
-                    <form action="{{ route('public.donasi.submit') }}" method="POST" class="space-y-5">
-                        @csrf
-                        <input type="hidden" name="id_program_donasi" value="{{ $program->id_program_donasi }}">
-                        
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori Donatur</label>
-                            <select name="cmb_kategori_sumbangan" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 outline-none focus:ring-4 focus:ring-[#00a6eb]/10 transition-all">
-                                <option value="2">Masyarakat Umum</option>
-                                <option value="1">Anonim</option>
-                                <option value="3">Unit Usaha / Perusahaan</option>
-                            </select>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
-                                <input type="text" name="text_title_new" placeholder="Masukkan nama Anda" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 outline-none focus:ring-4 focus:ring-[#00a6eb]/10 transition-all">
+                <!-- Content -->
+                <div class="p-6 space-y-3 overflow-y-auto no-scrollbar max-h-[60vh]">
+                    <!-- Masyarakat Umum Option -->
+                    <a href="{{ route('public.donasi.pembayaran', $program->id_program_donasi) }}" 
+                       class="block bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
+                        <div class="flex items-start gap-4">
+                            <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
+                                <i class="bi bi-people-fill text-slate-400 text-xl group-hover:text-white"></i>
                             </div>
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nominal Donasi (Rp)</label>
-                                <input type="number" name="text_minimal_pembayaran" required min="1000" placeholder="Minimal Rp 1.000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-[#00a6eb] outline-none focus:ring-4 focus:ring-[#00a6eb]/10 transition-all">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pesan</label>
-                                <textarea name="text_email_usaha_new" rows="2" placeholder="Tuliskan pesan Anda..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 outline-none focus:ring-4 focus:ring-[#00a6eb]/10 transition-all"></textarea>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-black text-slate-800 mb-1">Masyarakat Umum</h4>
+                                <p class="text-[10px] text-slate-500 leading-relaxed">Untuk krama desa dan masyarakat umum yang ingin berkontribusi</p>
+                                <div class="mt-3 flex items-center gap-2 text-slate-400 group-hover:text-[#00a6eb]">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider transition-colors">Donasi Sekarang</span>
+                                    <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </div>
                             </div>
                         </div>
+                    </a>
 
-                        <button type="submit" class="w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white py-4 rounded-xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-blue-100 transition-all active:scale-95 flex items-center justify-center gap-2">
-                            Kirim Donasi <i class="bi bi-send-fill"></i>
-                        </button>
-                    </form>
+                    <!-- Unit Usaha Option -->
+                    <a href="{{ route('login') }}" 
+                       class="block bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
+                        <div class="flex items-start gap-4">
+                            <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
+                                <i class="bi bi-shop text-slate-400 text-xl group-hover:text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-black text-slate-800 mb-1">Unit Usaha / Investor</h4>
+                                <p class="text-[10px] text-slate-500 leading-relaxed">Gunakan akun bisnis Anda untuk penyaluran donasi resmi</p>
+                                <div class="mt-3 flex items-center gap-2 text-slate-400 group-hover:text-[#00a6eb]">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider transition-colors">Login Terlebih Dahulu</span>
+                                    <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 pb-6 pt-2">
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                        <div class="flex items-start gap-3">
+                            <i class="bi bi-info-circle text-slate-400 text-lg shrink-0"></i>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">Setiap donasi yang masuk akan diverifikasi secara transparan untuk akuntabilitas publik.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

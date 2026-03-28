@@ -29,6 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'wartawan.guest' => \App\Http\Middleware\RedirectIfWartawan::class,
             'auth.legacy' => \App\Http\Middleware\RedirectIfNotAuthenticated::class,
         ]);
+        
+        $middleware->validateCsrfTokens(except: [
+            'api/webhooks/xendit'
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

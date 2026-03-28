@@ -194,7 +194,7 @@
                         </div>
 
                         <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Keterangan / Doa</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Keterangan</label>
                             <textarea name="text_email_usaha_new" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold"></textarea>
                         </div>
 

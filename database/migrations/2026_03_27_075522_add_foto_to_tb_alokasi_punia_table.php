@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tb_alokasi_punia', function (Blueprint $table) {
-            $table->json('foto')->nullable();
+            if (!Schema::hasColumn('tb_alokasi_punia', 'foto')) {
+                $table->json('foto')->nullable();
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tb_alokasi_punia', function (Blueprint $table) {
-            $table->dropColumn('foto');
+            if (Schema::hasColumn('tb_alokasi_punia', 'foto')) {
+                $table->dropColumn('foto');
+            }
         });
     }
 };

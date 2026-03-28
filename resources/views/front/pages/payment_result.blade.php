@@ -97,18 +97,29 @@
                                 <i class="bi" :class="copied ? 'bi-check-lg text-lg' : 'bi-files'"></i>
                             </div>
                         </div>
-                        @elseif($method === 'QRIS' || isset($payment_data['qr_string']))
+                        @elseif($method === 'QRIS' || isset($payment_data['qr_string']) || isset($payment_data['actions']['qr_checkout_string']))
                         <div class="bg-white rounded-2xl p-4 border border-slate-200 text-center">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode($payment_data['qr_string'] ?? '') }}" class="w-48 h-48 mx-auto mb-3" alt="QR">
-                            <p class="text-[9px] text-slate-400 uppercase tracking-wider">Scan dengan aplikasi pembayaran</p>
+                            @php 
+                                $qr_string = $payment_data['qr_string'] ?? ($payment_data['actions']['qr_checkout_string'] ?? '');
+                            @endphp
+                            @if($qr_string)
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode($qr_string) }}" class="w-48 h-48 mx-auto mb-3" alt="QR">
+                                <p class="text-[9px] text-slate-400 uppercase tracking-wider">Scan dengan aplikasi pembayaran</p>
+                            @else
+                                <p class="text-xs text-rose-500 font-bold p-4 italic">Gagal memuat kode QR</p>
+                            @endif
                         </div>
                         @else
                         @php
                             $checkout_url = null;
                             if(isset($payment_data['actions'])) {
                                 $actions = $payment_data['actions'];
-                                if(isset($actions['mobile_web_checkout_url'])) {
+                                if(isset($actions['mobile_deeplink_checkout_url'])) {
+                                    $checkout_url = $actions['mobile_deeplink_checkout_url'];
+                                } elseif(isset($actions['mobile_web_checkout_url'])) {
                                     $checkout_url = $actions['mobile_web_checkout_url'];
+                                } elseif(isset($actions['desktop_web_checkout_url'])) {
+                                    $checkout_url = $actions['desktop_web_checkout_url'];
                                 } elseif(is_array($actions)) {
                                     $action = collect($actions)->whereIn('url_type', ['MOBILE_WEB', 'WEB'])->first();
                                     $checkout_url = $action['url'] ?? null;
@@ -116,7 +127,7 @@
                             }
                         @endphp
                         @if($checkout_url)
-                            <a href="{{ $checkout_url }}" target="_blank" class="block w-full py-4 bg-gradient-to-r from-[#00a6eb] to-[#0090d0] text-white rounded-xl font-bold text-sm text-center shadow-lg">
+                            <a href="{{ $checkout_url }}" target="_blank" class="block w-full py-4 bg-gradient-to-r from-[#00a6eb] to-[#0090d0] text-white rounded-xl font-bold text-sm text-center shadow-lg transform active:scale-95 transition-all">
                                 Buka Aplikasi Pembayaran
                             </a>
                         @endif

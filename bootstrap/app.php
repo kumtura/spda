@@ -31,7 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         
         $middleware->validateCsrfTokens(except: [
-            'api/webhooks/xendit'
+            'api/webhooks/xendit',
+            'api/upload_gambar_usaha/*'
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

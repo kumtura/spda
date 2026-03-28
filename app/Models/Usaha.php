@@ -12,9 +12,20 @@ use DB;
 
 class Usaha extends Model
 {   
+    protected $primaryKey = 'id_usaha';
     //public $timestamps = false; 
     //
-    protected $fillable = ['id_usaha', 'user_id', 'id_detail_usaha', 'id_penanggung_jawab','aktif'];
+    protected $fillable = [
+        'id_usaha', 
+        'user_id', 
+        'id_detail_usaha', 
+        'id_jenis_usaha', 
+        'id_penanggung_jawab', 
+        'username', 
+        'password', 
+        'aktif', 
+        'aktif_status'
+    ];
     protected $table='tb_usaha';
 
     public static function get_datamenu($request){
@@ -192,6 +203,16 @@ class Usaha extends Model
         Usaha::where("id_usaha" , $index)->update(array("aktif_status" => "1"));
 
         return "success";
+    }
+
+    public function detail()
+    {
+        return $this->belongsTo(Detail_Usaha::class, 'id_detail_usaha', 'id_detail_usaha');
+    }
+
+    public function kategori()
+    {
+        return $this->belongsTo(Kategori_Usaha::class, 'id_jenis_usaha', 'id_kategori_usaha');
     }
 
     /*public function adv_city()

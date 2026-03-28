@@ -9,6 +9,7 @@ class Kategori_Usaha extends Model
 {   
     //public $timestamps = false; 
     //
+    protected $primaryKey = 'id_kategori_usaha';
     protected $fillable = ['id_kategori_usaha', 'nama_kategori_usaha','aktif'];
     protected $table='tb_kategori_usaha';
 

@@ -11,7 +11,17 @@ class Jadwal_Interview extends Model
 {   
     //public $timestamps = false; 
     //
-    protected $fillable = ['id_jadwal_interview', 'id_karyawan', 'id_usaha','aktif'];
+    protected $primaryKey = 'id_jadwal_interview';
+    protected $fillable = [
+        'id_karyawan', 
+        'id_usaha', 
+        'tanggal_interview', 
+        'jam', 
+        'status_diterima', 
+        'tanggal_diterima', 
+        'jabatan', 
+        'aktif'
+    ];
     protected $table='tb_jadwal_interview';
     
     public static function approve_data_tk($request){

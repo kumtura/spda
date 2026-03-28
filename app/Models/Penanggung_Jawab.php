@@ -9,7 +9,16 @@ class Penanggung_Jawab extends Model
 {   
     //public $timestamps = false; 
     //
-    protected $fillable = ['id_penanggung_jawab', 'nama', 'alamat','aktif'];
+    protected $primaryKey = 'id_penanggung_jawab';
+    protected $fillable = [
+        'status_penanggung_jawab', 
+        'nama', 
+        'alamat', 
+        'email', 
+        'alamat_usaha', 
+        'no_wa_pngg', 
+        'aktif'
+    ];
     protected $table='tb_penanggung_jawab';
 
     public static function get_dataUsaha($request){

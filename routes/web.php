@@ -38,6 +38,8 @@ Route::get('/pembayaran/hasil', [\App\Http\Controllers\PaymentController::class,
 Route::post('/pembayaran/simulate', [\App\Http\Controllers\PaymentController::class, 'simulate'])->name('public.payment_simulate');
 Route::get('/pembayaran/status/{order_id}', [\App\Http\Controllers\PaymentController::class, 'checkStatus'])->name('public.payment_status');
 Route::get('/unit-usaha', [LandingController::class, 'unit_usaha'])->name('public.unit_usaha');
+Route::get('/loker', [LandingController::class, 'loker'])->name('public.loker');
+Route::get('/loker/{id}', [LandingController::class, 'loker_detail'])->name('public.loker.detail');
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/register_usaha', function () {

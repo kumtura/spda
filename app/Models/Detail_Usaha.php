@@ -9,7 +9,23 @@ class Detail_Usaha extends Model
 {   
     //public $timestamps = false; 
     //
-    protected $fillable = ['id_detail_usaha', 'id_detail_usaha', 'id_penanggung_jawab','aktif'];
+    protected $primaryKey = 'id_detail_usaha';
+    protected $fillable = [
+        'nama_usaha', 
+        'email_usaha', 
+        'logo', 
+        'id_banjar', 
+        'no_telp', 
+        'minimal_bayar', 
+        'no_wa', 
+        'alamat_banjar', 
+        'facebook_url', 
+        'twitter_url', 
+        'website_url', 
+        'google_maps', 
+        'tanggal_daftar', 
+        'aktif'
+    ];
     protected $table='tb_detail_usaha';
 
     public static function get_dataUsaha($request){
@@ -43,19 +59,27 @@ class Detail_Usaha extends Model
         $originalImage= $request->file('file');
         $menu_name = time().str_shuffle("abcdefghijklmnopqrstuvwxyz").".".$originalImage->getClientOriginalExtension();
         
+        // Create directories if they don't exist (using storage path)
+        $thumbnailPath = public_path("storage/usaha/icon/thumbnail");
+        $originalPath = public_path("storage/usaha/icon");
+        
+        if (!file_exists($originalPath)) {
+            mkdir($originalPath, 0755, true);
+        }
+        if (!file_exists($thumbnailPath)) {
+            mkdir($thumbnailPath, 0755, true);
+        }
 
         $thumbnailImage = \Intervention\Image\Facades\Image::make($originalImage);
-        $thumbnailPath = public_path()."/usaha/icon/thumbnail/";
-        $originalPath = public_path()."/usaha/icon/";
-        $thumbnailImage->save($originalPath.$menu_name);
+        $thumbnailImage->save($originalPath."/".$menu_name);
         $thumbnailImage->resize(150,150);
-        $thumbnailImage->save($thumbnailPath.$menu_name); 
+        $thumbnailImage->save($thumbnailPath."/".$menu_name); 
         
         Detail_Usaha::where("id_detail_usaha",$index)->update(
             array("logo"      => $menu_name
         ));
         
-        return url("public/usaha/icon/".$menu_name);
+        return url("storage/usaha/icon/".$menu_name);
         
     }
 
@@ -63,13 +87,21 @@ public static function post_data_detail_usaha($request){
     $originalImage= $request->file('f_upload_gambar_mobile');
     $menu_name = time().str_shuffle("abcdefghijklmnopqrstuvwxyz").".".$originalImage->getClientOriginalExtension();
     
+    // Create directories if they don't exist (using storage path)
+    $thumbnailPath = public_path("storage/usaha/icon/thumbnail");
+    $originalPath = public_path("storage/usaha/icon");
+    
+    if (!file_exists($originalPath)) {
+        mkdir($originalPath, 0755, true);
+    }
+    if (!file_exists($thumbnailPath)) {
+        mkdir($thumbnailPath, 0755, true);
+    }
 
     $thumbnailImage = \Intervention\Image\Facades\Image::make($originalImage);
-    $thumbnailPath = public_path()."/usaha/icon/thumbnail/";
-    $originalPath = public_path()."/usaha/icon/";
-    $thumbnailImage->save($originalPath.$menu_name);
+    $thumbnailImage->save($originalPath."/".$menu_name);
     $thumbnailImage->resize(150,150);
-    $thumbnailImage->save($thumbnailPath.$menu_name); 
+    $thumbnailImage->save($thumbnailPath."/".$menu_name); 
 
     // $slide = "0";
 

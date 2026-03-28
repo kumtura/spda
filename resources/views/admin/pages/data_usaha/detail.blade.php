@@ -82,7 +82,12 @@
                     <!-- Logo Upload -->
                     <div class="relative inline-block group mb-6">
                         <div class="h-32 w-32 rounded-2xl bg-white p-2 shadow-lg border border-slate-100 overflow-hidden relative">
-                            <img src="{{ asset('storage/usaha/icon/'.$rows->logo) }}" id="logo_img_icon" class="w-full h-full object-contain rounded-xl">
+                            @php
+                                $logoPath = file_exists(public_path('usaha/icon/'.$rows->logo)) 
+                                    ? 'usaha/icon/'.$rows->logo 
+                                    : 'storage/usaha/icon/'.$rows->logo;
+                            @endphp
+                            <img src="{{ asset($logoPath) }}" id="logo_img_icon" class="w-full h-full object-contain rounded-xl">
                             <div id="logo_usaha_loader" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center" style="display: none;">
                                 <div class="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
                             </div>

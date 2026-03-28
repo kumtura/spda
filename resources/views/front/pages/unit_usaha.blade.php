@@ -80,7 +80,13 @@
             <div class="flex gap-4">
                 <div class="h-16 w-16 rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-1 group-hover:shadow-md transition-shadow">
                     @if($u->logo)
-                        <img src="{{ asset('storage/usaha/icon/'.$u->logo) }}" class="w-full h-full object-cover rounded-xl shadow-xs">
+                        @php
+                            // Check if file exists in public/usaha/icon, otherwise use storage path
+                            $logoPath = file_exists(public_path('usaha/icon/'.$u->logo)) 
+                                ? 'usaha/icon/'.$u->logo 
+                                : 'storage/usaha/icon/'.$u->logo;
+                        @endphp
+                        <img src="{{ asset($logoPath) }}" class="w-full h-full object-cover rounded-xl shadow-xs">
                     @else
                         <div class="h-full w-full flex flex-col items-center justify-center text-slate-200 gap-1">
                             <i class="bi bi-shop text-2xl"></i>
@@ -98,8 +104,12 @@
                             <span class="text-[10px] font-medium">{{ $u->nama_banjar ?? '-' }}</span>
                         </div>
                         <div class="flex items-center gap-1.5 text-slate-500">
+                            <i class="bi bi-people text-[10px]"></i>
+                            <span class="text-[10px] font-medium">{{ $u->jumlah_tenaga_kerja }} tenaga kerja lokal</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-slate-500">
                             <i class="bi bi-heart text-[10px]"></i>
-                            <span class="text-[10px] font-medium">Total Kontribusi: Rp {{ number_format($u->total_donasi, 0, ',', '.') }}</span>
+                            <span class="text-[10px] font-medium">Kontribusi Rp {{ number_format($u->total_donasi, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>

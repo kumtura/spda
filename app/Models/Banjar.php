@@ -8,6 +8,7 @@ class Banjar extends Model
 {   
     //public $timestamps = false; 
     //
+    protected $primaryKey = 'id_data_banjar';
     protected $fillable = ['id_data_banjar', 'nama_banjar', 'alamat_banjar','aktif'];
     protected $table='tb_data_banjar';
 

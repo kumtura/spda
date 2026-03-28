@@ -7,9 +7,24 @@ use DB;
 
 class Karyawan extends Model
 {   
+    protected $primaryKey = 'id_tenaga_kerja';
     //public $timestamps = false; 
     //
-    protected $fillable = ['id_tenaga_kerja', 'nama', 'umur','aktif'];
+    protected $fillable = [
+        'id_tenaga_kerja', 
+        'nama', 
+        'email_karyawan', 
+        'no_wa', 
+        'umur', 
+        'jenis_kelamin', 
+        'alamat', 
+        'foto_profile', 
+        'foto_ijazah', 
+        'facebook_link', 
+        'instagram_link',
+        'status', 
+        'aktif'
+    ];
     protected $table='tb_tenaga_kerja';
 
     public static function get_dataKaryawan($request,$status){

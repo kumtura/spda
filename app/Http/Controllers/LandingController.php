@@ -332,6 +332,7 @@ class LandingController extends Controller
             // Build query with proper joins to get banjar name and total donations
             $query = Usaha::select('tb_usaha.id_usaha', 'tb_detail_usaha.nama_usaha', 'tb_detail_usaha.logo', 'tb_data_banjar.nama_banjar')
                         ->selectRaw('COALESCE(SUM(tb_dana_punia.jumlah_dana), 0) as total_donasi')
+                        ->selectRaw('(SELECT COUNT(*) FROM tb_jadwal_interview WHERE tb_jadwal_interview.id_usaha = tb_usaha.id_usaha AND tb_jadwal_interview.status_diterima = 1 AND tb_jadwal_interview.aktif = 1) as jumlah_tenaga_kerja')
                         ->join('tb_detail_usaha', 'tb_detail_usaha.id_detail_usaha', '=', 'tb_usaha.id_detail_usaha')
                         ->leftJoin('tb_data_banjar', 'tb_data_banjar.id_data_banjar', '=', 'tb_detail_usaha.id_banjar')
                         ->leftJoin('tb_dana_punia', function($join) {
@@ -359,4 +360,41 @@ class LandingController extends Controller
             $village = $this->getVillageData();
             return view('front.pages.unit_usaha', compact('usaha', 'village', 'total_usaha', 'total_kontribusi', 'selected_banjar', 'banjar_list'));
         }
+
+    public function loker(Request $request)
+    {
+        $village = $this->getVillageData();
+        $kategori_filter = $request->get('kategori', 'all');
+        
+        // Get all kategori usaha for filter
+        $kategori_list = \App\Models\Kategori_Usaha::where('aktif', '1')->orderBy('nama_kategori_usaha', 'asc')->get();
+        
+        // Build query - get all lokers without status filter first to debug
+        $query = \App\Models\Loker::with(['usaha.detail', 'usaha.kategori']);
+        
+        // Filter by kategori if selected
+        if ($kategori_filter !== 'all') {
+            $query->whereHas('usaha', function($q) use ($kategori_filter) {
+                $q->where('id_jenis_usaha', $kategori_filter);
+            });
+        }
+        
+        $lokers = $query->orderBy('created_at', 'desc')->paginate(10);
+        
+        return view('front.pages.loker', compact('lokers', 'village', 'kategori_list', 'kategori_filter'));
+    }
+
+    public function loker_detail($id)
+    {
+        $loker = \App\Models\Loker::with(['usaha.detail', 'usaha.kategori'])->findOrFail($id);
+        $village = $this->getVillageData();
+        
+        // Get other lokers from same company
+        $other_lokers = \App\Models\Loker::where('id_usaha', $loker->id_usaha)
+            ->where('id_loker', '!=', $id)
+            ->take(3)
+            ->get();
+        
+        return view('front.pages.loker_detail', compact('loker', 'village', 'other_lokers'));
+    }
 }

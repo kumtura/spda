@@ -18,3 +18,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::post('/webhooks/xendit', [\App\Http\Controllers\XenditWebhookController::class, 'handle']);
+
+// Upload gambar usaha
+Route::post('/upload_gambar_usaha/{index}', [\App\Http\Controllers\Administrator\UsahaController::class, 'upload_gambar_usaha']);

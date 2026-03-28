@@ -78,7 +78,12 @@
                         <td class="px-6 py-4">
                             <div class="h-12 w-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center p-1">
                                @if($rows->logo)
-                                    <img src="{{ asset('storage/usaha/icon/'.$rows->logo) }}" class="w-full h-full object-contain" alt="Logo" onerror="this.outerHTML='<i class=\'bi bi-building text-slate-300 text-xl\'></i>'">
+                                    @php
+                                        $logoPath = file_exists(public_path('usaha/icon/'.$rows->logo)) 
+                                            ? 'usaha/icon/'.$rows->logo 
+                                            : 'storage/usaha/icon/'.$rows->logo;
+                                    @endphp
+                                    <img src="{{ asset($logoPath) }}" class="w-full h-full object-contain" alt="Logo" onerror="this.outerHTML='<i class=\'bi bi-building text-slate-300 text-xl\'></i>'">
                                @else
                                     <i class="bi bi-building text-slate-300 text-xl"></i>
                                @endif

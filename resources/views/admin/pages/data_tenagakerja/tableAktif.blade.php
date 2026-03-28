@@ -79,7 +79,12 @@
                                 <div class="flex items-center gap-2">
                                     <div class="h-7 w-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-primary-light font-black text-[10px] overflow-hidden">
                                         @if($rows->logo)
-                                            <img src="{{ asset('storage/usaha/icon/'.$rows->logo) }}" class="h-full w-full object-cover">
+                                            @php
+                                                $logoPath = file_exists(public_path('usaha/icon/'.$rows->logo)) 
+                                                    ? 'usaha/icon/'.$rows->logo 
+                                                    : 'storage/usaha/icon/'.$rows->logo;
+                                            @endphp
+                                            <img src="{{ asset($logoPath) }}" class="h-full w-full object-cover">
                                         @else
                                             <i class="bi bi-briefcase"></i>
                                         @endif

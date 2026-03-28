@@ -1,7 +1,8 @@
 @extends('mobile_layout_public')
 
 @section('content')
-<div class="bg-white px-4 pt-8 pb-24 space-y-6" x-data="{ activeTab: 'pemasukan', showModal: false }">
+<div x-data="{ activeTab: 'pemasukan', showModal: false }">
+<div class="bg-white px-4 pt-8 pb-28 space-y-6">
 
     <!-- Page Title -->
     <div>
@@ -149,37 +150,42 @@
     </div>
 
     <!-- Pemasukan List -->
-    <div x-show="activeTab === 'pemasukan'" x-transition class="space-y-3">
+    <div x-show="activeTab === 'pemasukan'" x-transition class="space-y-2.5">
         <h4 class="text-sm font-bold text-slate-800">Riwayat Pemasukan</h4>
+        
         @forelse($pemasukan as $item)
-        <div class="bg-white rounded-xl border border-slate-100 p-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="h-10 w-10 bg-emerald-50 rounded-lg flex items-center justify-center">
-                    <i class="bi bi-arrow-down-circle text-emerald-500 text-lg"></i>
+        <div class="bg-white rounded-xl border border-slate-100 p-3.5 hover:border-slate-200 transition-colors">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3 flex-1 min-w-0">
+                    <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
+                        @if($item->id_usaha)
+                            <i class="bi bi-shop text-slate-400 text-sm"></i>
+                        @else
+                            <i class="bi bi-person text-slate-400 text-sm"></i>
+                        @endif
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <p class="text-xs font-bold text-slate-800 truncate">{{ $item->nama_donatur }}</p>
+                            @if($item->id_usaha)
+                                <span class="shrink-0 text-[8px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">Unit Usaha</span>
+                            @else
+                                <span class="shrink-0 text-[8px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">Masyarakat</span>
+                            @endif
+                        </div>
+                        <p class="text-[10px] text-slate-400">{{ \Carbon\Carbon::parse($item->tanggal_pembayaran)->translatedFormat('d M Y') }}</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-800">{{ $item->nama_donatur }}</p>
-                    <p class="text-[10px] text-slate-400">{{ \Carbon\Carbon::parse($item->tanggal_pembayaran)->translatedFormat('d M Y') }}</p>
+                <div class="text-right shrink-0">
+                    <p class="text-xs font-bold text-emerald-600">+Rp {{ number_format($item->jumlah_dana, 0, ',', '.') }}</p>
                 </div>
             </div>
-            <p class="text-sm font-black text-emerald-600">+Rp {{ number_format($item->jumlah_dana, 0, ',', '.') }}</p>
         </div>
         @empty
         <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-6 text-center">
             <p class="text-xs text-slate-400">Belum ada pemasukan tercatat</p>
         </div>
         @endforelse
-
-        <!-- CTA Button -->
-        <button @click="showModal = true" type="button" class="w-full bg-white border border-[#00a6eb]/20 rounded-2xl p-4 shadow-sm group hover:shadow-md transition-shadow text-left mt-4">
-            <div class="flex items-center gap-3">
-                <span class="text-[9px] font-bold text-[#00a6eb] uppercase bg-blue-50 px-2 py-0.5 rounded border border-blue-100">Punia</span>
-                <h3 class="text-slate-800 font-bold text-sm leading-tight flex-1">Salurkan Dana Punia Sekarang</h3>
-                <div class="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-[#00a6eb] border border-blue-100 group-hover:bg-[#00a6eb] group-hover:text-white transition-colors shrink-0">
-                    <i class="bi bi-arrow-right text-sm"></i>
-                </div>
-            </div>
-        </button>
     </div>
 
     <!-- Pengeluaran List -->
@@ -203,23 +209,26 @@
         </div>
 
         <!-- Pengeluaran Items -->
-        <div class="space-y-3">
+        <div class="space-y-2.5">
             @forelse($pengeluaran as $item)
             <a href="{{ route('public.punia.alokasi.detail', $item->id_alokasi_punia) }}" 
                x-show="selectedKategori === 'all' || selectedKategori === '{{ $item->id_kategori_punia }}'"
                x-transition
-               class="block bg-white rounded-xl border border-slate-100 p-4 hover:shadow-md hover:border-[#00a6eb]/30 transition-all group">
+               class="block bg-white rounded-xl border border-slate-100 p-3.5 hover:border-[#00a6eb]/30 transition-all group">
                 <div class="flex items-start gap-3">
-                    <div class="h-10 w-10 bg-rose-50 rounded-lg flex items-center justify-center shrink-0">
-                        <i class="bi bi-arrow-up-circle text-rose-500 text-lg"></i>
+                    <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
+                        <i class="bi bi-box-arrow-up-right text-slate-400 text-sm"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs font-bold text-slate-800 mb-1 group-hover:text-[#00a6eb] transition-colors">{{ $item->judul }}</p>
-                        <p class="text-[10px] text-slate-400 mb-2">{{ $item->kategori->nama_kategori ?? '-' }} • {{ \Carbon\Carbon::parse($item->tanggal_alokasi)->translatedFormat('d M Y') }}</p>
-                        <p class="text-sm font-black text-rose-600">-Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
+                        <p class="text-xs font-bold text-slate-800 mb-1 line-clamp-1 group-hover:text-[#00a6eb] transition-colors">{{ $item->judul }}</p>
+                        <div class="flex items-center gap-1.5 mb-1.5">
+                            <span class="text-[8px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">{{ $item->kategori->nama_kategori ?? '-' }}</span>
+                            <span class="text-[10px] text-slate-400">{{ \Carbon\Carbon::parse($item->tanggal_alokasi)->translatedFormat('d M Y') }}</sdaniv>
+                        </div>
+                        <p class="text-xs font-bold text-rose-600">-Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
                     </div>
                     <div class="shrink-0 self-center">
-                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-colors"></i>
+                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-colors text-sm"></i>
                     </div>
                 </div>
             </a>
@@ -316,6 +325,13 @@
     </div>
 </div>
 
+<!-- Floating Punia Button -->
+<div class="fixed bottom-[75px] left-1/2 -translate-x-1/2 w-full max-w-[480px] px-5 z-40">
+    <button @click="showModal = true" class="w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/30 transition-all active:scale-95 flex items-center justify-center gap-2 border border-white/20">
+        <i class="bi bi-envelope-heart-fill"></i> Salurkan Dana Punia
+    </button>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -387,4 +403,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+</div>
 @endsection

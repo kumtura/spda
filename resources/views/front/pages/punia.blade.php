@@ -22,7 +22,18 @@
                 <span class="text-[8px] font-bold uppercase bg-white/20 px-2 py-0.5 rounded-full">Terverifikasi</span>
             </div>
             <p class="text-[9px] uppercase text-white/60 mb-1">Total Dana Terkumpul</p>
-            <h3 class="text-3xl font-black">Rp {{ number_format($total_punia, 0, ',', '.') }}</h3>
+            <h3 class="text-3xl font-black mb-3">Rp {{ number_format($total_punia, 0, ',', '.') }}</h3>
+            
+            <div class="flex items-center justify-between text-xs pt-3 border-t border-white/20">
+                <div>
+                    <p class="text-white/60 text-[9px] mb-0.5">Terpakai</p>
+                    <p class="font-bold">Rp {{ number_format($total_pengeluaran, 0, ',', '.') }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-white/60 text-[9px] mb-0.5">Sisa Dana</p>
+                    <p class="font-bold">Rp {{ number_format($total_punia - $total_pengeluaran, 0, ',', '.') }}</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -69,14 +80,14 @@
             </div>
         </div>
         
-        @if($total_pengeluaran > 0)
+        @if($total_punia > 0)
         <!-- Donut Chart -->
         <div class="flex items-center justify-center mb-6">
             <div class="relative w-48 h-48">
                 <canvas id="puniaChart"></canvas>
                 <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <p class="text-[9px] text-slate-400 uppercase">Total Terpakai</p>
-                    <p class="text-lg font-black text-slate-800">Rp {{ number_format($total_pengeluaran, 0, ',', '.') }}</p>
+                    <p class="text-[9px] text-slate-400 uppercase">Terpakai</p>
+                    <p class="text-base font-black text-slate-800">{{ number_format(($total_pengeluaran / $total_punia) * 100, 0) }}%</p>
                 </div>
             </div>
         </div>
@@ -87,16 +98,30 @@
             @php
                 $colors = ['#00a6eb', '#60a5fa', '#34d399', '#fbbf24', '#f87171'];
                 $color = $colors[$index % count($colors)];
-                $percentage = $total_pengeluaran > 0 ? number_format(($kat->alokasi->sum('nominal') / $total_pengeluaran) * 100, 0) : 0;
+                $nominal = $kat->alokasi->sum('nominal');
+                $percentage = $total_punia > 0 ? ($nominal / $total_punia) * 100 : 0;
             @endphp
+            @if($nominal > 0)
             <div class="flex items-center justify-between text-xs">
-                <div class="flex items-center gap-2">
-                    <span class="h-3 w-3 rounded-full" style="background-color: {{ $color }}"></span>
-                    <span class="text-slate-600">{{ $kat->nama_kategori }}</span>
+                <div class="flex items-center gap-2 flex-1">
+                    <span class="h-3 w-3 rounded-full shrink-0" style="background-color: {{ $color }}"></span>
+                    <span class="text-slate-600 truncate">{{ $kat->nama_kategori }}</span>
                 </div>
-                <span class="font-bold text-slate-800">{{ $percentage }}%</span>
+                <span class="font-bold text-slate-800 ml-2">{{ number_format($percentage, 1) }}%</span>
             </div>
+            @endif
             @endforeach
+            
+            <!-- Sisa Dana -->
+            @if($total_punia - $total_pengeluaran > 0)
+            <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="h-3 w-3 rounded-full bg-slate-300 shrink-0"></span>
+                    <span class="text-slate-600">Sisa Dana</span>
+                </div>
+                <span class="font-bold text-slate-800">{{ number_format((($total_punia - $total_pengeluaran) / $total_punia) * 100, 1) }}%</span>
+            </div>
+            @endif
         </div>
         @else
         <!-- Empty State -->
@@ -299,19 +324,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('puniaChart');
     if (ctx) {
         const chartData = @json($chart_data);
+        const totalPunia = {{ $total_punia }};
         const totalPengeluaran = {{ $total_pengeluaran }};
+        const sisaDana = totalPunia - totalPengeluaran;
         
         // Only render chart if there's data
-        if (totalPengeluaran > 0 && chartData.length > 0) {
-            const colors = ['#00a6eb', '#60a5fa', '#34d399', '#fbbf24', '#f87171'];
+        if (totalPunia > 0) {
+            const colors = ['#00a6eb', '#60a5fa', '#34d399', '#fbbf24', '#f87171', '#cbd5e1'];
+            
+            // Prepare data - filter out zero values
+            const labels = [];
+            const values = [];
+            const bgColors = [];
+            
+            chartData.forEach((item, index) => {
+                if (item.value > 0) {
+                    labels.push(item.label);
+                    values.push(item.value);
+                    bgColors.push(colors[index % (colors.length - 1)]);
+                }
+            });
+            
+            // Add sisa dana if exists
+            if (sisaDana > 0) {
+                labels.push('Sisa Dana');
+                values.push(sisaDana);
+                bgColors.push('#cbd5e1'); // Gray color for sisa dana
+            }
             
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: chartData.map(d => d.label),
+                    labels: labels,
                     datasets: [{
-                        data: chartData.map(d => d.value),
-                        backgroundColor: colors.slice(0, chartData.length),
+                        data: values,
+                        backgroundColor: bgColors,
                         borderWidth: 0,
                         borderRadius: 4
                     }]
@@ -330,8 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             callbacks: {
                                 label: function(context) {
                                     const value = context.parsed;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((value / total) * 100).toFixed(0);
+                                    const percentage = ((value / totalPunia) * 100).toFixed(1);
                                     return context.label + ': Rp ' + value.toLocaleString('id-ID') + ' (' + percentage + '%)';
                                 }
                             }

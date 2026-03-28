@@ -53,6 +53,7 @@ class XenditService
                     'expiration_date' => now()->addDays(1)->toISOString()
                 ]);
 
+            Log::info("Xendit VA Response [{$external_id}]:", $response->json() ?? []);
             return $response->json();
         } catch (\Exception $e) {
             Log::error('Xendit VA Error: ' . $e->getMessage());
@@ -63,29 +64,43 @@ class XenditService
     /**
      * Create an E-Wallet charge (Gopay/QRIS/DANA)
      */
-    public function createEWalletCharge($external_id, $amount, $channel_code, $reference_id)
+    public function createEWalletCharge($external_id, $amount, $channel_code, $reference_id, $redirect_url = null)
     {
         if (!$this->isConfigured()) {
             return ['status' => 'error', 'message' => 'Xendit not configured'];
         }
 
         try {
-            // Channel codes: ID_GOPAY, ID_DANA, ID_LINKAJA, ID_SHOPEEPAY
-            $response = Http::withBasicAuth($this->secret_key, '')
-                ->post($this->base_url . '/ewallets/charges', [
-                    'reference_id' => $reference_id,
-                    'currency' => 'IDR',
-                    'amount' => (int)$amount,
-                    'checkout_method' => 'ONE_TIME_PAYMENT',
-                    'channel_code' => $channel_code,
-                    'channel_properties' => [
-                        'success_redirect_url' => route('public.home'),
-                    ],
-                    'metadata' => [
-                        'external_id' => $external_id
-                    ]
-                ]);
+            // Xendit Regex Fix for localhost (Must have a dot)
+            if ($redirect_url && (str_contains($redirect_url, 'localhost') || str_contains($redirect_url, '127.0.0.1'))) {
+                // For success_redirect_url, Xendit is usually more lenient, but let's log it.
+                Log::info("Xendit Redirect URL (Localhost detected): " . $redirect_url);
+            }
 
+            // Channel codes: ID_GOPAY, ID_DANA, ID_LINKAJA, ID_SHOPEEPAY
+            $payload = [
+                'reference_id' => $reference_id,
+                'currency' => 'IDR',
+                'amount' => (int)$amount,
+                'checkout_method' => 'ONE_TIME_PAYMENT',
+                'channel_code' => $channel_code,
+                'metadata' => [
+                    'external_id' => $external_id
+                ]
+            ];
+
+            if ($redirect_url) {
+                $payload['channel_properties'] = [
+                    'success_redirect_url' => $redirect_url,
+                ];
+            }
+
+            Log::info("Xendit EWallet Request [{$reference_id}]:", $payload);
+
+            $response = Http::withBasicAuth($this->secret_key, '')
+                ->post($this->base_url . '/ewallets/charges', $payload);
+
+            Log::info("Xendit EWallet Response [{$reference_id}]:", $response->json() ?? []);
             return $response->json();
         } catch (\Exception $e) {
             Log::error('Xendit E-Wallet Error: ' . $e->getMessage());
@@ -96,21 +111,29 @@ class XenditService
     /**
      * Create a Universal QRIS Code
      */
-    public function createQRCode($external_id, $amount)
+    public function createQRCode($external_id, $amount, $redirect_url = null)
     {
         if (!$this->isConfigured()) {
             return ['status' => 'error', 'message' => 'Xendit not configured'];
         }
 
         try {
+            $callback_url = $redirect_url ?? route('public.home');
+            
+            // Xendit Regex Fix for localhost (Must have a dot)
+            if (str_contains($callback_url, 'localhost') || str_contains($callback_url, '127.0.0.1')) {
+                $callback_url = 'https://webhook.site/placeholder-spda-qris-local';
+            }
+
             $response = Http::withBasicAuth($this->secret_key, '')
                 ->post($this->base_url . '/qr_codes', [
                     'external_id' => $external_id,
                     'type' => 'DYNAMIC',
-                    'callback_url' => route('public.home'),
+                    'callback_url' => $callback_url,
                     'amount' => (int)$amount,
                 ]);
 
+            Log::info("Xendit QR Response [{$external_id}]:", $response->json() ?? []);
             return $response->json();
         } catch (\Exception $e) {
             Log::error('Xendit QRIS Error: ' . $e->getMessage());

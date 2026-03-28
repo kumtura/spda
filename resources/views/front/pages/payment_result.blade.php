@@ -85,31 +85,40 @@
                             @endif
                         </div>
 
+                        <!-- 1. Virtual Account Section -->
                         @if(str_contains($method, '_VA'))
                         <div x-data="{ copied: false }" class="bg-white rounded-xl p-4 border border-slate-200 flex items-center justify-between cursor-pointer hover:border-[#00a6eb] transition-all" 
-                             @click="copyToClipboard('{{ $payment_data['account_number'] }}'); copied = true; setTimeout(() => copied = false, 2000)">
+                             @click="copyToClipboard('{{ $payment_data['account_number'] ?? ($payment_data['external_id'] ?? '') }}'); copied = true; setTimeout(() => copied = false, 2000)">
                             <div>
                                 <p class="text-[9px] text-slate-400 uppercase tracking-wider mb-1">Nomor Virtual Account</p>
-                                <span class="text-lg font-black text-slate-800">{{ $payment_data['account_number'] }}</span>
+                                <span class="text-lg font-black text-slate-800">{{ $payment_data['account_number'] ?? ($payment_data['external_id'] ?? '-') }}</span>
                             </div>
                             <div class="h-10 w-10 rounded-lg flex items-center justify-center transition-colors"
                                  :class="copied ? 'bg-emerald-50 text-emerald-500' : 'bg-blue-50 text-[#00a6eb]'">
                                 <i class="bi" :class="copied ? 'bi-check-lg text-lg' : 'bi-files'"></i>
                             </div>
                         </div>
-                        @elseif($method === 'QRIS' || isset($payment_data['qr_string']) || isset($payment_data['actions']['qr_checkout_string']))
+                        @endif
+
+                        <!-- 2. QR Code Section (Always check and show if available) -->
+                        @php 
+                            $qr_string = $payment_data['qr_string'] ?? ($payment_data['actions']['qr_checkout_string'] ?? null);
+                            $is_ewallet = in_array($method, ['ID_OVO', 'ID_DANA', 'ID_SHOPEEPAY', 'ID_LINKAJA', 'ID_GOPAY']);
+                        @endphp
+                        
+                        @if($qr_string && $qr_string !== 'test-qr-string')
                         <div class="bg-white rounded-2xl p-4 border border-slate-200 text-center">
-                            @php 
-                                $qr_string = $payment_data['qr_string'] ?? ($payment_data['actions']['qr_checkout_string'] ?? '');
-                            @endphp
-                            @if($qr_string)
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode($qr_string) }}" class="w-48 h-48 mx-auto mb-3" alt="QR">
-                                <p class="text-[9px] text-slate-400 uppercase tracking-wider">Scan dengan aplikasi pembayaran</p>
-                            @else
-                                <p class="text-xs text-rose-500 font-bold p-4 italic">Gagal memuat kode QR</p>
-                            @endif
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode($qr_string) }}" class="w-48 h-48 mx-auto mb-3" alt="QR">
+                            <p class="text-[9px] text-slate-400 uppercase tracking-wider">Scan dengan aplikasi pembayaran</p>
                         </div>
-                        @else
+                        @elseif($qr_string === 'test-qr-string' || $method === 'ID_DANA')
+                        <div class="bg-blue-50/50 rounded-xl p-3 border border-blue-100 text-center">
+                            <i class="bi bi-info-circle text-[#00a6eb] mb-1 block"></i>
+                            <p class="text-[10px] text-slate-500 leading-relaxed font-medium">Klik tombol <b>Buka Aplikasi Pembayaran</b> di bawah untuk menyelesaikan pembayaran Anda.</p>
+                        </div>
+                        @endif
+
+                        <!-- 3. Checkout Button Section (Always check and show if available) -->
                         @php
                             $checkout_url = null;
                             if(isset($payment_data['actions'])) {
@@ -127,19 +136,18 @@
                             }
                         @endphp
                         @if($checkout_url)
-                            <a href="{{ $checkout_url }}" target="_blank" class="block w-full py-4 bg-gradient-to-r from-[#00a6eb] to-[#0090d0] text-white rounded-xl font-bold text-sm text-center shadow-lg transform active:scale-95 transition-all">
+                            <a id="btnOpenApp" href="{{ $checkout_url }}" class="block w-full py-4 bg-gradient-to-r from-[#00a6eb] to-[#0090d0] text-white rounded-xl font-bold text-sm text-center shadow-lg transform active:scale-95 transition-all">
                                 Buka Aplikasi Pembayaran
                             </a>
                         @endif
-                        @endif
                     </div>
 
-                    <!-- Simulation (Sandbox Only) -->
-                    @if($is_sandbox && $record->status_pembayaran === 'pending')
+                    <!-- Simulation (Sandbox Only - Hide for E-Wallets as they use the main button) -->
+                    @if($is_sandbox && $record->status_pembayaran === 'pending' && !$is_ewallet)
                     <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
                         <div class="flex items-center gap-2 mb-3">
                             <span class="h-1.5 w-1.5 bg-[#00a6eb] rounded-full animate-pulse"></span>
-                            <p class="text-[9px] text-[#00a6eb] uppercase tracking-wider font-bold">Mode Sandbox</p>
+                            <p class="text-[9px] text-[#00a6eb] uppercase tracking-wider font-bold">Instruksi Pembayaran</p>
                         </div>
                         <button id="btnSimulate" onclick="simulatePayment()" class="w-full py-3 bg-white border border-blue-200 text-[#00a6eb] rounded-xl text-xs font-bold hover:bg-[#00a6eb] hover:text-white transition-all">
                             Simulasi Pembayaran
@@ -151,12 +159,40 @@
                     <div class="space-y-3 pt-2">
                         <h3 class="text-xs font-bold text-slate-800">Cara Pembayaran</h3>
                         @php
-                            $steps = [
-                                'Buka aplikasi M-Banking atau ATM',
-                                'Masukkan nomor Virtual Account',
-                                'Konfirmasi nominal dan PIN',
-                                'Status akan terupdate otomatis'
-                            ];
+                            // Determine steps based on payment method
+                            if(str_contains($method, '_VA')) {
+                                $steps = [
+                                    'Buka aplikasi M-Banking atau ATM',
+                                    'Pilih menu Transfer atau Bayar',
+                                    'Masukkan nomor Virtual Account di atas',
+                                    'Konfirmasi nominal dan selesaikan pembayaran',
+                                    'Status akan terupdate otomatis'
+                                ];
+                            } elseif(in_array($method, ['QRIS', 'ID_QRIS'])) {
+                                $steps = [
+                                    'Buka aplikasi e-wallet atau mobile banking Anda',
+                                    'Pilih menu Scan QR atau QRIS',
+                                    'Arahkan kamera ke QR Code di atas',
+                                    'Konfirmasi nominal dan selesaikan pembayaran',
+                                    'Status akan terupdate otomatis'
+                                ];
+                            } elseif(in_array($method, ['ID_OVO', 'ID_DANA', 'ID_SHOPEEPAY', 'ID_LINKAJA', 'ID_GOPAY'])) {
+                                $wallet_name = str_replace('ID_', '', $method);
+                                $wallet_name = ucfirst(strtolower($wallet_name));
+                                $steps = [
+                                    'Klik tombol "Buka Aplikasi Pembayaran" di atas',
+                                    'Anda akan diarahkan ke aplikasi ' . $wallet_name,
+                                    'Konfirmasi detail pembayaran di aplikasi',
+                                    'Masukkan PIN dan selesaikan pembayaran',
+                                    'Status akan terupdate otomatis'
+                                ];
+                            } else {
+                                $steps = [
+                                    'Ikuti instruksi pembayaran yang tersedia',
+                                    'Selesaikan pembayaran sesuai metode yang dipilih',
+                                    'Status akan terupdate otomatis'
+                                ];
+                            }
                         @endphp
                         @foreach($steps as $index => $step)
                         <div class="flex gap-3 items-start">
@@ -205,6 +241,7 @@
 
     function simulatePayment() {
         const btn = $('#btnSimulate');
+        const originalText = btn.text();
         btn.prop('disabled', true).text('Memproses...');
 
         $.ajax({
@@ -216,10 +253,23 @@
                 type: '{{ $type }}',
                 amount: {{ $record->nominal ?? $record->jumlah_dana }}
             },
-            success: function() { location.reload(); },
+            success: function(res) {
+                if (res.status === 'redirect_to_checkout') {
+                    // Open checkout URL in same tab
+                    const checkoutUrl = $('#btnOpenApp').attr('href');
+                    if (checkoutUrl) {
+                        window.location.href = checkoutUrl;
+                    } else {
+                        alert('Gagal menemukan link pembayaran. Silakan coba tombol "Buka Aplikasi" secara manual.');
+                        btn.prop('disabled', false).text(originalText);
+                    }
+                } else {
+                    location.reload(); 
+                }
+            },
             error: function(err) {
                 alert('Simulasi gagal: ' + (err.responseJSON?.message || 'Terjadi kesalahan'));
-                btn.prop('disabled', false).text('Simulasi Pembayaran');
+                btn.prop('disabled', false).text(originalText);
             }
         });
     }

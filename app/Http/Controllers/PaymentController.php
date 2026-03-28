@@ -55,16 +55,18 @@ public function initiate(Request $request)
 
         $response = null;
 
+        $redirect_url = route('public.payment_result', ['order_id' => $order_id, 'type' => $type]);
+
         // 1. Tembak Direct API (Tanpa fallback Invoice sama sekali)
         if (str_ends_with($method, '_VA')) {
             $bank_code = str_replace('_VA', '', $method); 
             $response = $this->xendit->createVA($external_id, $bank_code, $record->nama ?? 'Anonim', $amount);
             
         } elseif (in_array($method, ['ID_OVO', 'ID_DANA', 'ID_SHOPEEPAY', 'ID_LINKAJA', 'ID_GOPAY'])) {
-            $response = $this->xendit->createEWalletCharge($external_id, $amount, $method, $order_id);
+            $response = $this->xendit->createEWalletCharge($external_id, $amount, $method, $order_id, $redirect_url);
             
         } elseif (in_array($method, ['QRIS', 'ID_QRIS'])) {
-            $response = $this->xendit->createQRCode($external_id, $amount);
+            $response = $this->xendit->createQRCode($external_id, $amount, $redirect_url);
             
         } else {
             // Jika method aneh/tidak dikenali, tolak!
@@ -117,7 +119,7 @@ public function initiate(Request $request)
 
         $payment_data = json_decode($record->payment_data, true);
         
-        // If it's VA, call Xendit Simulator
+        // 1. If it's VA, call Xendit Simulator API
         if (str_contains($record->metode, '_VA')) {
             $external_id = $payment_data['external_id'] ?? null;
             if ($external_id) {
@@ -133,7 +135,15 @@ public function initiate(Request $request)
             }
         }
 
-        return response()->json(['status' => 'error', 'message' => 'Simulasi hanya tersedia untuk metode Virtual Account di mode Sandbox.'], 400);
+        // 2. If it's E-Wallet or QRIS, simulation happens on the Mock Page
+        if (in_array($record->metode, ['ID_OVO', 'ID_DANA', 'ID_SHOPEEPAY', 'ID_LINKAJA', 'ID_GOPAY', 'QRIS', 'ID_QRIS'])) {
+            return response()->json([
+                'status' => 'redirect_to_checkout',
+                'message' => 'Untuk simulasi E-Wallet/QRIS, silakan gunakan tombol "Buka Aplikasi Pembayaran" untuk menuju ke halaman Simulator resmi Xendit.'
+            ]);
+        }
+
+        return response()->json(['status' => 'error', 'message' => 'Simulasi belum tersedia untuk metode ini.'], 400);
     }
 
     public function showResult(Request $request)

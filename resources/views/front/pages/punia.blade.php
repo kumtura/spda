@@ -1,7 +1,7 @@
 @extends('mobile_layout_public')
 
 @section('content')
-<div class="bg-white px-4 pt-8 pb-24 space-y-6" x-data="{ activeTab: 'pemasukan' }">
+<div class="bg-white px-4 pt-8 pb-24 space-y-6" x-data="{ activeTab: 'pemasukan', showModal: false }">
 
     <!-- Page Title -->
     <div>
@@ -169,6 +169,17 @@
             <p class="text-xs text-slate-400">Belum ada pemasukan tercatat</p>
         </div>
         @endforelse
+
+        <!-- CTA Button -->
+        <button @click="showModal = true" type="button" class="w-full bg-white border border-[#00a6eb]/20 rounded-2xl p-4 shadow-sm group hover:shadow-md transition-shadow text-left mt-4">
+            <div class="flex items-center gap-3">
+                <span class="text-[9px] font-bold text-[#00a6eb] uppercase bg-blue-50 px-2 py-0.5 rounded border border-blue-100">Punia</span>
+                <h3 class="text-slate-800 font-bold text-sm leading-tight flex-1">Salurkan Dana Punia Sekarang</h3>
+                <div class="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-[#00a6eb] border border-blue-100 group-hover:bg-[#00a6eb] group-hover:text-white transition-colors shrink-0">
+                    <i class="bi bi-arrow-right text-sm"></i>
+                </div>
+            </div>
+        </button>
     </div>
 
     <!-- Pengeluaran List -->
@@ -220,97 +231,84 @@
         </div>
     </div>
 
-    <!-- CTA -->
-    <div x-data="{ showModal: false }">
-        <button @click="showModal = true" type="button" class="block w-full bg-white border border-[#00a6eb]/20 rounded-2xl p-4 shadow-sm group hover:shadow-md transition-shadow text-left">
-            <div class="flex items-center gap-3">
-                <span class="text-[9px] font-bold text-[#00a6eb] uppercase bg-blue-50 px-2 py-0.5 rounded border border-blue-100">Punia</span>
-                <h3 class="text-slate-800 font-bold text-sm leading-tight flex-1">Salurkan Dana Punia Sekarang</h3>
-                <div class="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-[#00a6eb] border border-blue-100 group-hover:bg-[#00a6eb] group-hover:text-white transition-colors shrink-0">
-                    <i class="bi bi-arrow-right text-sm"></i>
+    <!-- Modal -->
+    <div x-show="showModal" 
+         x-cloak
+         @click.self="showModal = false"
+         @keydown.escape.window="showModal = false"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+         style="display: none;">
+        
+        <div @click.stop 
+             class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-8"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+            
+            <!-- Header -->
+            <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] p-6 text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+                <button @click="showModal = false" type="button" class="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
+                    <i class="bi bi-x text-xl"></i>
+                </button>
+                <div class="relative">
+                    <h3 class="text-xl font-black">Salurkan Dana Punia</h3>
+                    <p class="text-white/80 text-xs font-medium mt-1">Pilih kategori Anda untuk melanjutkan</p>
                 </div>
             </div>
-        </button>
 
-        <!-- Modal -->
-        <div x-show="showModal" 
-             x-cloak
-             @click.self="showModal = false"
-             @keydown.escape.window="showModal = false"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-             style="display: none;">
-            
-            <div @click.stop 
-                 class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
-                 x-transition:enter="transition ease-out duration-300 transform"
-                 x-transition:enter-start="opacity-0 scale-95 translate-y-8"
-                 x-transition:enter-end="opacity-100 scale-100 translate-y-0">
-                
-                <!-- Header -->
-                <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] p-6 text-white relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                    <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
-                    <button @click="showModal = false" type="button" class="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
-                        <i class="bi bi-x text-xl"></i>
-                    </button>
-                    <div class="relative">
-                        <h3 class="text-xl font-black">Salurkan Dana Punia</h3>
-                        <p class="text-white/80 text-xs font-medium mt-1">Pilih kategori Anda untuk melanjutkan</p>
+            <!-- Content -->
+            <div class="p-6 space-y-3 overflow-y-auto no-scrollbar max-h-[60vh]">
+                <!-- Masyarakat Umum Option -->
+                <a href="{{ route('public.punia.pembayaran') }}" 
+                   class="block bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
+                    <div class="flex items-start gap-4">
+                        <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
+                            <i class="bi bi-people-fill text-slate-400 text-xl group-hover:text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-black text-slate-800 mb-1">Masyarakat Umum</h4>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">Untuk krama desa dan masyarakat umum yang ingin berkontribusi</p>
+                            <div class="mt-3 flex items-center gap-2 text-slate-400 group-hover:text-[#00a6eb]">
+                                <span class="text-[9px] font-bold uppercase tracking-wider transition-colors">Bayar Sekarang</span>
+                                <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </a>
 
-                <!-- Content -->
-                <div class="p-6 space-y-3 overflow-y-auto no-scrollbar max-h-[60vh]">
-                    <!-- Masyarakat Umum Option -->
-                    <a href="{{ route('public.punia.pembayaran') }}" 
-                       class="block bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
-                        <div class="flex items-start gap-4">
-                            <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
-                                <i class="bi bi-people-fill text-slate-400 text-xl group-hover:text-white"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-sm font-black text-slate-800 mb-1">Masyarakat Umum</h4>
-                                <p class="text-[10px] text-slate-500 leading-relaxed">Untuk krama desa dan masyarakat umum yang ingin berkontribusi</p>
-                                <div class="mt-3 flex items-center gap-2 text-slate-400 group-hover:text-[#00a6eb]">
-                                    <span class="text-[9px] font-bold uppercase tracking-wider transition-colors">Bayar Sekarang</span>
-                                    <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
-                                </div>
+                <!-- Unit Usaha Option -->
+                <a href="{{ route('login') }}" 
+                   class="block bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
+                    <div class="flex items-start gap-4">
+                        <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
+                            <i class="bi bi-shop text-slate-400 text-xl group-hover:text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-black text-slate-800 mb-1">Unit Usaha / Investor</h4>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">Gunakan akun bisnis Anda untuk penyaluran dana punia resmi</p>
+                            <div class="mt-3 flex items-center gap-2 text-slate-400 group-hover:text-[#00a6eb]">
+                                <span class="text-[9px] font-bold uppercase tracking-wider transition-colors">Login Terlebih Dahulu</span>
+                                <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                             </div>
                         </div>
-                    </a>
+                    </div>
+                </a>
+            </div>
 
-                    <!-- Unit Usaha Option -->
-                    <a href="{{ route('login') }}" 
-                       class="block bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
-                        <div class="flex items-start gap-4">
-                            <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
-                                <i class="bi bi-shop text-slate-400 text-xl group-hover:text-white"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-sm font-black text-slate-800 mb-1">Unit Usaha / Investor</h4>
-                                <p class="text-[10px] text-slate-500 leading-relaxed">Gunakan akun bisnis Anda untuk penyaluran dana punia resmi</p>
-                                <div class="mt-3 flex items-center gap-2 text-slate-400 group-hover:text-[#00a6eb]">
-                                    <span class="text-[9px] font-bold uppercase tracking-wider transition-colors">Login Terlebih Dahulu</span>
-                                    <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Footer -->
-                <div class="px-6 pb-6 pt-2">
-                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                        <div class="flex items-start gap-3">
-                            <i class="bi bi-info-circle text-slate-400 text-lg shrink-0"></i>
-                            <p class="text-[10px] text-slate-500 leading-relaxed">Penggunaan dana punia akan ditampilkan secara transparan untuk akuntabilitas kepada masyarakat.</p>
-                        </div>
+            <!-- Footer -->
+            <div class="px-6 pb-6 pt-2">
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                    <div class="flex items-start gap-3">
+                        <i class="bi bi-info-circle text-slate-400 text-lg shrink-0"></i>
+                        <p class="text-[10px] text-slate-500 leading-relaxed">Penggunaan dana punia akan ditampilkan secara transparan untuk akuntabilitas kepada masyarakat.</p>
                     </div>
                 </div>
             </div>

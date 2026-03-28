@@ -40,7 +40,7 @@
         <h3 class="text-sm font-bold text-slate-800 mb-4">Riwayat Alokasi</h3>
         <div class="space-y-3">
             @forelse($kategori->alokasi as $alokasi)
-                <div class="bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <a href="{{ route('public.punia.alokasi.detail', $alokasi->id_alokasi_punia) }}" class="block bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-[#00a6eb]/30 transition-all">
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex-1">
                             <h4 class="text-sm font-bold text-slate-800 leading-snug">{{ $alokasi->judul }}</h4>
@@ -54,15 +54,14 @@
                     </div>
                     
                     @if($alokasi->deskripsi)
-                    <p class="text-xs text-slate-500 leading-relaxed mb-3">{{ $alokasi->deskripsi }}</p>
+                    <p class="text-xs text-slate-500 leading-relaxed mb-3 line-clamp-2">{{ $alokasi->deskripsi }}</p>
                     @endif
 
                     @if($alokasi->foto && is_array($alokasi->foto) && count($alokasi->foto) > 0)
-                    <div class="mt-3" x-data="{ showLightbox: false, currentImage: '' }">
+                    <div class="mt-3">
                         @if(count($alokasi->foto) === 1)
                             <!-- Single Image -->
-                            <div class="h-48 rounded-xl overflow-hidden bg-slate-100 cursor-pointer hover:opacity-90 transition-opacity" 
-                                 @click="showLightbox = true; currentImage = '{{ asset($alokasi->foto[0]) }}'">
+                            <div class="h-48 rounded-xl overflow-hidden bg-slate-100">
                                 <img src="{{ asset($alokasi->foto[0]) }}" class="w-full h-full object-cover" alt="{{ $alokasi->judul }}">
                             </div>
                         @else
@@ -70,8 +69,7 @@
                             <div class="grid grid-cols-2 gap-2">
                                 @foreach($alokasi->foto as $index => $foto)
                                     @if($index < 4)
-                                        <div class="relative h-32 rounded-lg overflow-hidden bg-slate-100 cursor-pointer hover:opacity-90 transition-opacity {{ $index >= 3 ? 'col-span-2' : '' }}"
-                                             @click="showLightbox = true; currentImage = '{{ asset($foto) }}'">
+                                        <div class="relative h-32 rounded-lg overflow-hidden bg-slate-100 {{ $index >= 3 ? 'col-span-2' : '' }}">
                                             <img src="{{ asset($foto) }}" class="w-full h-full object-cover" alt="{{ $alokasi->judul }} - {{ $index + 1 }}">
                                             @if($index === 3 && count($alokasi->foto) > 4)
                                                 <div class="absolute inset-0 bg-black/60 flex items-center justify-center pointer-events-none">
@@ -83,35 +81,15 @@
                                 @endforeach
                             </div>
                         @endif
-
-                        <!-- Lightbox Modal -->
-                        <div x-show="showLightbox" 
-                             x-cloak
-                             @click="showLightbox = false"
-                             @keydown.escape.window="showLightbox = false"
-                             class="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-4"
-                             style="display: none;"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0"
-                             x-transition:enter-end="opacity-100"
-                             x-transition:leave="transition ease-in duration-200"
-                             x-transition:leave-start="opacity-100"
-                             x-transition:leave-end="opacity-0">
-                            
-                            <button @click.stop="showLightbox = false" type="button" class="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
-                                <i class="bi bi-x text-white text-2xl"></i>
-                            </button>
-                            
-                            <img :src="currentImage" 
-                                 @click.stop
-                                 class="max-w-full max-h-full object-contain rounded-lg"
-                                 x-transition:enter="transition ease-out duration-300"
-                                 x-transition:enter-start="opacity-0 scale-90"
-                                 x-transition:enter-end="opacity-100 scale-100">
-                        </div>
                     </div>
                     @endif
-                </div>
+
+                    <!-- View Detail Link -->
+                    <div class="mt-3 flex items-center gap-2 text-[#00a6eb]">
+                        <span class="text-[9px] font-bold uppercase tracking-wider">Lihat Detail</span>
+                        <i class="bi bi-arrow-right text-xs"></i>
+                    </div>
+                </a>
             @empty
                 <div class="py-10 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                     <i class="bi bi-inbox text-3xl text-slate-200 mb-2 block"></i>

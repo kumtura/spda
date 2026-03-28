@@ -143,19 +143,19 @@
             </ul>
           </li>
 
-          <!-- Tenaga Kerja Dropdown -->
+          <!-- Manajemen Tenaga Kerja Dropdown -->
           <li>
             <button type="button" @click="openTenaga = !openTenaga" 
                     class="flex items-center w-full p-2.5 text-white transition duration-75 rounded-xl group hover:bg-white/10">
                   <i class="bi bi-person-workspace w-5 h-5 text-white flex items-center justify-center"></i>
-                  <span class="flex-1 ms-3 text-left text-sm font-semibold tracking-tight" x-show="sidebarOpen">Tenaga Kerja</span>
+                  <span class="flex-1 ms-3 text-left text-sm font-semibold tracking-tight" x-show="sidebarOpen">Manajemen Tenaga Kerja</span>
                   <i class="bi bi-chevron-down w-3 h-3 transition-transform duration-300" :class="openTenaga ? 'rotate-180' : ''" x-show="sidebarOpen"></i>
             </button>
             <ul x-show="openTenaga && sidebarOpen" x-transition x-cloak class="py-2 space-y-1 ml-4 border-l border-white/10 pl-2">
-                  <li><a href="{{ url('administrator/data_tenagakerja') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_tenagakerja') ? 'text-white bg-white/5' : '' }}">Basis Data</a></li>
-                  <li><a href="{{ url('administrator/data_tenagakerja_skill') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_tenagakerja_skill*') ? 'text-white bg-white/5' : '' }}">Keahlian</a></li>
+                  <li><a href="{{ url('administrator/data_tenagakerja_aktif') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_tenagakerja_aktif*') ? 'text-white bg-white/5' : '' }}">Tenaga Kerja Aktif</a></li>
+                  <li><a href="{{ url('administrator/data_tenagakerja_skill') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_tenagakerja_skill*') ? 'text-white bg-white/5' : '' }}">Kategori Keahlian</a></li>
+                  <li><a href="{{ url('administrator/data_loker') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_loker*') ? 'text-white bg-white/5' : '' }}">Lowongan Pekerjaan</a></li>
                   <li><a href="{{ url('administrator/data_tenagakerja_interview') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_tenagakerja_interview*') ? 'text-white bg-white/5' : '' }}">Wawancara</a></li>
-                  <li><a href="{{ url('administrator/data_tenagakerja_approve') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_tenagakerja_approve*') ? 'text-white bg-white/5' : '' }}">Diterima</a></li>
             </ul>
           </li>
           

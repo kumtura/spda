@@ -26,6 +26,7 @@ Route::get('/punia', [LandingController::class, 'punia'])->name('public.punia');
 Route::get('/punia/pembayaran', [LandingController::class, 'punia_pembayaran'])->name('public.punia.pembayaran');
 Route::post('/punia/pembayaran/submit', [LandingController::class, 'punia_pembayaran_submit'])->name('public.punia.pembayaran.submit');
 Route::get('/punia/penggunaan/{id}', [LandingController::class, 'punia_penggunaan_detail'])->name('public.punia.penggunaan');
+Route::get('/punia/alokasi/{id}', [LandingController::class, 'punia_alokasi_detail'])->name('public.punia.alokasi.detail');
 Route::get('/punia/download-laporan', [LandingController::class, 'punia_download_laporan'])->name('public.punia.download');
 Route::get('/donasi', [LandingController::class, 'donasi'])->name('public.donasi');
 Route::get('/donasi/pembayaran/{id}', [LandingController::class, 'donasi_pembayaran'])->name('public.donasi.pembayaran');
@@ -106,6 +107,12 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 
 		// Karyawan / Tenaga Kerja
 		Route::get('/data_tenagakerja','Administrator\KaryawanController@index');
+		Route::get('/data_tenagakerja_aktif','Administrator\KaryawanController@indexAktif');
+		Route::get('/data_tenagakerja_skill','Administrator\KaryawanController@index_skill');
+		Route::get('/data_tenagakerja_interview','Administrator\KaryawanController@indexInterview');
+		Route::get('/data_tenagakerja_approve','Administrator\KaryawanController@indexApprove');
+		Route::get('/data_loker','Administrator\KaryawanController@indexLoker');
+
 		Route::post('submit_post_add_tenagakerja','Administrator\KaryawanController@submit_post_add_tenagakerja');
 		Route::put('update_post_add_tenagakerja','Administrator\KaryawanController@update_post_add_tenagakerja');
 		Route::get('detail_tenaga_kerja/{index}','Administrator\KaryawanController@detail_tenaga_kerja');

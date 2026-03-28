@@ -76,7 +76,9 @@ class LandingController extends Controller
 
     public function punia()
     {
-        $total_punia = Danapunia::where('aktif', '1')->sum('jumlah_dana');
+        $total_punia = Danapunia::where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->sum('jumlah_dana');
         $village = $this->getVillageData();
         $kategori_punia = \App\Models\KategoriPunia::with(['alokasi' => function($q) {
             $q->where('aktif', '1')->orderBy('tanggal_alokasi', 'desc');
@@ -87,6 +89,7 @@ class LandingController extends Controller
         
         // Get recent pemasukan (income)
         $pemasukan = Danapunia::where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
             ->orderBy('tanggal_pembayaran', 'desc')
             ->take(10)
             ->get();
@@ -146,7 +149,8 @@ class LandingController extends Controller
             'tanggal_pembayaran' => now(),
             'bulan' => date('m'),
             'tahun' => date('Y'),
-            'aktif' => '1'
+            'aktif' => '1',
+            'status_pembayaran' => 'pending'
         ]);
 
         return redirect()->route('public.payment_methods', [
@@ -181,6 +185,27 @@ class LandingController extends Controller
         return view('front.pages.punia_penggunaan_detail', compact('kategori', 'village'));
     }
 
+    public function punia_alokasi_detail($id)
+    {
+        $alokasi = \App\Models\AlokasiPunia::with('kategori')
+            ->where('id_alokasi_punia', $id)
+            ->where('aktif', '1')
+            ->firstOrFail();
+        
+        $village = $this->getVillageData();
+        
+        // Get recent alokasi from same category
+        $recent_alokasi = \App\Models\AlokasiPunia::with('kategori')
+            ->where('id_kategori_punia', $alokasi->id_kategori_punia)
+            ->where('id_alokasi_punia', '!=', $id)
+            ->where('aktif', '1')
+            ->orderBy('tanggal_alokasi', 'desc')
+            ->take(3)
+            ->get();
+        
+        return view('front.pages.punia_alokasi_detail', compact('alokasi', 'village', 'recent_alokasi'));
+    }
+
     public function punia_download_laporan(Request $request)
     {
         $month = $request->get('month', date('m'));
@@ -191,6 +216,7 @@ class LandingController extends Controller
         
         // Get pemasukan for the month
         $pemasukan = Danapunia::where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
             ->whereMonth('tanggal_pembayaran', $month)
             ->whereYear('tanggal_pembayaran', $year)
             ->orderBy('tanggal_pembayaran', 'asc')
@@ -288,7 +314,8 @@ class LandingController extends Controller
             'nominal' => $request->text_minimal_pembayaran,
             'deskripsi' => $request->text_pesan ?? '',
             'tanggal' => now(),
-            'aktif' => '1'
+            'aktif' => '1',
+            'status_pembayaran' => 'pending'
         ])->id_sumbangan_sukarela;
 
         return redirect()->route('public.payment_methods', [
@@ -309,7 +336,8 @@ class LandingController extends Controller
                         ->leftJoin('tb_data_banjar', 'tb_data_banjar.id_data_banjar', '=', 'tb_detail_usaha.id_banjar')
                         ->leftJoin('tb_dana_punia', function($join) {
                             $join->on('tb_dana_punia.id_usaha', '=', 'tb_usaha.id_usaha')
-                                 ->where('tb_dana_punia.aktif', '=', '1');
+                                 ->where('tb_dana_punia.aktif', '=', '1')
+                                 ->where('tb_dana_punia.status_pembayaran', '=', 'completed');
                         })
                         ->where('tb_usaha.aktif_status', '1')
                         ->groupBy('tb_usaha.id_usaha', 'tb_detail_usaha.nama_usaha', 'tb_detail_usaha.logo', 'tb_data_banjar.nama_banjar');
@@ -323,7 +351,10 @@ class LandingController extends Controller
 
             $total_usaha = Usaha::where("aktif_status", "1")->count();
             // Calculate total contributions from dana punia table where id_usaha is not null
-            $total_kontribusi = Danapunia::whereNotNull('id_usaha')->where('aktif', '1')->sum('jumlah_dana');
+            $total_kontribusi = Danapunia::whereNotNull('id_usaha')
+                ->where('aktif', '1')
+                ->where('status_pembayaran', 'completed')
+                ->sum('jumlah_dana');
             $banjar_list = \App\Models\Banjar::where('aktif', '1')->orderBy('nama_banjar', 'asc')->get();
             $village = $this->getVillageData();
             return view('front.pages.unit_usaha', compact('usaha', 'village', 'total_usaha', 'total_kontribusi', 'selected_banjar', 'banjar_list'));

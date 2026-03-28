@@ -147,26 +147,52 @@
     </div>
 
     <!-- Pengeluaran List -->
-    <div x-show="activeTab === 'pengeluaran'" x-transition class="space-y-3">
+    <div x-show="activeTab === 'pengeluaran'" x-transition class="space-y-4" x-data="{ selectedKategori: 'all' }">
         <h4 class="text-sm font-bold text-slate-800">Riwayat Pengeluaran</h4>
-        @forelse($pengeluaran as $item)
-        <div class="bg-white rounded-xl border border-slate-100 p-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="h-10 w-10 bg-rose-50 rounded-lg flex items-center justify-center">
-                    <i class="bi bi-arrow-up-circle text-rose-500 text-lg"></i>
+        
+        <!-- Category Filter Pills -->
+        <div class="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-2">
+            <button @click="selectedKategori = 'all'" 
+                    :class="selectedKategori === 'all' ? 'bg-[#00a6eb] text-white border-[#00a6eb] shadow-md shadow-blue-200/50' : 'bg-white text-slate-500 border-slate-200 hover:border-[#00a6eb]/30'"
+                    class="shrink-0 px-4 py-2 rounded-full text-[10px] font-bold border transition-all active:scale-95">
+                Semua
+            </button>
+            @foreach($kategori_punia as $kat)
+            <button @click="selectedKategori = '{{ $kat->id_kategori_punia }}'" 
+                    :class="selectedKategori === '{{ $kat->id_kategori_punia }}' ? 'bg-[#00a6eb] text-white border-[#00a6eb] shadow-md shadow-blue-200/50' : 'bg-white text-slate-500 border-slate-200 hover:border-[#00a6eb]/30'"
+                    class="shrink-0 px-4 py-2 rounded-full text-[10px] font-bold border transition-all active:scale-95">
+                {{ $kat->nama_kategori }}
+            </button>
+            @endforeach
+        </div>
+
+        <!-- Pengeluaran Items -->
+        <div class="space-y-3">
+            @forelse($pengeluaran as $item)
+            <a href="{{ route('public.punia.alokasi.detail', $item->id_alokasi_punia) }}" 
+               x-show="selectedKategori === 'all' || selectedKategori === '{{ $item->id_kategori_punia }}'"
+               x-transition
+               class="block bg-white rounded-xl border border-slate-100 p-4 hover:shadow-md hover:border-[#00a6eb]/30 transition-all group">
+                <div class="flex items-start gap-3">
+                    <div class="h-10 w-10 bg-rose-50 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="bi bi-arrow-up-circle text-rose-500 text-lg"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold text-slate-800 mb-1 group-hover:text-[#00a6eb] transition-colors">{{ $item->judul }}</p>
+                        <p class="text-[10px] text-slate-400 mb-2">{{ $item->kategori->nama_kategori ?? '-' }} • {{ \Carbon\Carbon::parse($item->tanggal_alokasi)->translatedFormat('d M Y') }}</p>
+                        <p class="text-sm font-black text-rose-600">-Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
+                    </div>
+                    <div class="shrink-0 self-center">
+                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-colors"></i>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-800">{{ $item->judul }}</p>
-                    <p class="text-[10px] text-slate-400">{{ $item->kategori->nama_kategori ?? '-' }} • {{ \Carbon\Carbon::parse($item->tanggal_alokasi)->translatedFormat('d M Y') }}</p>
-                </div>
+            </a>
+            @empty
+            <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-6 text-center">
+                <p class="text-xs text-slate-400">Belum ada pengeluaran tercatat</p>
             </div>
-            <p class="text-sm font-black text-rose-600">-Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
+            @endforelse
         </div>
-        @empty
-        <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-6 text-center">
-            <p class="text-xs text-slate-400">Belum ada pengeluaran tercatat</p>
-        </div>
-        @endforelse
     </div>
 
     <!-- CTA -->

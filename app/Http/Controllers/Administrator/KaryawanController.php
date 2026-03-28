@@ -46,6 +46,19 @@ class KaryawanController extends BaseController
             return view('admin.pages.data_tenagakerja.table' ,compact('karyawan','tenaga_kerja','banjar'));
         }
 
+        public function indexAktif(Request $request){
+            $karyawan = Karyawan::get_dataKaryawan_all($request);
+            $tenaga_kerja = Skill_TenagaKerja::get_dataTenagaKerja($request);
+            $banjar = Banjar::get_databanjar($request);
+
+            return view('admin.pages.data_tenagakerja.tableAktif' ,compact('karyawan','tenaga_kerja','banjar'));
+        }
+
+        public function indexLoker(Request $request){
+            $lokers = \App\Models\Loker::with(['usaha.detail'])->orderBy('id_loker', 'desc')->get();
+            return view('admin.pages.data_tenagakerja.tableLoker', compact('lokers'));
+        }
+
         public function upload_gambar_karyawan(Request $request , $index){
             $usaha = Karyawan::upload_gambar_karyawan($request , $index);
             
@@ -69,7 +82,7 @@ class KaryawanController extends BaseController
 
         public function indexApprove(Request $request){
             //$usaha = Usaha::get_dataUsaha($request);
-            $karyawan = Karyawan::get_dataKaryawan_Approved($request,1);
+            $karyawan = Karyawan::get_dataKaryawan_Approved($request);
             //$banjar = Banjar::get_databanjar($request);
             $tenaga_kerja = Skill_TenagaKerja::get_dataTenagaKerja($request);
 

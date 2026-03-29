@@ -14,12 +14,16 @@ class Jadwal_Interview extends Model
     protected $primaryKey = 'id_jadwal_interview';
     protected $fillable = [
         'id_karyawan', 
-        'id_usaha', 
+        'id_usaha',
+        'id_loker',
         'tanggal_interview', 
         'jam', 
+        'status_interview',
         'status_diterima', 
         'tanggal_diterima', 
-        'jabatan', 
+        'jabatan',
+        'alasan_penolakan',
+        'dokumen_lamaran',
         'aktif'
     ];
     protected $table='tb_jadwal_interview';

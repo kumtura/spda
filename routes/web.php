@@ -40,6 +40,8 @@ Route::get('/pembayaran/status/{order_id}', [\App\Http\Controllers\PaymentContro
 Route::get('/unit-usaha', [LandingController::class, 'unit_usaha'])->name('public.unit_usaha')->middleware('public.redirect');
 Route::get('/loker', [LandingController::class, 'loker'])->name('public.loker')->middleware('public.redirect');
 Route::get('/loker/{id}', [LandingController::class, 'loker_detail'])->name('public.loker.detail')->middleware('public.redirect');
+Route::get('/loker/{id}/apply', [LandingController::class, 'loker_apply_form'])->name('public.loker.apply_form');
+Route::post('/loker/{id}/apply', [LandingController::class, 'loker_apply'])->name('public.loker.apply');
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/register_usaha', function () {
@@ -108,6 +110,11 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/usaha/punia/bayar', [LandingController::class, 'usaha_punia_bayar'])->name('usaha.punia.bayar');
             Route::get('/usaha/punia/print', [LandingController::class, 'usaha_punia_print'])->name('usaha.punia.print');
             Route::get('/usaha/loker', function() { return view('backend.usaha.loker'); });
+            Route::get('/usaha/loker/detail/{id}', [LandingController::class, 'usaha_loker_detail'])->name('usaha.loker.detail');
+            Route::post('/usaha/loker/create', [LandingController::class, 'usaha_loker_create'])->name('usaha.loker.create');
+            Route::post('/usaha/loker/interview', [LandingController::class, 'usaha_loker_interview'])->name('usaha.loker.interview');
+            Route::post('/usaha/loker/accept', [LandingController::class, 'usaha_loker_accept'])->name('usaha.loker.accept');
+            Route::post('/usaha/loker/reject', [LandingController::class, 'usaha_loker_reject'])->name('usaha.loker.reject');
             Route::get('/usaha/donasi', [LandingController::class, 'usaha_donasi']);
             Route::get('/usaha/donasi/detail/{id}', [LandingController::class, 'usaha_donasi_detail']);
             Route::get('/usaha/berita', [LandingController::class, 'usaha_berita']);

@@ -408,10 +408,109 @@ class LandingController extends Controller
         // Get other lokers from same company
         $other_lokers = \App\Models\Loker::where('id_usaha', $loker->id_usaha)
             ->where('id_loker', '!=', $id)
+            ->where('status', 'Buka')
             ->take(3)
             ->get();
         
         return view('front.pages.loker_detail', compact('loker', 'village', 'other_lokers'));
+    }
+
+    public function loker_apply_form($id)
+    {
+        $loker = \App\Models\Loker::with(['usaha.detail'])->findOrFail($id);
+        
+        if($loker->status != 'Buka') {
+            return redirect()->route('public.loker.detail', $id)->with('error', 'Lowongan sudah ditutup');
+        }
+        
+        $village = $this->getVillageData();
+        return view('front.pages.loker_apply', compact('loker', 'village'));
+    }
+
+    public function loker_apply(Request $request, $id)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:100',
+            'email' => 'required|email|max:100',
+            'jenis_kelamin' => 'required|in:L,P',
+            'umur' => 'required|integer|min:17|max:65',
+            'alamat' => 'required|string|max:255',
+            'no_telp' => 'required|string|max:20',
+            'files.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048'
+        ]);
+
+        // Check if loker exists and is open
+        $loker = \App\Models\Loker::findOrFail($id);
+        if($loker->status != 'Buka') {
+            return redirect()->back()->with('error', 'Lowongan sudah ditutup');
+        }
+
+        // Create or get karyawan record
+        $karyawan = \App\Models\Karyawan::firstOrCreate(
+            ['no_telp' => $request->no_telp],
+            [
+                'nama' => $request->nama,
+                'email_karyawan' => $request->email,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'umur' => $request->umur,
+                'alamat' => $request->alamat,
+                'status' => '0',
+                'aktif' => '1'
+            ]
+        );
+
+        // Check if already applied
+        $existing = \App\Models\Jadwal_Interview::where('id_karyawan', $karyawan->id_tenaga_kerja)
+            ->where('id_loker', $id)
+            ->where('aktif', '1')
+            ->first();
+
+        if($existing) {
+            return redirect()->back()->with('error', 'Anda sudah melamar posisi ini');
+        }
+
+        // Handle file uploads
+        $uploadedFiles = [];
+        if($request->hasFile('files')) {
+            $files = $request->file('files');
+            
+            // Limit to 5 files
+            $files = array_slice($files, 0, 5);
+            
+            foreach($files as $file) {
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = 'lamaran/dokumen';
+                
+                // Create directory if not exists
+                if (!file_exists(public_path($path))) {
+                    mkdir(public_path($path), 0777, true);
+                }
+                
+                $file->move(public_path($path), $filename);
+                $uploadedFiles[] = $path . '/' . $filename;
+            }
+        }
+
+        // Create application
+        \App\Models\Jadwal_Interview::create([
+            'id_karyawan' => $karyawan->id_tenaga_kerja,
+            'id_usaha' => $loker->id_usaha,
+            'id_loker' => $id,
+            'status_interview' => '0',
+            'status_diterima' => '0',
+            'dokumen_lamaran' => !empty($uploadedFiles) ? json_encode($uploadedFiles) : null,
+            'aktif' => '1'
+        ]);
+
+        $village = $this->getVillageData();
+        $loker->load('usaha.detail'); // Ensure relations are loaded
+        return view('front.pages.loker_apply_success', [
+            'loker' => $loker,
+            'nama' => $request->nama,
+            'email' => $request->email,
+            'no_telp' => $request->no_telp,
+            'village' => $village
+        ]);
     }
     
     // Unit Usaha specific pages
@@ -548,6 +647,98 @@ class LandingController extends Controller
         
         $pdf = Pdf::loadView('pdf.kartu_punia', $data);
         return $pdf->download('Kartu_Punia_' . $usaha->nama_usaha . '_' . $year . '.pdf');
+    }
+
+    public function usaha_loker_create(Request $request)
+    {
+        $request->validate([
+            'id_usaha' => 'required|exists:tb_usaha,id_usaha',
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'required|string'
+        ]);
+
+        \App\Models\Loker::create([
+            'id_usaha' => $request->id_usaha,
+            'judul' => $request->judul,
+            'deskripsi' => $request->deskripsi,
+            'status' => 'Buka'
+        ]);
+
+        return redirect()->back()->with('success', 'Lowongan berhasil dibuat');
+    }
+
+    public function usaha_loker_detail($id)
+    {
+        $loker = \App\Models\Loker::with('usaha.detail')->findOrFail($id);
+        
+        // Verify ownership
+        $myUsaha = \App\Models\Usaha::join('tb_detail_usaha','tb_detail_usaha.id_detail_usaha','tb_usaha.id_detail_usaha')
+            ->where('tb_usaha.username', Auth::user()->email)->first();
+        
+        if(!$myUsaha || $loker->id_usaha != $myUsaha->id_usaha) {
+            return redirect()->route('administrator.usaha.home')->with('error', 'Akses ditolak');
+        }
+        
+        $applicants = \App\Models\Jadwal_Interview::where('id_loker', $id)
+            ->where('aktif', '1')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        $village = $this->getVillageData();
+        
+        return view('backend.usaha.loker_detail', compact('loker', 'applicants', 'village'));
+    }
+
+    public function usaha_loker_accept(Request $request)
+    {
+        $request->validate([
+            'id_jadwal_interview' => 'required|exists:tb_jadwal_interview,id_jadwal_interview'
+        ]);
+
+        $interview = \App\Models\Jadwal_Interview::find($request->id_jadwal_interview);
+        
+        if($interview) {
+            $interview->update(['status_diterima' => '1']);
+            return redirect()->back()->with('success', 'Pelamar berhasil diterima');
+        }
+
+        return redirect()->back()->with('error', 'Data tidak ditemukan');
+    }
+
+    public function usaha_loker_interview(Request $request)
+    {
+        $request->validate([
+            'id_jadwal_interview' => 'required|exists:tb_jadwal_interview,id_jadwal_interview'
+        ]);
+
+        $interview = \App\Models\Jadwal_Interview::find($request->id_jadwal_interview);
+        
+        if($interview) {
+            $interview->update(['status_interview' => '1']);
+            return redirect()->back()->with('success', 'Pelamar dipindahkan ke tahap interview');
+        }
+
+        return redirect()->back()->with('error', 'Data tidak ditemukan');
+    }
+
+    public function usaha_loker_reject(Request $request)
+    {
+        $request->validate([
+            'id_jadwal_interview' => 'required|exists:tb_jadwal_interview,id_jadwal_interview',
+            'alasan' => 'nullable|string|max:500'
+        ]);
+
+        $interview = \App\Models\Jadwal_Interview::find($request->id_jadwal_interview);
+        
+        if($interview) {
+            $interview->update([
+                'aktif' => '0',
+                'alasan_penolakan' => $request->alasan
+            ]);
+            return redirect()->back()->with('success', 'Pelamar berhasil ditolak');
+        }
+
+        return redirect()->back()->with('error', 'Data tidak ditemukan');
     }
 
 }

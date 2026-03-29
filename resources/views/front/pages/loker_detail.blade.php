@@ -44,7 +44,7 @@
     <!-- Job Description -->
     @if($loker->deskripsi)
     <div>
-        <h3 class="text-sm font-bold text-slate-800 mb-3">Deskripsi Pekerjaan</h3>
+        <h3 class="text-sm font-semibold text-slate-800 mb-3">Deskripsi Pekerjaan</h3>
         <div class="prose prose-sm prose-slate max-w-none text-slate-600 leading-relaxed">
             <p class="whitespace-pre-line text-xs">{{ $loker->deskripsi }}</p>
         </div>
@@ -54,7 +54,7 @@
     <!-- Company Info -->
     @if($loker->usaha && $loker->usaha->detail)
     <div class="bg-slate-50 rounded-xl border border-slate-100 p-4">
-        <h3 class="text-sm font-bold text-slate-800 mb-3">Tentang Perusahaan</h3>
+        <h3 class="text-sm font-semibold text-slate-800 mb-3">Tentang Perusahaan</h3>
         <div class="space-y-2 text-xs text-slate-600">
             @if($loker->usaha->detail->alamat_banjar)
             <div class="flex items-start gap-2">
@@ -81,23 +81,25 @@
     <!-- Other Jobs -->
     @if($other_lokers->count() > 0)
     <div>
-        <h3 class="text-sm font-bold text-slate-800 mb-3">Lowongan Lainnya</h3>
+        <h3 class="text-sm font-semibold text-slate-800 mb-3">Lowongan Lainnya</h3>
         <div class="space-y-2">
             @foreach($other_lokers as $other)
                 <a href="{{ route('public.loker.detail', $other->id_loker) }}" class="block bg-white rounded-lg border border-slate-100 p-3 hover:border-slate-200 transition-colors">
-                    <h4 class="text-xs font-bold text-slate-800 mb-1">{{ $other->judul }}</h4>
+                    <h4 class="text-xs font-medium text-slate-800 mb-1">{{ $other->judul }}</h4>
                     <p class="text-[10px] text-slate-400">{{ \Carbon\Carbon::parse($other->created_at)->diffForHumans() }}</p>
                 </a>
             @endforeach
         </div>
     </div>
     @endif
-
-    <!-- Apply Button -->
-    <div class="fixed bottom-[75px] left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4 z-40">
-        <a href="{{ route('login') }}" class="block w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white py-3.5 rounded-xl font-bold text-xs text-center shadow-lg transition-colors">
-            Lamar Pekerjaan
-        </a>
-    </div>
 </div>
+
+<!-- Apply Button -->
+@if(!Auth::check() || (Auth::check() && Auth::user()->level == '4'))
+<div class="fixed bottom-[75px] left-1/2 -translate-x-1/2 w-full max-w-[480px] px-5 z-40">
+    <a href="{{ route('public.loker.apply_form', $loker->id_loker) }}" class="block w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/30 transition-all active:scale-95 text-center border border-white/20">
+        <i class="bi bi-send-fill mr-2"></i> Lamar Pekerjaan
+    </a>
+</div>
+@endif
 @endsection

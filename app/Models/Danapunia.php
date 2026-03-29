@@ -32,6 +32,11 @@ class Danapunia extends Model
     protected $primaryKey = 'id_dana_punia';
     protected $table='tb_dana_punia';
 
+    public function usaha()
+    {
+        return $this->belongsTo(Usaha::class, 'id_usaha', 'id_usaha');
+    }
+
     public static function get_dataPunia($request){
         $data = Danapunia::join("tb_usaha" , "tb_usaha.id_usaha" , "tb_dana_punia.id_usaha")->join("tb_detail_usaha" , "tb_detail_usaha.id_detail_usaha" , "tb_usaha.id_detail_usaha")->where("tb_dana_punia.aktif","1")->orderBy("tb_dana_punia.id_usaha" , "desc")->get();
 

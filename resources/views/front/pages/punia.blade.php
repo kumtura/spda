@@ -27,12 +27,12 @@
             
             <div class="flex items-center justify-between text-xs pt-3 border-t border-white/20">
                 <div>
-                    <p class="text-white/60 text-[9px] mb-0.5">Terpakai</p>
-                    <p class="font-bold">Rp {{ number_format($total_pengeluaran, 0, ',', '.') }}</p>
-                </div>
-                <div class="text-right">
                     <p class="text-white/60 text-[9px] mb-0.5">Sisa Dana</p>
                     <p class="font-bold">Rp {{ number_format($total_punia - $total_pengeluaran, 0, ',', '.') }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-white/60 text-[9px] mb-0.5">Terpakai</p>
+                    <p class="font-bold">Rp {{ number_format($total_pengeluaran, 0, ',', '.') }}</p>
                 </div>
             </div>
         </div>
@@ -165,14 +165,7 @@
                         @endif
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-0.5">
-                            <p class="text-xs font-bold text-slate-800 truncate">{{ $item->nama_donatur }}</p>
-                            @if($item->id_usaha)
-                                <span class="shrink-0 text-[8px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">Unit Usaha</span>
-                            @else
-                                <span class="shrink-0 text-[8px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">Masyarakat</span>
-                            @endif
-                        </div>
+                        <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->nama_donatur ?: 'Anonim' }}</p>
                         <p class="text-[10px] text-slate-400">{{ \Carbon\Carbon::parse($item->tanggal_pembayaran)->translatedFormat('d M Y') }}</p>
                     </div>
                 </div>

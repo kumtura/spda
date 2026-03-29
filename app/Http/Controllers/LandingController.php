@@ -489,6 +489,7 @@ class LandingController extends Controller
         // bulan_punia & tahun_punia = which month is being paid
         $punia = \App\Models\Danapunia::create([
             'id_usaha' => $request->id_usaha,
+            'nama_donatur' => $usaha->nama_usaha, // Add business name
             'jumlah_dana' => $usaha->minimal_bayar ?? 0,
             'tanggal_pembayaran' => now(), // When payment is made
             'bulan_punia' => $bulanDibayar, // Which month is being paid

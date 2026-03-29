@@ -48,6 +48,11 @@ class AuthenticatedSessionController extends Controller
             'boolsessionpt' => 1,
         ]);
 
+        // Redirect based on user level
+        if ($user->id_level == config('myconfig.level.usaha')) {
+            return redirect('/administrator/usaha/home');
+        }
+
         return redirect()->intended(route('administrator.home', absolute: false));
     }
 

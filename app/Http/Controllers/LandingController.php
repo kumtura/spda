@@ -8,6 +8,7 @@ use App\Models\Danapunia;
 use App\Models\Usaha;
 use App\Models\PaymentChannel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class LandingController extends Controller
@@ -302,22 +303,37 @@ class LandingController extends Controller
     public function donasi_post(Request $request)
     {
         $isAnonymous = $request->cmb_kategori_sumbangan == '1';
+        $tipeDonat = $request->tipe_donatur ?? 'masyarakat'; // 'usaha' or 'masyarakat'
+        
         $request->validate([
             'text_minimal_pembayaran' => 'required|numeric|min:10000',
             'id_program_donasi' => 'required|exists:tb_program_donasi,id_program_donasi'
         ]);
 
-        $id = Sumbangan::create([
+        $data = [
             'id_program_donasi' => $request->id_program_donasi,
             'nama' => $isAnonymous ? 'Anonim' : $request->text_title_new,
-            'status_donatur' => $request->cmb_kategori_sumbangan,
+            'status_donatur' => $tipeDonat == 'usaha' ? '3' : $request->cmb_kategori_sumbangan, // 3 = unit usaha
             'nominal' => $request->text_minimal_pembayaran,
             'deskripsi' => $request->text_pesan ?? '',
             'tanggal' => now(),
             'aktif' => '1',
             'status_pembayaran' => 'pending'
-        ])->id_sumbangan_sukarela;
+        ];
 
+        // If unit usaha and not anonymous, save id_usaha and logo
+        if($tipeDonat == 'usaha' && !$isAnonymous && Auth::check()) {
+            $usaha = \App\Models\Usaha::join('tb_detail_usaha','tb_detail_usaha.id_detail_usaha','tb_usaha.id_detail_usaha')
+                ->where('tb_usaha.username', Auth::user()->email)->first();
+            if($usaha) {
+                $data['id_usaha'] = $usaha->id_usaha;
+                $data['profile'] = $usaha->logo; // Save logo for transparency
+            }
+        }
+
+        $id = Sumbangan::create($data)->id_sumbangan_sukarela;
+
+        // Redirect to payment method selection
         return redirect()->route('public.payment_methods', [
             'amount' => $request->text_minimal_pembayaran,
             'order_id' => 'DN-' . $id,
@@ -397,4 +413,140 @@ class LandingController extends Controller
         
         return view('front.pages.loker_detail', compact('loker', 'village', 'other_lokers'));
     }
+    
+    // Unit Usaha specific pages
+    public function usaha_donasi()
+    {
+        $programs = \App\Models\ProgramDonasi::where('aktif', '1')->orderBy('id_program_donasi', 'desc')->get();
+        $kategori_donasi = \App\Models\KategoriDonasi::where('aktif', '1')->get();
+        $village = $this->getVillageData();
+        
+        return view('backend.usaha.donasi', compact('programs', 'kategori_donasi', 'village'));
+    }
+    
+    public function usaha_donasi_detail($id)
+    {
+        $program = \App\Models\ProgramDonasi::with('kategori')->findOrFail($id);
+        $donatur = \App\Models\Sumbangan::where('id_program_donasi', $id)
+            ->where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->orderBy('id_sumbangan_sukarela', 'desc')
+            ->take(10)
+            ->get();
+        $village = $this->getVillageData();
+        
+        return view('backend.usaha.donasi_detail', compact('program', 'donatur', 'village'));
+    }
+    
+    public function usaha_berita()
+    {
+        $berita = \App\Models\Berita::where('aktif', '1')->orderBy('id_berita', 'desc')->paginate(10);
+        $village = $this->getVillageData();
+        
+        return view('backend.usaha.berita', compact('berita', 'village'));
+    }
+    
+    public function usaha_berita_detail($id)
+    {
+        $berita = \App\Models\Berita::with('kategori')->findOrFail($id);
+        $village = $this->getVillageData();
+        
+        return view('backend.usaha.berita_detail', compact('berita', 'village'));
+    }
+
+    public function usaha_punia_bayar(Request $request)
+    {
+        $request->validate([
+            'bulan' => 'required|integer|min:1|max:12',
+            'tahun' => 'required|integer|min:2020|max:2100',
+            'id_usaha' => 'required|exists:tb_usaha,id_usaha'
+        ]);
+
+        $usaha = \App\Models\Usaha::join('tb_detail_usaha','tb_detail_usaha.id_detail_usaha','tb_usaha.id_detail_usaha')
+            ->where('tb_usaha.id_usaha', $request->id_usaha)->first();
+
+        if(!$usaha) {
+            return redirect()->back()->with('error', 'Data usaha tidak ditemukan');
+        }
+
+        $tahunDibayar = (int)$request->tahun;
+        $bulanDibayar = (int)$request->bulan;
+        
+        // Check if already paid for this specific month and year
+        $existing = \App\Models\Danapunia::where('id_usaha', $request->id_usaha)
+            ->where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->where('bulan_punia', $bulanDibayar)
+            ->where('tahun_punia', $tahunDibayar)
+            ->first();
+
+        if($existing) {
+            return redirect()->back()->with('error', 'Punia bulan ini sudah dibayar');
+        }
+
+        // Create pending punia record
+        // tanggal_pembayaran = when payment is made (today)
+        // bulan_punia & tahun_punia = which month is being paid
+        $punia = \App\Models\Danapunia::create([
+            'id_usaha' => $request->id_usaha,
+            'jumlah_dana' => $usaha->minimal_bayar ?? 0,
+            'tanggal_pembayaran' => now(), // When payment is made
+            'bulan_punia' => $bulanDibayar, // Which month is being paid
+            'tahun_punia' => $tahunDibayar, // Which year is being paid
+            'aktif' => '1',
+            'status_pembayaran' => 'pending'
+        ]);
+
+        // Redirect to payment method selection
+        return redirect()->route('public.payment_methods', [
+            'amount' => $usaha->minimal_bayar ?? 0,
+            'order_id' => 'PN-' . $punia->id_dana_punia,
+            'type' => 'punia'
+        ]);
+    }
+
+    public function usaha_punia_print(Request $request)
+    {
+        $year = $request->get('year', date('Y'));
+        
+        $usaha = \App\Models\Usaha::join('tb_detail_usaha','tb_detail_usaha.id_detail_usaha','tb_usaha.id_detail_usaha')
+            ->join('tb_data_banjar', 'tb_data_banjar.id_data_banjar', '=', 'tb_detail_usaha.id_banjar')
+            ->where('tb_usaha.username', Auth::user()->email)
+            ->select('tb_usaha.*', 'tb_detail_usaha.*', 'tb_data_banjar.nama_banjar')
+            ->first();
+
+        if(!$usaha) {
+            return redirect()->back()->with('error', 'Data usaha tidak ditemukan');
+        }
+
+        $currentYear = date('Y');
+        $currentMonth = date('m');
+        
+        $months = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        
+        // Get all payments for selected year
+        $payments = [];
+        $paymentsData = \App\Models\Danapunia::where('id_usaha', $usaha->id_usaha)
+            ->where('aktif','1')
+            ->where('status_pembayaran', 'completed')
+            ->where('tahun_punia', $year)
+            ->get();
+        
+        foreach($paymentsData as $p) {
+            $month = (int)$p->bulan_punia;
+            $payments[$month] = $p;
+        }
+        
+        $village = $this->getVillageData();
+        
+        $data = compact('usaha', 'year', 'months', 'payments', 'village', 'currentYear', 'currentMonth');
+        
+        $pdf = Pdf::loadView('pdf.kartu_punia', $data);
+        return $pdf->download('Kartu_Punia_' . $usaha->nama_usaha . '_' . $year . '.pdf');
+    }
+
 }

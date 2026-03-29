@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'wartawan' => \App\Http\Middleware\RedirectIfNotWartawan::class,
             'wartawan.guest' => \App\Http\Middleware\RedirectIfWartawan::class,
             'auth.legacy' => \App\Http\Middleware\RedirectIfNotAuthenticated::class,
+            'public.redirect' => \App\Http\Middleware\RedirectAuthenticatedFromPublic::class,
         ]);
         
         $middleware->validateCsrfTokens(except: [

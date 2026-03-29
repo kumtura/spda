@@ -84,10 +84,12 @@
                 @forelse($donatur as $item)
                     <div class="bg-white rounded-xl border border-slate-100 p-3 flex items-center gap-3">
                         <div class="h-10 w-10 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
-                            @if($item->profile && file_exists(public_path('sumbangan/thumbnail/'.$item->profile)))
+                            @if($item->status_donatur != '1' && $item->profile && file_exists(public_path('storage/usaha/icon/'.$item->profile)))
+                                <img src="{{ asset('storage/usaha/icon/'.$item->profile) }}" class="h-full w-full object-cover" alt="">
+                            @elseif($item->status_donatur != '1' && $item->profile && file_exists(public_path('sumbangan/thumbnail/'.$item->profile)))
                                 <img src="{{ asset('sumbangan/thumbnail/'.$item->profile) }}" class="h-full w-full object-cover" alt="">
                             @else
-                                <i class="bi bi-person text-slate-300"></i>
+                                <i class="bi bi-{{ $item->status_donatur == '3' ? 'shop' : 'person' }} text-slate-300"></i>
                             @endif
                         </div>
                         <div class="flex-1 min-w-0">

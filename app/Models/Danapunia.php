@@ -22,6 +22,8 @@ class Danapunia extends Model
         'tanggal_pembayaran', 
         'bulan', 
         'tahun',
+        'bulan_punia',
+        'tahun_punia',
         'xendit_id',
         'status_pembayaran',
         'payment_data',

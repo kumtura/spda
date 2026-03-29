@@ -58,13 +58,13 @@
             
             @if(Session::get('level') == "3")
                 <!-- Business Unit Features -->
-                <a href="{{ url('administrator/usaha/iuran') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/usaha/iuran*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                <a href="{{ url('administrator/usaha/punia') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/usaha/punia*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
                     <i class="bi bi-wallet2 text-xl"></i>
-                    <span class="text-[10px] font-semibold">Iuran</span>
+                    <span class="text-[10px] font-semibold">Punia</span>
                 </a>
                 <a href="{{ url('administrator/usaha/loker') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/usaha/loker*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
-                    <i class="bi bi-plus-circle text-xl"></i>
-                    <span class="text-[10px] font-semibold">Loker</span>
+                    <i class="bi bi-people text-xl"></i>
+                    <span class="text-[10px] font-semibold">Tenaga Kerja</span>
                 </a>
             @endif
 

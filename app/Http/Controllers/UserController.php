@@ -38,8 +38,21 @@ class UserController extends BaseController
 
     public function indexuser(Request $request){
         $datas = User::where('id' , Session::get('idloginpt'))->orderBy('id' , 'desc')->firstOrfail();
+        
+        // If unit usaha, get business details
+        $usaha = null;
+        $banjar = null;
+        if(Session::get('level') == 3) {
+            $usaha = \App\Models\Usaha::join('tb_detail_usaha','tb_detail_usaha.id_detail_usaha','tb_usaha.id_detail_usaha')
+                ->leftJoin('tb_kategori_usaha', 'tb_kategori_usaha.id_kategori_usaha', 'tb_usaha.id_jenis_usaha')
+                ->where('tb_usaha.username', $datas->email)
+                ->select('tb_usaha.*', 'tb_detail_usaha.*', 'tb_kategori_usaha.nama_kategori_usaha')
+                ->first();
+            
+            $banjar = \App\Models\Banjar::where('aktif', '1')->get();
+        }
 
-        return view('admin.pages.user_profile.update_form' , compact('datas'));
+        return view('admin.pages.user_profile.update_form' , compact('datas', 'usaha', 'banjar'));
     }
 
 	public function login_user(Request $request){
@@ -101,24 +114,41 @@ class UserController extends BaseController
 	}
 
     public function updatepost_profile(Request $request){
-
+        
+        // Update User table
         if($request->input('passwordinput') == ""){
-
             User::where('id', $request->input('iduserinput_edit'))->update(array(
                     'name' =>  $request->input('textinput'),'email' =>  $request->input('emailinput'),'no_wa' =>  $request->input('nowainput')));
-
         }
         else{
-
             User::where('id', $request->input('iduserinput_edit'))->update(array(
                     'name' =>  $request->input('textinput'), 'password' => Hash::make($request->input('passwordinput')) , 'email' =>  $request->input('emailinput'),'no_wa' =>  $request->input('nowainput')));
-
+        }
+        
+        // If unit usaha, update business details
+        if(Session::get('level') == 3 && $request->has('id_detail_usaha')) {
+            $updateData = [
+                'nama_usaha' => $request->input('nama_usaha'),
+                'email_usaha' => $request->input('email_usaha'),
+                'id_banjar' => $request->input('id_banjar'),
+                'no_telp' => $request->input('no_telp'),
+                'no_wa' => $request->input('no_wa_usaha'),
+                'alamat_banjar' => $request->input('alamat_banjar'),
+                'facebook_url' => $request->input('facebook_url'),
+                'twitter_url' => $request->input('twitter_url'),
+                'website_url' => $request->input('website_url'),
+                'google_maps' => $request->input('google_maps'),
+            ];
+            
+            \App\Models\Detail_Usaha::where('id_detail_usaha', $request->input('id_detail_usaha'))->update($updateData);
+            
+            // Update logo if uploaded
+            if($request->hasFile('logo_usaha')) {
+                \App\Models\Detail_Usaha::update_logo_usaha($request, $request->input('id_detail_usaha'));
+            }
         }
 
-       // $datas = User::where('id' , Session::get('idloginpt'))->orderBy('id' , 'desc')->firstOrfail();
-
-        return redirect('administrator/userprofile');
-
+        return redirect('administrator/userprofile')->with('success', 'Profil berhasil diperbarui');
     }
 
     public function ambil_listuser(Request $request){

@@ -72,11 +72,17 @@ class XenditWebhookController extends Controller
         // Potential Statuses: PAID, SETTLED, COMPLETED, SUCCEEDED
         $success_statuses = ['PAID', 'SETTLED', 'COMPLETED', 'SUCCEEDED'];
         if (in_array(strtoupper($status), $success_statuses)) {
-            $record->update([
+            $updateData = [
                 'status_pembayaran' => 'completed',
-                'aktif' => '1',
-                'tanggal_pembayaran' => now()
-            ]);
+                'aktif' => '1'
+            ];
+            
+            // Only update tanggal_pembayaran if it's not already set or if it's null
+            if (!$record->tanggal_pembayaran) {
+                $updateData['tanggal_pembayaran'] = now();
+            }
+            
+            $record->update($updateData);
 
             // For Donation Programs: Update 'terkumpul' total
             if ($type === 'donasi' && $record->id_program_donasi) {

@@ -16,30 +16,30 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', [LandingController::class, 'home'])->name('public.home');
+Route::get('/', [LandingController::class, 'home'])->name('public.home')->middleware('public.redirect');
 
-Route::get('/berita', [LandingController::class, 'berita'])->name('public.berita');
-Route::get('/berita/kategori/{id}', [LandingController::class, 'berita_kategori'])->name('public.berita.kategori');
-Route::get('/berita/{id}', [LandingController::class, 'berita_detail'])->name('public.berita.detail');
+Route::get('/berita', [LandingController::class, 'berita'])->name('public.berita')->middleware('public.redirect');
+Route::get('/berita/kategori/{id}', [LandingController::class, 'berita_kategori'])->name('public.berita.kategori')->middleware('public.redirect');
+Route::get('/berita/{id}', [LandingController::class, 'berita_detail'])->name('public.berita.detail')->middleware('public.redirect');
 Route::post('/berita/{id}/komentar', [LandingController::class, 'berita_komentar'])->name('public.berita.komentar');
-Route::get('/punia', [LandingController::class, 'punia'])->name('public.punia');
-Route::get('/punia/pembayaran', [LandingController::class, 'punia_pembayaran'])->name('public.punia.pembayaran');
+Route::get('/punia', [LandingController::class, 'punia'])->name('public.punia')->middleware('public.redirect');
+Route::get('/punia/pembayaran', [LandingController::class, 'punia_pembayaran'])->name('public.punia.pembayaran')->middleware('public.redirect');
 Route::post('/punia/pembayaran/submit', [LandingController::class, 'punia_pembayaran_submit'])->name('public.punia.pembayaran.submit');
-Route::get('/punia/penggunaan/{id}', [LandingController::class, 'punia_penggunaan_detail'])->name('public.punia.penggunaan');
-Route::get('/punia/alokasi/{id}', [LandingController::class, 'punia_alokasi_detail'])->name('public.punia.alokasi.detail');
+Route::get('/punia/penggunaan/{id}', [LandingController::class, 'punia_penggunaan_detail'])->name('public.punia.penggunaan')->middleware('public.redirect');
+Route::get('/punia/alokasi/{id}', [LandingController::class, 'punia_alokasi_detail'])->name('public.punia.alokasi.detail')->middleware('public.redirect');
 Route::get('/punia/download-laporan', [LandingController::class, 'punia_download_laporan'])->name('public.punia.download');
-Route::get('/donasi', [LandingController::class, 'donasi'])->name('public.donasi');
-Route::get('/donasi/pembayaran/{id}', [LandingController::class, 'donasi_pembayaran'])->name('public.donasi.pembayaran');
-Route::get('/donasi/{id}', [LandingController::class, 'donasi_detail'])->name('public.donasi.detail');
+Route::get('/donasi', [LandingController::class, 'donasi'])->name('public.donasi')->middleware('public.redirect');
+Route::get('/donasi/pembayaran/{id}', [LandingController::class, 'donasi_pembayaran'])->name('public.donasi.pembayaran')->middleware('public.redirect');
+Route::get('/donasi/{id}', [LandingController::class, 'donasi_detail'])->name('public.donasi.detail')->middleware('public.redirect');
 Route::post('/donasi/submit', [LandingController::class, 'donasi_post'])->name('public.donasi.submit');
 Route::get('/pembayaran/metode', [LandingController::class, 'payment_methods'])->name('public.payment_methods');
 Route::post('/pembayaran/proses', [\App\Http\Controllers\PaymentController::class, 'initiate'])->name('public.payment_initiate');
 Route::get('/pembayaran/hasil', [\App\Http\Controllers\PaymentController::class, 'showResult'])->name('public.payment_result');
 Route::post('/pembayaran/simulate', [\App\Http\Controllers\PaymentController::class, 'simulate'])->name('public.payment_simulate');
 Route::get('/pembayaran/status/{order_id}', [\App\Http\Controllers\PaymentController::class, 'checkStatus'])->name('public.payment_status');
-Route::get('/unit-usaha', [LandingController::class, 'unit_usaha'])->name('public.unit_usaha');
-Route::get('/loker', [LandingController::class, 'loker'])->name('public.loker');
-Route::get('/loker/{id}', [LandingController::class, 'loker_detail'])->name('public.loker.detail');
+Route::get('/unit-usaha', [LandingController::class, 'unit_usaha'])->name('public.unit_usaha')->middleware('public.redirect');
+Route::get('/loker', [LandingController::class, 'loker'])->name('public.loker')->middleware('public.redirect');
+Route::get('/loker/{id}', [LandingController::class, 'loker_detail'])->name('public.loker.detail')->middleware('public.redirect');
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/register_usaha', function () {
@@ -103,8 +103,15 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 
         // Unit Usaha Mobile Features
         Route::group(['middleware' => 'role:3'], function() {
-            Route::get('/usaha/iuran', function() { return view('backend.usaha.iuran'); });
+            Route::get('/usaha/home', function() { return view('backend.usaha.home'); });
+            Route::get('/usaha/punia', function() { return view('backend.usaha.punia'); });
+            Route::post('/usaha/punia/bayar', [LandingController::class, 'usaha_punia_bayar'])->name('usaha.punia.bayar');
+            Route::get('/usaha/punia/print', [LandingController::class, 'usaha_punia_print'])->name('usaha.punia.print');
             Route::get('/usaha/loker', function() { return view('backend.usaha.loker'); });
+            Route::get('/usaha/donasi', [LandingController::class, 'usaha_donasi']);
+            Route::get('/usaha/donasi/detail/{id}', [LandingController::class, 'usaha_donasi_detail']);
+            Route::get('/usaha/berita', [LandingController::class, 'usaha_berita']);
+            Route::get('/usaha/berita/detail/{id}', [LandingController::class, 'usaha_berita_detail']);
         });
 
 		// Karyawan / Tenaga Kerja

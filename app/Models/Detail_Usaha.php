@@ -56,7 +56,7 @@ class Detail_Usaha extends Model
     }
     
     public static function update_logo_usaha($request,$index){
-        $originalImage= $request->file('file');
+        $originalImage= $request->file('logo_usaha') ?: $request->file('file');
         $menu_name = time().str_shuffle("abcdefghijklmnopqrstuvwxyz").".".$originalImage->getClientOriginalExtension();
         
         // Create directories if they don't exist (using storage path)

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Laporan Dana Punia - {{ $month_name }} {{ $year }}</title>
+    <title>Kartu Punia - {{ $usaha->nama_usaha }} - Tahun {{ $year }}</title>
     <style>
         * {
             margin: 0;
@@ -55,16 +55,6 @@
             color: #2c3e50;
             font-weight: 600;
         }
-        h3 {
-            font-size: 12px;
-            color: #2c3e50;
-            margin: 25px 0 12px 0;
-            padding: 8px 0;
-            border-bottom: 1px solid #bdc3c7;
-            text-transform: uppercase;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -100,6 +90,9 @@
         table tbody tr:nth-child(even) {
             background: #f8f9fa;
         }
+        table tbody tr.unpaid {
+            background: #fff5f5;
+        }
         table tbody tr.total-row {
             background: #ecf0f1;
             font-weight: 600;
@@ -110,6 +103,26 @@
         }
         .text-center {
             text-align: center;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 8px;
+            font-weight: 600;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
         }
         .summary {
             margin-top: 30px;
@@ -153,112 +166,95 @@
         .footer p {
             margin: 3px 0;
         }
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #95a5a6;
-            font-style: italic;
-            background: #f8f9fa;
-            border: 1px dashed #bdc3c7;
-        }
-        .page-break {
-            page-break-after: always;
-        }
     </style>
 </head>
 <body>
     <!-- Header -->
     <div class="header">
         <h1>{{ strtoupper($village['name'] ?? 'SPDA') }}</h1>
-        <h2>Laporan Dana Punia</h2>
-        <p>Periode: {{ $month_name }} {{ $year }}</p>
+        <h2>Kartu Punia Unit Usaha</h2>
+        <p>Tahun {{ $year }}</p>
     </div>
 
     <!-- Info Box -->
     <div class="info-box">
+        <p><strong>Nama Usaha:</strong> {{ $usaha->nama_usaha }}</p>
+        <p><strong>Banjar:</strong> {{ $usaha->nama_banjar ?? '-' }}</p>
         <p><strong>Tanggal Cetak:</strong> {{ \Carbon\Carbon::now()->translatedFormat('d F Y, H:i') }} WITA</p>
-        <p><strong>Dicetak oleh:</strong> Sistem SPDA</p>
     </div>
 
-    <!-- Pemasukan Section -->
-    <h3>Pemasukan Dana Punia</h3>
-    @if($pemasukan->count() > 0)
+    <!-- Kartu Punia Table -->
     <table>
         <thead>
             <tr>
                 <th style="width: 5%;">No</th>
-                <th style="width: 15%;">Tanggal</th>
-                <th style="width: 35%;">Nama Donatur</th>
-                <th style="width: 20%;">Kontak</th>
-                <th style="width: 25%;" class="text-right">Jumlah (Rp)</th>
+                <th style="width: 25%;">Bulan</th>
+                <th style="width: 25%;" class="text-center">Nominal (Rp)</th>
+                <th style="width: 20%;" class="text-center">Tanggal Bayar</th>
+                <th style="width: 25%;" class="text-center">Status</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($pemasukan as $index => $item)
-            <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ \Carbon\Carbon::parse($item->tanggal_pembayaran)->translatedFormat('d M Y') }}</td>
-                <td>{{ $item->nama_donatur }}</td>
-                <td>{{ $item->no_wa ?: '-' }}</td>
-                <td class="text-right">{{ number_format($item->jumlah_dana, 0, ',', '.') }}</td>
+            @php
+                $totalPaid = 0;
+                $paidCount = 0;
+            @endphp
+            @foreach($months as $monthNum => $monthName)
+            @php
+                $payment = $payments[$monthNum] ?? null;
+                $isPaid = $payment !== null;
+                $isPastMonth = $year < $currentYear || ($year == $currentYear && $monthNum < (int)$currentMonth);
+                
+                if($isPaid) {
+                    $totalPaid += $payment->jumlah_dana;
+                    $paidCount++;
+                }
+            @endphp
+            <tr class="{{ !$isPaid && $isPastMonth ? 'unpaid' : '' }}">
+                <td class="text-center">{{ $monthNum }}</td>
+                <td>{{ $monthName }}</td>
+                <td class="text-right">
+                    @if($isPaid)
+                        {{ number_format($payment->jumlah_dana, 0, ',', '.') }}
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="text-center">
+                    @if($isPaid)
+                        {{ \Carbon\Carbon::parse($payment->tanggal_pembayaran)->translatedFormat('d M Y') }}
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="text-center">
+                    @if($isPaid)
+                        <span class="badge badge-success">Lunas</span>
+                    @elseif($isPastMonth)
+                        <span class="badge badge-danger">Terlewat</span>
+                    @else
+                        <span class="badge badge-warning">Belum Bayar</span>
+                    @endif
+                </td>
             </tr>
             @endforeach
             <tr class="total-row">
-                <td colspan="4" class="text-right">TOTAL PEMASUKAN:</td>
-                <td class="text-right">{{ number_format($total_pemasukan, 0, ',', '.') }}</td>
+                <td colspan="2" class="text-right">TOTAL TERBAYAR ({{ $paidCount }} bulan):</td>
+                <td class="text-right">{{ number_format($totalPaid, 0, ',', '.') }}</td>
+                <td colspan="2"></td>
             </tr>
         </tbody>
     </table>
-    @else
-    <div class="no-data">Tidak ada data pemasukan pada periode ini</div>
-    @endif
-
-    <!-- Pengeluaran Section -->
-    <h3>Pengeluaran Dana Punia</h3>
-    @if($pengeluaran->count() > 0)
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 5%;">No</th>
-                <th style="width: 15%;">Tanggal</th>
-                <th style="width: 25%;">Kategori</th>
-                <th style="width: 30%;">Keperluan</th>
-                <th style="width: 25%;" class="text-right">Jumlah (Rp)</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($pengeluaran as $index => $item)
-            <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ \Carbon\Carbon::parse($item->tanggal_alokasi)->translatedFormat('d M Y') }}</td>
-                <td>{{ $item->kategori->nama_kategori ?? '-' }}</td>
-                <td>{{ $item->judul }}</td>
-                <td class="text-right">{{ number_format($item->nominal, 0, ',', '.') }}</td>
-            </tr>
-            @endforeach
-            <tr class="total-row">
-                <td colspan="4" class="text-right">TOTAL PENGELUARAN:</td>
-                <td class="text-right">{{ number_format($total_pengeluaran, 0, ',', '.') }}</td>
-            </tr>
-        </tbody>
-    </table>
-    @else
-    <div class="no-data">Tidak ada data pengeluaran pada periode ini</div>
-    @endif
 
     <!-- Summary -->
     <div class="summary">
         <div class="summary-row">
-            <span class="summary-label">Total Pemasukan:</span>
-            <span class="summary-value">Rp {{ number_format($total_pemasukan, 0, ',', '.') }}</span>
+            <span class="summary-label">Total Bulan Terbayar:</span>
+            <span class="summary-value">{{ $paidCount }} dari 12 bulan</span>
         </div>
         <div class="summary-row">
-            <span class="summary-label">Total Pengeluaran:</span>
-            <span class="summary-value">Rp {{ number_format($total_pengeluaran, 0, ',', '.') }}</span>
-        </div>
-        <div class="summary-row">
-            <span class="summary-label">Saldo Periode Ini:</span>
-            <span class="summary-value">Rp {{ number_format($saldo, 0, ',', '.') }}</span>
+            <span class="summary-label">Total Kontribusi Tahun {{ $year }}:</span>
+            <span class="summary-value">Rp {{ number_format($totalPaid, 0, ',', '.') }}</span>
         </div>
     </div>
 

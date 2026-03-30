@@ -110,11 +110,21 @@
                   $pendingCount = \App\Models\Danapunia::where('metode_pembayaran', 'transfer_manual')
                      ->where('status_verifikasi', 'pending')->count() + 
                      \App\Models\Sumbangan::where('metode_pembayaran', 'transfer_manual')
+                     ->where('status_verifikasi', 'pending')->count() +
+                     \App\Models\TiketWisata::where('metode_pembayaran', 'transfer_manual')
                      ->where('status_verifikasi', 'pending')->count();
                @endphp
                @if($pendingCount > 0)
                <span class="ms-auto bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full" x-show="sidebarOpen">{{ $pendingCount }}</span>
                @endif
+            </a>
+          </li>
+
+          <!-- Objek Wisata (Standalone) -->
+          <li>
+            <a href="{{ url('administrator/objek_wisata') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/objek_wisata*') ? 'bg-white/15' : '' }}">
+               <i class="bi bi-geo-alt w-5 h-5 text-white flex items-center justify-center"></i>
+               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Objek Wisata</span>
             </a>
           </li>
 

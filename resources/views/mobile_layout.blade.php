@@ -51,10 +51,15 @@
 
         <!-- Bottom Navigation (Minimalist KitaBisa Style) -->
         <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around items-center h-[70px] z-50 px-2 pb-[env(safe-area-inset-bottom)]">
-            <a href="{{ url('administrator/') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+            @php
+                $homeActiveColor = 'text-[#00a6eb]';
+            @endphp
+            @if(Session::get('level') != "2")
+            <a href="{{ url('administrator/') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator') ? $homeActiveColor : 'text-gray-400' }}">
                 <i class="bi bi-house-door{{ Request::is('administrator') ? '-fill' : '' }} text-xl"></i>
                 <span class="text-[10px] font-semibold">Home</span>
             </a>
+            @endif
             
             @if(Session::get('level') == "3")
                 <!-- Business Unit Features -->
@@ -70,17 +75,28 @@
 
             @if(Session::get('level') == "2")
                 <!-- Kelian Adat Features -->
-                <a href="{{ url('administrator/data_usaha') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/data_usaha*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
-                    <i class="bi bi-briefcase text-xl"></i>
-                    <span class="text-[10px] font-semibold">Usaha</span>
+                <a href="{{ url('administrator/') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator') && !Request::is('administrator/*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-house-door{{ Request::is('administrator') && !Request::is('administrator/*') ? '-fill' : '' }} text-xl"></i>
+                    <span class="text-[10px] font-semibold">Home</span>
                 </a>
-                <a href="{{ url('administrator/datauser') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/datauser*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
-                    <i class="bi bi-people text-xl"></i>
-                    <span class="text-[10px] font-semibold">User</span>
+                <a href="{{ url('administrator/kelian/punia') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/kelian/punia*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-wallet2 text-xl"></i>
+                    <span class="text-[10px] font-semibold">Punia</span>
+                </a>
+                <a href="{{ url('administrator/kelian/tiket') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/kelian/tiket*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-ticket-perforated text-xl"></i>
+                    <span class="text-[10px] font-semibold">Tiket</span>
+                </a>
+                <a href="{{ url('administrator/kelian/usaha') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/kelian/usaha*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-building text-xl"></i>
+                    <span class="text-[10px] font-semibold">Usaha</span>
                 </a>
             @endif
 
-            <a href="{{ url('administrator/userprofile') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/userprofile*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+            @php
+                $profileActiveColor = 'text-[#00a6eb]';
+            @endphp
+            <a href="{{ url('administrator/userprofile') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/userprofile*') ? $profileActiveColor : 'text-gray-400' }}">
                 <i class="bi bi-person{{ Request::is('administrator/userprofile*') ? '-fill' : '' }} text-xl"></i>
                 <span class="text-[10px] font-semibold">Profil</span>
             </a>

@@ -15,7 +15,7 @@
     </div>
 
     <!-- Status Banjar Card -->
-    <div class="bg-[#00a6eb] rounded-3xl p-6 text-white shadow-lg shadow-[#00a6eb]/20 relative overflow-hidden">
+    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] rounded-3xl p-6 text-white shadow-lg shadow-[#00a6eb]/20 relative overflow-hidden">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
         <p class="text-xs font-bold text-white/80 uppercase tracking-widest mb-1">Otoritas Wilayah</p>
         <h2 class="text-2xl font-black mb-4">Banjar {{ Auth::user()->banjar ? Auth::user()->banjar->nama_banjar : 'Adat' }}</h2>
@@ -43,7 +43,7 @@
             </a>
 
             <a href="{{ url('administrator/kelian/donasi') }}" class="bg-white border border-slate-100 p-5 rounded-3xl shadow-sm hover:shadow-md transition-all group">
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mb-4 transition-colors group-hover:bg-emerald-500 group-hover:text-white">
+                <div class="w-12 h-12 bg-blue-50 text-[#00a6eb] rounded-2xl flex items-center justify-center mb-4 transition-colors group-hover:bg-[#00a6eb] group-hover:text-white">
                     <i class="bi bi-heart-pulse text-2xl"></i>
                 </div>
                 <h3 class="font-bold text-slate-800 text-sm mb-1">Data Donasi</h3>
@@ -51,7 +51,7 @@
             </a>
 
             <a href="{{ url('administrator/kelian/verifikasi') }}" class="bg-white border border-slate-100 p-5 rounded-3xl shadow-sm hover:shadow-md transition-all group">
-                <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center mb-4 transition-colors group-hover:bg-amber-500 group-hover:text-white">
+                <div class="w-12 h-12 bg-blue-50 text-[#00a6eb] rounded-2xl flex items-center justify-center mb-4 transition-colors group-hover:bg-[#00a6eb] group-hover:text-white">
                     <i class="bi bi-clock-history text-2xl"></i>
                 </div>
                 <h3 class="font-bold text-slate-800 text-sm mb-1">Verifikasi</h3>
@@ -75,7 +75,7 @@
             </a>
 
             <a href="{{ url('administrator/data_tenagakerja_interview') }}" class="bg-white border border-slate-100 p-5 rounded-3xl shadow-sm hover:shadow-md transition-all group">
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mb-4 transition-colors group-hover:bg-emerald-500 group-hover:text-white">
+                <div class="w-12 h-12 bg-blue-50 text-[#00a6eb] rounded-2xl flex items-center justify-center mb-4 transition-colors group-hover:bg-[#00a6eb] group-hover:text-white">
                     <i class="bi bi-person-workspace text-2xl"></i>
                 </div>
                 <h3 class="font-bold text-slate-800 text-sm mb-1">Penerimaan</h3>

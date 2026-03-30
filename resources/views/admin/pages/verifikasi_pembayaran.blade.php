@@ -44,6 +44,15 @@
                 <span class="bg-primary-light text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $pending_donasi->count() }}</span>
                 @endif
             </button>
+            <button @click="activeTab = 'tiket'" 
+                    :class="activeTab === 'tiket' ? 'border-b-2 border-primary-light text-primary-light' : 'text-slate-400 hover:text-slate-600'"
+                    class="flex-1 py-4 text-sm font-bold transition-colors flex items-center justify-center gap-2 -mb-px">
+                <i class="bi bi-ticket-perforated"></i>
+                <span>Tiket</span>
+                @if($pending_tiket->count() > 0)
+                <span class="bg-primary-light text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $pending_tiket->count() }}</span>
+                @endif
+            </button>
             <button @click="activeTab = 'riwayat'" 
                     :class="activeTab === 'riwayat' ? 'border-b-2 border-primary-light text-primary-light' : 'text-slate-400 hover:text-slate-600'"
                     class="flex-1 py-4 text-sm font-bold transition-colors flex items-center justify-center gap-2 -mb-px">
@@ -205,10 +214,87 @@
             @endif
         </div>
 
+        <!-- Tiket Tab Content -->
+        <div x-show="activeTab === 'tiket'" class="p-6">
+            @if($pending_tiket->count() > 0)
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b-2 border-slate-200">
+                            <th class="text-left px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Tanggal</th>
+                            <th class="text-left px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Pengunjung</th>
+                            <th class="text-left px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Objek Wisata</th>
+                            <th class="text-center px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Jumlah</th>
+                            <th class="text-right px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Nominal</th>
+                            <th class="text-center px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Bukti</th>
+                            <th class="text-center px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($pending_tiket as $tiket)
+                        <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td class="px-4 py-4">
+                                <span class="text-xs text-slate-600">{{ \Carbon\Carbon::parse($tiket->created_at)->translatedFormat('d M Y') }}</span>
+                                <br>
+                                <span class="text-[10px] text-slate-400">{{ \Carbon\Carbon::parse($tiket->created_at)->translatedFormat('H:i') }} WITA</span>
+                            </td>
+                            <td class="px-4 py-4">
+                                <span class="text-xs font-bold text-slate-800">{{ $tiket->nama_pengunjung }}</span>
+                                @if($tiket->email)
+                                <br><span class="text-[10px] text-slate-400">{{ $tiket->email }}</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-4">
+                                <span class="text-xs text-slate-600">{{ $tiket->objekWisata->nama_objek }}</span>
+                                <br>
+                                <span class="text-[10px] text-slate-400">{{ $tiket->tanggal_kunjungan->translatedFormat('d M Y') }}</span>
+                            </td>
+                            <td class="px-4 py-4 text-center">
+                                <span class="text-xs font-bold text-slate-800">{{ $tiket->jumlah_tiket }} Tiket</span>
+                            </td>
+                            <td class="px-4 py-4 text-right">
+                                <span class="text-sm font-bold text-slate-800">Rp {{ number_format($tiket->total_harga, 0, ',', '.') }}</span>
+                            </td>
+                            <td class="px-4 py-4 text-center">
+                                <button @click="selectedBukti = '{{ asset('bukti_transfer/'.$tiket->bukti_transfer) }}'; showBuktiModal = true" 
+                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-light text-white rounded-lg text-xs font-bold hover:bg-primary-dark transition-colors">
+                                    <i class="bi bi-eye"></i> Lihat
+                                </button>
+                            </td>
+                            <td class="px-4 py-4">
+                                <div class="flex items-center justify-center gap-2">
+                                    <form action="{{ url('administrator/verifikasi_pembayaran/approve') }}" method="POST" onsubmit="return confirm('Setujui pembayaran ini?')">
+                                        @csrf
+                                        <input type="hidden" name="id" value="{{ $tiket->id_tiket }}">
+                                        <input type="hidden" name="type" value="tiket">
+                                        <button type="submit" class="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-xs font-bold hover:bg-emerald-600 transition-colors">
+                                            <i class="bi bi-check-circle"></i> Setujui
+                                        </button>
+                                    </form>
+                                    <button @click="rejectId = {{ $tiket->id_tiket }}; rejectType = 'tiket'; showRejectModal = true" 
+                                            class="px-3 py-1.5 bg-slate-500 text-white rounded-lg text-xs font-bold hover:bg-slate-600 transition-colors">
+                                        <i class="bi bi-x-circle"></i> Tolak
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @else
+            <div class="text-center py-12">
+                <i class="bi bi-inbox text-5xl text-slate-300 mb-3"></i>
+                <p class="text-sm font-bold text-slate-600">Tidak ada pembayaran tiket yang menunggu verifikasi</p>
+                <p class="text-xs text-slate-400 mt-1">Semua pembayaran sudah diproses</p>
+            </div>
+            @endif
+        </div>
+
         <!-- Riwayat Tab Content -->
         <div x-show="activeTab === 'riwayat'" class="p-6">
             @php
-                // Gabungkan punia dan donasi yang sudah diverifikasi
+                // Gabungkan punia, donasi, dan tiket yang sudah diverifikasi
                 $riwayat_punia = App\Models\Danapunia::where('metode_pembayaran', 'transfer_manual')
                     ->whereIn('status_verifikasi', ['approved', 'rejected'])
                     ->with('usaha.detail')
@@ -227,8 +313,17 @@
                         return $item;
                     });
                 
+                $riwayat_tiket = App\Models\TiketWisata::where('metode_pembayaran', 'transfer_manual')
+                    ->whereIn('status_verifikasi', ['approved', 'rejected'])
+                    ->with('objekWisata')
+                    ->get()
+                    ->map(function($item) {
+                        $item->tipe = 'tiket';
+                        return $item;
+                    });
+                
                 // Gabungkan dan sort by updated_at
-                $riwayat = $riwayat_punia->concat($riwayat_donasi)->sortByDesc('updated_at');
+                $riwayat = $riwayat_punia->concat($riwayat_donasi)->concat($riwayat_tiket)->sortByDesc('updated_at');
             @endphp
             
             @if($riwayat->count() > 0)
@@ -258,17 +353,23 @@
                                 <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 rounded text-[10px] font-bold border border-blue-100">
                                     <i class="bi bi-wallet2"></i> Punia
                                 </span>
-                                @else
+                                @elseif($item->tipe === 'donasi')
                                 <span class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-600 rounded text-[10px] font-bold border border-rose-100">
                                     <i class="bi bi-heart-pulse"></i> Donasi
+                                </span>
+                                @else
+                                <span class="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-600 rounded text-[10px] font-bold border border-amber-100">
+                                    <i class="bi bi-ticket-perforated"></i> Tiket
                                 </span>
                                 @endif
                             </td>
                             <td class="px-4 py-4">
                                 @if($item->tipe === 'punia')
                                 <span class="text-xs font-bold text-slate-800">{{ $item->nama_donatur }}</span>
-                                @else
+                                @elseif($item->tipe === 'donasi')
                                 <span class="text-xs font-bold text-slate-800">{{ $item->nama }}</span>
+                                @else
+                                <span class="text-xs font-bold text-slate-800">{{ $item->nama_pengunjung }}</span>
                                 @endif
                             </td>
                             <td class="px-4 py-4">
@@ -289,7 +390,7 @@
                                         <span class="text-xs text-slate-400">Masyarakat</span>
                                     </div>
                                     @endif
-                                @else
+                                @elseif($item->tipe === 'donasi')
                                     @if($item->programDonasi)
                                     <div class="flex items-center gap-2">
                                         <i class="bi bi-heart text-slate-400 text-xs"></i>
@@ -298,13 +399,23 @@
                                     @else
                                     <span class="text-xs text-slate-400">-</span>
                                     @endif
+                                @else
+                                    <div class="flex items-center gap-2">
+                                        <i class="bi bi-geo-alt text-slate-400 text-xs"></i>
+                                        <div>
+                                            <p class="text-xs text-slate-600">{{ $item->objekWisata->nama_objek }}</p>
+                                            <p class="text-[10px] text-slate-400">{{ $item->jumlah_tiket }} Tiket - {{ $item->tanggal_kunjungan->translatedFormat('d M Y') }}</p>
+                                        </div>
+                                    </div>
                                 @endif
                             </td>
                             <td class="px-4 py-4 text-right">
                                 @if($item->tipe === 'punia')
                                 <span class="text-sm font-bold text-slate-800">Rp {{ number_format($item->jumlah_dana, 0, ',', '.') }}</span>
-                                @else
+                                @elseif($item->tipe === 'donasi')
                                 <span class="text-sm font-bold text-slate-800">Rp {{ number_format($item->nominal, 0, ',', '.') }}</span>
+                                @else
+                                <span class="text-sm font-bold text-slate-800">Rp {{ number_format($item->total_harga, 0, ',', '.') }}</span>
                                 @endif
                             </td>
                             <td class="px-4 py-4 text-center">

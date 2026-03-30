@@ -45,6 +45,15 @@ Route::get('/loker', [LandingController::class, 'loker'])->name('public.loker')-
 Route::get('/loker/{id}', [LandingController::class, 'loker_detail'])->name('public.loker.detail')->middleware('public.redirect');
 Route::get('/loker/{id}/apply', [LandingController::class, 'loker_apply_form'])->name('public.loker.apply_form');
 Route::post('/loker/{id}/apply', [LandingController::class, 'loker_apply'])->name('public.loker.apply');
+Route::get('/wisata', [LandingController::class, 'wisata'])->name('public.wisata')->middleware('public.redirect');
+Route::get('/wisata/detail/{id}', [LandingController::class, 'wisata_detail'])->name('public.wisata.detail')->middleware('public.redirect');
+Route::get('/wisata/beli/{id}', [LandingController::class, 'wisata_beli'])->name('public.wisata.beli');
+Route::post('/wisata/beli/submit', [LandingController::class, 'wisata_beli_submit'])->name('public.wisata.beli.submit');
+Route::get('/wisata/payment/methods', [LandingController::class, 'wisata_payment_methods'])->name('public.wisata.payment.methods');
+Route::get('/wisata/payment/xendit', [LandingController::class, 'wisata_payment_xendit'])->name('public.wisata.payment.xendit');
+Route::get('/wisata/payment/manual', [LandingController::class, 'wisata_payment_manual'])->name('public.wisata.payment.manual');
+Route::post('/wisata/payment/manual/submit', [LandingController::class, 'wisata_payment_manual_submit'])->name('public.wisata.payment.manual.submit');
+Route::get('/wisata/payment/manual/success', [LandingController::class, 'wisata_payment_manual_success'])->name('public.wisata.payment.manual.success');
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/register_usaha', function () {
@@ -130,6 +139,24 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/kelian/punia', function() { return view('backend.kelian.punia'); });
             Route::get('/kelian/donasi', function() { return view('backend.kelian.donasi'); });
             Route::get('/kelian/verifikasi', [DashboardController::class, 'verifikasi_pembayaran']);
+            Route::get('/kelian/usaha', function() { return view('backend.kelian.usaha'); });
+            
+            // Tiket Wisata for Kelian
+            Route::get('/kelian/tiket', 'Administrator\TiketWisataController@index');
+            Route::get('/kelian/tiket/scan', 'Administrator\TiketWisataController@scan');
+            Route::get('/kelian/tiket/jual', 'Administrator\TiketWisataController@jual');
+            Route::post('/kelian/tiket/jual/submit', 'Administrator\TiketWisataController@jual_submit');
+            Route::get('/kelian/tiket/jual/success/{id}', 'Administrator\TiketWisataController@jual_success');
+            Route::post('/kelian/tiket/scan/validate', 'Administrator\TiketWisataController@scan_validate');
+            
+            // Objek Wisata Management for Kelian
+            Route::get('/kelian/tiket/objek', 'Administrator\ObjekWisataController@index_kelian');
+            Route::get('/kelian/tiket/objek/create', 'Administrator\ObjekWisataController@create_kelian');
+            Route::post('/kelian/tiket/objek/store', 'Administrator\ObjekWisataController@store');
+            Route::get('/kelian/tiket/objek/edit/{id}', 'Administrator\ObjekWisataController@edit_kelian');
+            Route::put('/kelian/tiket/objek/update/{id}', 'Administrator\ObjekWisataController@update');
+            Route::get('/kelian/tiket/objek/delete/{id}', 'Administrator\ObjekWisataController@destroy');
+            Route::get('/kelian/tiket/objek/toggle/{id}', 'Administrator\ObjekWisataController@toggle_status');
         });
 
 		// Karyawan / Tenaga Kerja
@@ -170,6 +197,15 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::post('/alokasi_punia/post','Administrator\AlokasiPuniaController@store');
 			Route::post('/alokasi_punia/update','Administrator\AlokasiPuniaController@update');
 			Route::get('/alokasi_punia/hapus/{id}','Administrator\AlokasiPuniaController@destroy');
+			
+			// Objek Wisata Routes
+			Route::get('/objek_wisata','Administrator\ObjekWisataController@index');
+			Route::get('/objek_wisata/create','Administrator\ObjekWisataController@create');
+			Route::post('/objek_wisata/store','Administrator\ObjekWisataController@store');
+			Route::get('/objek_wisata/edit/{id}','Administrator\ObjekWisataController@edit');
+			Route::put('/objek_wisata/update/{id}','Administrator\ObjekWisataController@update');
+			Route::get('/objek_wisata/delete/{id}','Administrator\ObjekWisataController@destroy');
+			Route::get('/objek_wisata/toggle/{id}','Administrator\ObjekWisataController@toggle_status');
 			
 			Route::get('/data_usaha','Administrator\UsahaController@ambil_listUsaha');
 			

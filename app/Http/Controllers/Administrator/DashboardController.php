@@ -153,20 +153,27 @@ class DashboardController extends BaseController
             ->orderBy('created_at', 'desc')
             ->get();
         
+        // Get pending payments for tiket
+        $pending_tiket = \App\Models\TiketWisata::where('metode_pembayaran', 'transfer_manual')
+            ->where('status_verifikasi', 'pending')
+            ->with('objekWisata')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
         if($level == "1" || $level == "4") {
-            return view('admin.pages.verifikasi_pembayaran', compact('pending_punia', 'pending_donasi'));
+            return view('admin.pages.verifikasi_pembayaran', compact('pending_punia', 'pending_donasi', 'pending_tiket'));
         } else if ($level == "2") {
-            return view('backend.kelian.verifikasi_pembayaran', compact('pending_punia', 'pending_donasi'));
+            return view('backend.kelian.verifikasi_pembayaran', compact('pending_punia', 'pending_donasi', 'pending_tiket'));
         }
         
-        return view('admin.pages.verifikasi_pembayaran', compact('pending_punia', 'pending_donasi'));
+        return view('admin.pages.verifikasi_pembayaran', compact('pending_punia', 'pending_donasi', 'pending_tiket'));
     }
 
     public function verifikasi_approve(Request $request)
     {
         $request->validate([
             'id' => 'required',
-            'type' => 'required|in:punia,donasi'
+            'type' => 'required|in:punia,donasi,tiket'
         ]);
 
         if($request->type === 'punia') {
@@ -178,13 +185,21 @@ class DashboardController extends BaseController
                     'tanggal_pembayaran' => now()
                 ]);
             }
-        } else {
+        } elseif($request->type === 'donasi') {
             $payment = \App\Models\Sumbangan::find($request->id);
             if($payment) {
                 $payment->update([
                     'status_verifikasi' => 'approved',
                     'status_pembayaran' => 'completed',
                     'tanggal' => now()
+                ]);
+            }
+        } else {
+            $payment = \App\Models\TiketWisata::find($request->id);
+            if($payment) {
+                $payment->update([
+                    'status_verifikasi' => 'approved',
+                    'status_pembayaran' => 'completed'
                 ]);
             }
         }
@@ -196,7 +211,7 @@ class DashboardController extends BaseController
     {
         $request->validate([
             'id' => 'required',
-            'type' => 'required|in:punia,donasi',
+            'type' => 'required|in:punia,donasi,tiket',
             'alasan' => 'nullable|string'
         ]);
 
@@ -208,8 +223,16 @@ class DashboardController extends BaseController
                     'catatan_verifikasi' => $request->alasan
                 ]);
             }
-        } else {
+        } elseif($request->type === 'donasi') {
             $payment = \App\Models\Sumbangan::find($request->id);
+            if($payment) {
+                $payment->update([
+                    'status_verifikasi' => 'rejected',
+                    'catatan_verifikasi' => $request->alasan
+                ]);
+            }
+        } else {
+            $payment = \App\Models\TiketWisata::find($request->id);
             if($payment) {
                 $payment->update([
                     'status_verifikasi' => 'rejected',

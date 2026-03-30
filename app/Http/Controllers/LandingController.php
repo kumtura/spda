@@ -7,6 +7,8 @@ use App\Models\Sumbangan;
 use App\Models\Danapunia;
 use App\Models\Usaha;
 use App\Models\PaymentChannel;
+use App\Models\ObjekWisata;
+use App\Models\TiketWisata;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -825,6 +827,190 @@ class LandingController extends Controller
         }
 
         return redirect()->back()->with('error', 'Data tidak ditemukan');
+    }
+
+    // Tiket Wisata Public Pages
+    public function wisata()
+    {
+        return view('front.pages.wisata');
+    }
+
+    public function wisata_detail($id)
+    {
+        $objek = ObjekWisata::where('id_objek_wisata', $id)
+            ->where('aktif', '1')
+            ->where('status', 'aktif')
+            ->firstOrFail();
+        return view('front.pages.wisata_detail', compact('objek'));
+    }
+
+    public function wisata_beli($id)
+    {
+        $objek = ObjekWisata::where('id_objek_wisata', $id)
+            ->where('aktif', '1')
+            ->where('status', 'aktif')
+            ->firstOrFail();
+        return view('front.pages.wisata_beli', compact('objek'));
+    }
+
+    public function wisata_beli_submit(Request $request)
+    {
+        $request->validate([
+            'id_objek_wisata' => 'required',
+            'nama_pengunjung' => 'required',
+            'email' => 'required|email',
+            'no_telp' => 'required',
+            'jumlah_tiket' => 'required|integer|min:1',
+            'tanggal_kunjungan' => 'required|date|after_or_equal:today'
+        ]);
+
+        $objek = ObjekWisata::findOrFail($request->id_objek_wisata);
+        $totalHarga = $objek->harga_tiket * $request->jumlah_tiket;
+
+        // Store in session for payment
+        session([
+            'tiket_data' => [
+                'id_objek_wisata' => $request->id_objek_wisata,
+                'nama_pengunjung' => $request->nama_pengunjung,
+                'email' => $request->email,
+                'no_telp' => $request->no_telp,
+                'jumlah_tiket' => $request->jumlah_tiket,
+                'tanggal_kunjungan' => $request->tanggal_kunjungan,
+                'total_harga' => $totalHarga
+            ]
+        ]);
+
+        return redirect()->to('wisata/payment/methods');
+    }
+
+    public function wisata_payment_methods()
+    {
+        if (!session('tiket_data')) {
+            return redirect()->to('wisata');
+        }
+
+        $tiketData = session('tiket_data');
+        $objek = ObjekWisata::findOrFail($tiketData['id_objek_wisata']);
+        
+        return view('front.pages.wisata_payment_methods', compact('tiketData', 'objek'));
+    }
+
+    public function wisata_payment_xendit(Request $request)
+    {
+        if (!session('tiket_data')) {
+            return redirect()->to('wisata');
+        }
+
+        $tiketData = session('tiket_data');
+        $channel = $request->query('channel');
+        $amount = $request->query('amount');
+
+        // Create ticket record with pending status
+        $kodeTimestamp = time();
+        $kodeRandom = strtoupper(\Illuminate\Support\Str::random(6));
+        $kodeTicket = "TKT-{$kodeTimestamp}-{$kodeRandom}";
+
+        $tiket = TiketWisata::create([
+            'kode_tiket' => $kodeTicket,
+            'id_objek_wisata' => $tiketData['id_objek_wisata'],
+            'nama_pengunjung' => $tiketData['nama_pengunjung'],
+            'email' => $tiketData['email'],
+            'no_telp' => $tiketData['no_telp'],
+            'jumlah_tiket' => $tiketData['jumlah_tiket'],
+            'total_harga' => $tiketData['total_harga'],
+            'tanggal_kunjungan' => $tiketData['tanggal_kunjungan'],
+            'metode_pembelian' => 'online',
+            'metode_pembayaran' => $channel,
+            'status_pembayaran' => 'pending',
+            'status_tiket' => 'belum_digunakan',
+            'qr_code' => $kodeTicket,
+            'aktif' => '1'
+        ]);
+
+        // Clear session
+        session()->forget('tiket_data');
+
+        // Redirect to payment processing
+        return redirect()->route('public.payment_initiate_wisata', [
+            'id' => $tiket->id_tiket,
+            'channel' => $channel,
+            'amount' => $amount
+        ]);
+    }
+
+    public function wisata_payment_manual(Request $request)
+    {
+        if (!session('tiket_data')) {
+            return redirect()->to('wisata');
+        }
+
+        $tiketData = session('tiket_data');
+        $amount = $request->query('amount');
+        
+        $settingsPath = storage_path('app/settings.json');
+        $settings = json_decode(file_get_contents($settingsPath), true);
+        $bankAccounts = $settings['bank_accounts'] ?? [];
+
+        return view('front.pages.wisata_payment_manual', compact('tiketData', 'amount', 'bankAccounts'));
+    }
+
+    public function wisata_payment_manual_submit(Request $request)
+    {
+        if (!session('tiket_data')) {
+            return redirect()->to('wisata');
+        }
+
+        $request->validate([
+            'bukti_transfer' => 'required|image|max:2048'
+        ]);
+
+        $tiketData = session('tiket_data');
+
+        // Upload bukti transfer
+        $file = $request->file('bukti_transfer');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        
+        if (!file_exists(public_path('bukti_transfer'))) {
+            mkdir(public_path('bukti_transfer'), 0777, true);
+        }
+        
+        $file->move(public_path('bukti_transfer'), $filename);
+
+        // Create ticket record
+        $kodeTimestamp = time();
+        $kodeRandom = strtoupper(\Illuminate\Support\Str::random(6));
+        $kodeTicket = "TKT-{$kodeTimestamp}-{$kodeRandom}";
+
+        $tiket = TiketWisata::create([
+            'kode_tiket' => $kodeTicket,
+            'id_objek_wisata' => $tiketData['id_objek_wisata'],
+            'nama_pengunjung' => $tiketData['nama_pengunjung'],
+            'email' => $tiketData['email'],
+            'no_telp' => $tiketData['no_telp'],
+            'jumlah_tiket' => $tiketData['jumlah_tiket'],
+            'total_harga' => $tiketData['total_harga'],
+            'tanggal_kunjungan' => $tiketData['tanggal_kunjungan'],
+            'metode_pembelian' => 'online',
+            'metode_pembayaran' => 'transfer_manual',
+            'bukti_transfer' => $filename,
+            'status_pembayaran' => 'pending',
+            'status_verifikasi' => 'pending',
+            'status_tiket' => 'belum_digunakan',
+            'qr_code' => $kodeTicket,
+            'aktif' => '1'
+        ]);
+
+        // Clear session
+        session()->forget('tiket_data');
+
+        return redirect()->to('wisata/payment/manual/success?id=' . $tiket->id_tiket);
+    }
+
+    public function wisata_payment_manual_success(Request $request)
+    {
+        $id = $request->query('id');
+        $tiket = TiketWisata::with('objekWisata')->findOrFail($id);
+        return view('front.pages.wisata_payment_manual_success', compact('tiket'));
     }
 
 }

@@ -123,4 +123,39 @@ class SettingController extends Controller
         }
         return redirect()->back()->with('success', 'Slide berhasil dihapus.');
     }
+
+    public function update_bank_accounts(Request $request)
+    {
+        $request->validate([
+            'bank_bca_number' => 'nullable|string|max:50',
+            'bank_bca_name' => 'nullable|string|max:100',
+            'bank_bni_number' => 'nullable|string|max:50',
+            'bank_bni_name' => 'nullable|string|max:100',
+            'bank_mandiri_number' => 'nullable|string|max:50',
+            'bank_mandiri_name' => 'nullable|string|max:100',
+            'bank_bri_number' => 'nullable|string|max:50',
+            'bank_bri_name' => 'nullable|string|max:100',
+        ]);
+
+        $settingsPath = storage_path('app/settings.json');
+        $settings = [];
+        if (File::exists($settingsPath)) {
+            $settings = json_decode(File::get($settingsPath), true);
+        }
+
+        // Update bank account data
+        $settings['bank_bca_number'] = $request->bank_bca_number;
+        $settings['bank_bca_name'] = $request->bank_bca_name;
+        $settings['bank_bni_number'] = $request->bank_bni_number;
+        $settings['bank_bni_name'] = $request->bank_bni_name;
+        $settings['bank_mandiri_number'] = $request->bank_mandiri_number;
+        $settings['bank_mandiri_name'] = $request->bank_mandiri_name;
+        $settings['bank_bri_number'] = $request->bank_bri_number;
+        $settings['bank_bri_name'] = $request->bank_bri_name;
+
+        File::put($settingsPath, json_encode($settings));
+
+        return redirect()->back()->with('success', 'Rekening bank berhasil diperbarui!');
+    }
 }
+

@@ -33,6 +33,9 @@ Route::get('/donasi/pembayaran/{id}', [LandingController::class, 'donasi_pembaya
 Route::get('/donasi/{id}', [LandingController::class, 'donasi_detail'])->name('public.donasi.detail')->middleware('public.redirect');
 Route::post('/donasi/submit', [LandingController::class, 'donasi_post'])->name('public.donasi.submit');
 Route::get('/pembayaran/metode', [LandingController::class, 'payment_methods'])->name('public.payment_methods');
+Route::get('/pembayaran/manual', [LandingController::class, 'payment_manual'])->name('public.payment.manual');
+Route::post('/pembayaran/manual/submit', [LandingController::class, 'payment_manual_submit'])->name('public.payment.manual.submit');
+Route::get('/pembayaran/manual/sukses', [LandingController::class, 'payment_manual_success'])->name('public.payment.manual.success');
 Route::post('/pembayaran/proses', [\App\Http\Controllers\PaymentController::class, 'initiate'])->name('public.payment_initiate');
 Route::get('/pembayaran/hasil', [\App\Http\Controllers\PaymentController::class, 'showResult'])->name('public.payment_result');
 Route::post('/pembayaran/simulate', [\App\Http\Controllers\PaymentController::class, 'simulate'])->name('public.payment_simulate');
@@ -104,6 +107,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 		Route::get('/get_pembayaran_detail/{index}','Administrator\UsahaController@get_pembayaran_detail');
 
         // Unit Usaha Mobile Features
+        // Unit Usaha (Level 3)
         Route::group(['middleware' => 'role:3'], function() {
             Route::get('/usaha/home', function() { return view('backend.usaha.home'); });
             Route::get('/usaha/punia', function() { return view('backend.usaha.punia'); });
@@ -119,6 +123,13 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/usaha/donasi/detail/{id}', [LandingController::class, 'usaha_donasi_detail']);
             Route::get('/usaha/berita', [LandingController::class, 'usaha_berita']);
             Route::get('/usaha/berita/detail/{id}', [LandingController::class, 'usaha_berita_detail']);
+        });
+
+        // Kelian Adat (Level 2)
+        Route::group(['middleware' => 'role:2'], function() {
+            Route::get('/kelian/punia', function() { return view('backend.kelian.punia'); });
+            Route::get('/kelian/donasi', function() { return view('backend.kelian.donasi'); });
+            Route::get('/kelian/verifikasi', [DashboardController::class, 'verifikasi_pembayaran']);
         });
 
 		// Karyawan / Tenaga Kerja
@@ -138,6 +149,11 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 
 		// Dana Punia & Sumbangan
 		Route::group(['middleware' => 'role:1,2'], function() {
+			// Verifikasi Pembayaran Manual
+			Route::get('/verifikasi_pembayaran', [DashboardController::class, 'verifikasi_pembayaran'])->name('verifikasi_pembayaran');
+			Route::post('/verifikasi_pembayaran/approve', [DashboardController::class, 'verifikasi_approve'])->name('verifikasi.approve');
+			Route::post('/verifikasi_pembayaran/reject', [DashboardController::class, 'verifikasi_reject'])->name('verifikasi.reject');
+			
 			Route::get('/datapunia_wajib','Administrator\DanaPuniaController@list_datapunia_wajib');
 			Route::get('/datapunia_wajib/{index}/{tanggal}','Administrator\DanaPuniaController@list_datapunia_wajib_param');
 			Route::get('/list_datapunia_wajib/{index}','Administrator\DanaPuniaController@list_datapunia_wajib');
@@ -233,6 +249,11 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/data_tenagakerja_approve', 'Administrator\KaryawanController@indexApprove');
             Route::get('/data_tenagakerja_skill', 'Administrator\KaryawanController@index_skill');
             Route::post('/post_data_skill', 'Administrator\KaryawanController@post_data_skill');
+            
+            // Verifikasi Pembayaran
+            Route::get('/verifikasi_pembayaran', 'Administrator\DashboardController@verifikasi_pembayaran');
+            Route::post('/verifikasi_pembayaran/approve', 'Administrator\DashboardController@verifikasi_approve');
+            Route::post('/verifikasi_pembayaran/reject', 'Administrator\DashboardController@verifikasi_reject');
 		});
         
         // Admin Settings
@@ -242,6 +263,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/settings/upload_hero_slide', 'Administrator\SettingController@upload_hero_slide');
             Route::post('/settings/delete_hero_slide', 'Administrator\SettingController@delete_hero_slide');
             Route::post('/settings/update_village', 'Administrator\SettingController@update_village');
+            Route::post('/settings/update_bank_accounts', 'Administrator\SettingController@update_bank_accounts');
             
             // Payment Gateway Settings
             Route::get('/settings/payment_gateway', 'Administrator\PaymentGatewayController@index')->name('settings.payment_gateway');

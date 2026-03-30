@@ -86,6 +86,26 @@
                     $vaPayments = $channels->where('type', 'VA');
                 @endphp
 
+                <!-- Transfer Manual -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between px-1">
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Transfer Manual</h3>
+                        <span class="text-[8px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">Verifikasi Manual</span>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                        <a href="{{ route('public.payment.manual', ['order_id' => $order_id, 'amount' => $amount, 'type' => $type]) }}" class="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left group block">
+                            <div class="h-10 w-12 flex items-center justify-center">
+                                <i class="bi bi-bank text-2xl text-[#00a6eb]"></i>
+                            </div>
+                            <div class="flex-1">
+                                <span class="text-xs font-bold text-slate-700 block">Transfer Bank Manual</span>
+                                <span class="text-[9px] text-slate-400">Upload bukti transfer untuk verifikasi</span>
+                            </div>
+                            <i class="bi bi-chevron-right ms-auto text-slate-300 text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Instant Payment -->
                 @if($instantPayments->count() > 0)
                 <div class="space-y-3">

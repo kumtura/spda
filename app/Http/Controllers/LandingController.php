@@ -175,6 +175,92 @@ class LandingController extends Controller
         return view('front.pages.payment_methods', compact('amount', 'order_id', 'type', 'village', 'is_configured', 'channels'));
     }
 
+    public function payment_manual(Request $request)
+    {
+        $order_id = $request->order_id;
+        $amount = $request->amount ?? 0;
+        $type = $request->type;
+        $village = $this->getVillageData();
+
+        // If amount is 0, try to get from order
+        if($amount == 0) {
+            $order_parts = explode('-', $order_id);
+            $id = $order_parts[1] ?? null;
+            
+            if($type === 'punia') {
+                $punia = Danapunia::find($id);
+                $amount = $punia->jumlah_dana ?? 0;
+            } else {
+                $donasi = Sumbangan::find($id);
+                $amount = $donasi->nominal ?? 0;
+            }
+        }
+
+        return view('front.pages.payment_manual', compact('order_id', 'amount', 'type', 'village'));
+    }
+
+    public function payment_manual_submit(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required',
+            'amount' => 'required|numeric',
+            'type' => 'required|in:punia,donasi',
+            'bukti_transfer' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048'
+        ]);
+
+        // Upload bukti transfer
+        $file = $request->file('bukti_transfer');
+        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $path = 'bukti_transfer';
+        
+        if (!file_exists(public_path($path))) {
+            mkdir(public_path($path), 0777, true);
+        }
+        
+        $file->move(public_path($path), $filename);
+        $buktiPath = $path . '/' . $filename;
+
+        // Get order details
+        $order_parts = explode('-', $request->order_id);
+        $id = $order_parts[1] ?? null;
+
+        if($request->type === 'punia') {
+            $punia = Danapunia::find($id);
+            if($punia) {
+                $punia->update([
+                    'metode_pembayaran' => 'transfer_manual',
+                    'bukti_transfer' => $buktiPath,
+                    'status_verifikasi' => 'pending',
+                    'catatan_verifikasi' => $request->catatan
+                ]);
+            }
+        } else {
+            $donasi = Sumbangan::find($id);
+            if($donasi) {
+                $donasi->update([
+                    'metode_pembayaran' => 'transfer_manual',
+                    'bukti_transfer' => $buktiPath,
+                    'status_verifikasi' => 'pending',
+                    'catatan_verifikasi' => $request->catatan
+                ]);
+            }
+        }
+
+        return redirect()->route('public.payment.manual.success', [
+            'order_id' => $request->order_id,
+            'type' => $request->type
+        ]);
+    }
+
+    public function payment_manual_success(Request $request)
+    {
+        $order_id = $request->order_id;
+        $type = $request->type;
+        $village = $this->getVillageData();
+
+        return view('front.pages.payment_manual_success', compact('order_id', 'type', 'village'));
+    }
+
     public function punia_penggunaan_detail($id)
     {
         $kategori = \App\Models\KategoriPunia::with(['alokasi' => function($q) {

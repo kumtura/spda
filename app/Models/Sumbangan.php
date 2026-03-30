@@ -31,7 +31,11 @@ class Sumbangan extends Model
         'aktif',
         'xendit_id',
         'status_pembayaran',
-        'payment_data'
+        'payment_data',
+        'metode_pembayaran',
+        'bukti_transfer',
+        'status_verifikasi',
+        'catatan_verifikasi'
     ];
     protected $primaryKey = 'id_sumbangan_sukarela';
     protected $table='tb_sumbangan_sukarela';
@@ -231,4 +235,8 @@ class Sumbangan extends Model
         return $this->hasMany('App\tb_adv_city', 'id_adv_city', 'id_adv_city');
     }*/
     
+    public function programDonasi()
+    {
+        return $this->belongsTo(\App\Models\ProgramDonasi::class, 'id_program_donasi', 'id_program_donasi');
+    }
 }

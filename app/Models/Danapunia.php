@@ -27,7 +27,11 @@ class Danapunia extends Model
         'xendit_id',
         'status_pembayaran',
         'payment_data',
-        'metode'
+        'metode',
+        'metode_pembayaran',
+        'bukti_transfer',
+        'status_verifikasi',
+        'catatan_verifikasi'
     ];
     protected $primaryKey = 'id_dana_punia';
     protected $table='tb_dana_punia';
@@ -106,13 +110,25 @@ class Danapunia extends Model
     }
     
     public static function get_totalPunia($request){
-        $data = Danapunia::select(DB::raw("SUM(jumlah_dana) as paidsum"))->join("tb_usaha" , "tb_usaha.id_usaha" , "tb_dana_punia.id_usaha")->join("tb_detail_usaha" , "tb_detail_usaha.id_detail_usaha" , "tb_usaha.id_detail_usaha")->where("tb_dana_punia.aktif","1")->orderBy("tb_dana_punia.id_usaha" , "desc")->get();
+        $data = Danapunia::select(DB::raw("SUM(jumlah_dana) as paidsum"))
+            ->join("tb_usaha" , "tb_usaha.id_usaha" , "tb_dana_punia.id_usaha")
+            ->join("tb_detail_usaha" , "tb_detail_usaha.id_detail_usaha" , "tb_usaha.id_detail_usaha")
+            ->where("tb_dana_punia.aktif","1")
+            ->where("tb_dana_punia.status_pembayaran","completed")
+            ->orderBy("tb_dana_punia.id_usaha" , "desc")
+            ->get();
 
         return $data[0]->paidsum;
     }
     
     public static function get_totalPunia_inRange($awal,$akhir){
-        $data = Danapunia::select(DB::raw("SUM(jumlah_dana) as paidsum"))->where("tb_dana_punia.aktif","1")->where("tb_dana_punia.tanggal_pembayaran",">=",$awal)->where("tb_dana_punia.tanggal_pembayaran","<=",$akhir)->orderBy("tb_dana_punia.id_usaha" , "desc")->get();
+        $data = Danapunia::select(DB::raw("SUM(jumlah_dana) as paidsum"))
+            ->where("tb_dana_punia.aktif","1")
+            ->where("tb_dana_punia.status_pembayaran","completed")
+            ->where("tb_dana_punia.tanggal_pembayaran",">=",$awal)
+            ->where("tb_dana_punia.tanggal_pembayaran","<=",$akhir)
+            ->orderBy("tb_dana_punia.id_usaha" , "desc")
+            ->get();
 
         return $data[0]->paidsum;
     }

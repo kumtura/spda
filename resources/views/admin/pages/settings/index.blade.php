@@ -181,6 +181,115 @@
                 </div>
             </form>
         </div>
+
+        <!-- Bank Account Settings -->
+        <div class="bg-white rounded-4xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition duration-300 col-span-1 md:col-span-2">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 pb-3 border-b border-slate-100 flex items-center gap-2">
+                <i class="bi bi-bank text-primary-light"></i> Rekening Bank Desa Adat
+            </h3>
+            
+            <form action="{{ url('administrator/settings/update_bank_accounts') }}" method="POST" class="space-y-6">
+                @csrf
+                
+                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+                    <div class="flex items-start gap-3">
+                        <i class="bi bi-info-circle text-[#00a6eb] text-lg shrink-0"></i>
+                        <div>
+                            <p class="text-xs font-bold text-slate-700 mb-1">Informasi Rekening</p>
+                            <p class="text-[10px] text-slate-600 leading-relaxed">Rekening ini akan ditampilkan kepada masyarakat saat melakukan transfer manual. Pastikan data rekening benar dan aktif.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- BCA -->
+                    <div class="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="h-8 w-12 bg-white rounded border border-slate-300 flex items-center justify-center">
+                                <span class="text-[10px] font-black text-slate-700">BCA</span>
+                            </div>
+                            <p class="text-xs font-bold text-slate-700">Bank Central Asia</p>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1">Nomor Rekening</label>
+                            <input type="text" name="bank_bca_number" value="{{ $village['bank_bca_number'] ?? '' }}" placeholder="1234567890"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1">Atas Nama</label>
+                            <input type="text" name="bank_bca_name" value="{{ $village['bank_bca_name'] ?? '' }}" placeholder="Nama Pemilik Rekening"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                        </div>
+                    </div>
+
+                    <!-- BNI -->
+                    <div class="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="h-8 w-12 bg-white rounded border border-slate-300 flex items-center justify-center">
+                                <span class="text-[10px] font-black text-slate-700">BNI</span>
+                            </div>
+                            <p class="text-xs font-bold text-slate-700">Bank Negara Indonesia</p>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1">Nomor Rekening</label>
+                            <input type="text" name="bank_bni_number" value="{{ $village['bank_bni_number'] ?? '' }}" placeholder="0987654321"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1">Atas Nama</label>
+                            <input type="text" name="bank_bni_name" value="{{ $village['bank_bni_name'] ?? '' }}" placeholder="Nama Pemilik Rekening"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Mandiri -->
+                    <div class="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="h-8 w-12 bg-white rounded border border-slate-300 flex items-center justify-center">
+                                <span class="text-[10px] font-black text-slate-700">MANDIRI</span>
+                            </div>
+                            <p class="text-xs font-bold text-slate-700">Bank Mandiri</p>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1">Nomor Rekening</label>
+                            <input type="text" name="bank_mandiri_number" value="{{ $village['bank_mandiri_number'] ?? '' }}" placeholder="1122334455"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1">Atas Nama</label>
+                            <input type="text" name="bank_mandiri_name" value="{{ $village['bank_mandiri_name'] ?? '' }}" placeholder="Nama Pemilik Rekening"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                        </div>
+                    </div>
+
+                    <!-- BRI -->
+                    <div class="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="h-8 w-12 bg-white rounded border border-slate-300 flex items-center justify-center">
+                                <span class="text-[10px] font-black text-slate-700">BRI</span>
+                            </div>
+                            <p class="text-xs font-bold text-slate-700">Bank Rakyat Indonesia</p>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1">Nomor Rekening</label>
+                            <input type="text" name="bank_bri_number" value="{{ $village['bank_bri_number'] ?? '' }}" placeholder="5566778899"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1">Atas Nama</label>
+                            <input type="text" name="bank_bri_name" value="{{ $village['bank_bri_name'] ?? '' }}" placeholder="Nama Pemilik Rekening"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-4">
+                    <button type="submit" class="bg-slate-900 hover:bg-primary-dark text-white px-10 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl transition-all transform hover:-translate-y-1">
+                        Simpan Rekening Bank <i class="bi bi-check-lg ml-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 @endsection

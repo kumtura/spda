@@ -47,8 +47,42 @@ class DashboardController extends BaseController
             // Bendesa Adat & Admin Sistem use the Desktop Dashboard
             return view('admin.pages.home',compact('usaha','totalpunia','jml_karyawan'));
         } else if ($level == "2") {
-            // Kelian Adat uses the Mobile Dashboard
-            return view('backend.kelian.home',compact('usaha','totalpunia','jml_karyawan'));
+            // Kelian Adat uses the Mobile Dashboard with filtered data
+            $kelianBanjar = Auth::user()->banjar;
+            
+            if(!$kelianBanjar) {
+                // If no banjar assigned, show empty data
+                return view('backend.kelian.home', [
+                    'usaha_count' => 0,
+                    'totalpunia' => 0,
+                    'jml_karyawan' => 0
+                ]);
+            }
+            
+            // Get usaha count for this banjar only
+            $usaha_count = Usaha::join('tb_detail_usaha','tb_detail_usaha.id_detail_usaha','tb_usaha.id_detail_usaha')
+                ->where('tb_detail_usaha.id_banjar', $kelianBanjar->id_data_banjar)
+                ->where('tb_usaha.aktif_status', '1')
+                ->count();
+            
+            // Get tenaga kerja count for usaha in this banjar
+            $usahaIds = Usaha::join('tb_detail_usaha','tb_detail_usaha.id_detail_usaha','tb_usaha.id_detail_usaha')
+                ->where('tb_detail_usaha.id_banjar', $kelianBanjar->id_data_banjar)
+                ->where('tb_usaha.aktif_status', '1')
+                ->pluck('tb_usaha.id_usaha');
+            
+            $jml_karyawan = \App\Models\Jadwal_Interview::whereIn('id_usaha', $usahaIds)
+                ->where('status_diterima', '1')
+                ->where('aktif', '1')
+                ->count();
+            
+            // Get total punia for this banjar
+            $totalpunia = Danapunia::whereIn('id_usaha', $usahaIds)
+                ->where('aktif', '1')
+                ->where('status_pembayaran', 'completed')
+                ->sum('jumlah_dana');
+            
+            return view('backend.kelian.home',compact('usaha_count','totalpunia','jml_karyawan'));
         } else if ($level == "3") {
             // Unit Usaha uses the Mobile Dashboard
             return view('backend.usaha.home',compact('usaha','totalpunia','jml_karyawan'));
@@ -100,7 +134,90 @@ class DashboardController extends BaseController
         echo json_encode($arr_json);
         
     }
-        
 
+    public function verifikasi_pembayaran(Request $request)
+    {
+        $level = Session::get('level');
+        
+        // Get pending payments for punia
+        $pending_punia = Danapunia::where('metode_pembayaran', 'transfer_manual')
+            ->where('status_verifikasi', 'pending')
+            ->with('usaha.detail')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Get pending payments for donasi
+        $pending_donasi = \App\Models\Sumbangan::where('metode_pembayaran', 'transfer_manual')
+            ->where('status_verifikasi', 'pending')
+            ->with('programDonasi')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        if($level == "1" || $level == "4") {
+            return view('admin.pages.verifikasi_pembayaran', compact('pending_punia', 'pending_donasi'));
+        } else if ($level == "2") {
+            return view('backend.kelian.verifikasi_pembayaran', compact('pending_punia', 'pending_donasi'));
+        }
+        
+        return view('admin.pages.verifikasi_pembayaran', compact('pending_punia', 'pending_donasi'));
+    }
+
+    public function verifikasi_approve(Request $request)
+    {
+        $request->validate([
+            'id' => 'required',
+            'type' => 'required|in:punia,donasi'
+        ]);
+
+        if($request->type === 'punia') {
+            $payment = Danapunia::find($request->id);
+            if($payment) {
+                $payment->update([
+                    'status_verifikasi' => 'approved',
+                    'status_pembayaran' => 'completed',
+                    'tanggal_pembayaran' => now()
+                ]);
+            }
+        } else {
+            $payment = \App\Models\Sumbangan::find($request->id);
+            if($payment) {
+                $payment->update([
+                    'status_verifikasi' => 'approved',
+                    'status_pembayaran' => 'completed',
+                    'tanggal' => now()
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Pembayaran berhasil diverifikasi');
+    }
+
+    public function verifikasi_reject(Request $request)
+    {
+        $request->validate([
+            'id' => 'required',
+            'type' => 'required|in:punia,donasi',
+            'alasan' => 'nullable|string'
+        ]);
+
+        if($request->type === 'punia') {
+            $payment = Danapunia::find($request->id);
+            if($payment) {
+                $payment->update([
+                    'status_verifikasi' => 'rejected',
+                    'catatan_verifikasi' => $request->alasan
+                ]);
+            }
+        } else {
+            $payment = \App\Models\Sumbangan::find($request->id);
+            if($payment) {
+                $payment->update([
+                    'status_verifikasi' => 'rejected',
+                    'catatan_verifikasi' => $request->alasan
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Pembayaran ditolak');
+    }
 }
-?>

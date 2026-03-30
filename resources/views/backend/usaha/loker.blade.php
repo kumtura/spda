@@ -12,7 +12,7 @@
             ->where('tb_usaha.username', Auth::user()->email)->first();
         $tenagaKerjaAktif = collect();
         $myLokers = collect();
-        $totalApplicants = 0;
+        $totalInterview = 0;
         
         if($myUsaha) {
             $tenagaKerjaAktif = App\Models\Jadwal_Interview::join('tb_tenaga_kerja','tb_tenaga_kerja.id_tenaga_kerja','tb_jadwal_interview.id_karyawan')
@@ -24,7 +24,8 @@
                 
             $myLokers = App\Models\Loker::where('id_usaha', $myUsaha->id_usaha)->orderBy('created_at', 'desc')->get();
             
-            $totalApplicants = App\Models\Jadwal_Interview::where('id_usaha', $myUsaha->id_usaha)
+            $totalInterview = App\Models\Jadwal_Interview::where('id_usaha', $myUsaha->id_usaha)
+                ->where('status_interview', '1')
                 ->where('status_diterima', '0')
                 ->where('aktif','1')
                 ->count();
@@ -54,7 +55,7 @@
                 </div>
                 <div class="text-right">
                     <p class="text-white/60 text-[9px] mb-0.5">Proses Interview</p>
-                    <p class="font-bold">{{ $totalApplicants }} Orang</p>
+                    <p class="font-bold">{{ $totalInterview }} Orang</p>
                 </div>
             </div>
         </div>

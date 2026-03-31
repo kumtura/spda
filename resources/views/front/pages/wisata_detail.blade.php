@@ -1,95 +1,112 @@
-@extends('front.layout.template')
+@extends('mobile_layout_public')
 
 @section('content')
-<div class="bg-white min-h-screen">
+<div class="bg-slate-50 min-h-screen pb-24">
     <!-- Hero Image -->
-    <div class="relative h-96 bg-slate-100">
+    <div class="relative h-64 bg-slate-100">
         @if($objek->foto)
         <img src="{{ asset('storage/wisata/'.$objek->foto) }}" 
             class="w-full h-full object-cover" 
             alt="{{ $objek->nama_objek }}">
         @else
         <div class="w-full h-full flex items-center justify-center">
-            <i class="bi bi-image text-slate-300 text-6xl"></i>
+            <i class="bi bi-image text-slate-300 text-5xl"></i>
         </div>
         @endif
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
         
-        <div class="absolute bottom-0 left-0 right-0 p-8">
-            <div class="container mx-auto">
-                <h1 class="text-4xl font-black text-white mb-2">{{ $objek->nama_objek }}</h1>
-                <div class="flex items-center gap-2 text-white/90">
-                    <i class="bi bi-geo-alt"></i>
-                    <span class="text-sm">{{ $objek->alamat }}</span>
-                </div>
+        <!-- Back Button -->
+        <a href="{{ url('wisata') }}" class="absolute top-4 left-4 h-9 w-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+            <i class="bi bi-arrow-left text-slate-800"></i>
+        </a>
+        
+        <div class="absolute bottom-0 left-0 right-0 p-4">
+            <h1 class="text-xl font-black text-white mb-1">{{ $objek->nama_objek }}</h1>
+            <div class="flex items-center gap-1.5 text-white/90">
+                <i class="bi bi-geo-alt text-xs"></i>
+                <span class="text-xs">{{ $objek->alamat }}</span>
             </div>
         </div>
     </div>
 
-    <div class="container mx-auto px-4 py-12">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Main Content -->
-            <div class="lg:col-span-2">
-                <div class="prose max-w-none">
-                    <h2 class="text-2xl font-black text-slate-800 mb-4">Tentang Objek Wisata</h2>
-                    <p class="text-slate-600 leading-relaxed whitespace-pre-line">{{ $objek->deskripsi }}</p>
-                </div>
-
-                <!-- Info Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                    @if($objek->jam_buka && $objek->jam_tutup)
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-5">
-                        <div class="flex items-start gap-3">
-                            <div class="h-10 w-10 bg-[#00a6eb] rounded-lg flex items-center justify-center shrink-0">
-                                <i class="bi bi-clock text-white"></i>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-800 mb-1">Jam Operasional</p>
-                                <p class="text-sm text-slate-600">{{ $objek->jam_buka }} - {{ $objek->jam_tutup }} WITA</p>
-                            </div>
-                        </div>
+    <div class="px-4 pt-4 space-y-4">
+        <!-- Info Cards -->
+        <div class="grid grid-cols-2 gap-2">
+            @if($objek->jam_buka && $objek->jam_tutup)
+            <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="h-7 w-7 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-clock text-[#00a6eb] text-xs"></i>
                     </div>
-                    @endif
-
-                    @if($objek->kapasitas_harian)
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-5">
-                        <div class="flex items-start gap-3">
-                            <div class="h-10 w-10 bg-[#00a6eb] rounded-lg flex items-center justify-center shrink-0">
-                                <i class="bi bi-people text-white"></i>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-800 mb-1">Kapasitas Harian</p>
-                                <p class="text-sm text-slate-600">{{ number_format($objek->kapasitas_harian, 0, ',', '.') }} Pengunjung</p>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
+                    <p class="text-[9px] font-bold text-slate-500 uppercase">Jam Buka</p>
                 </div>
+                <p class="text-[10px] font-bold text-slate-800">{{ $objek->jam_buka }} - {{ $objek->jam_tutup }}</p>
+                <p class="text-[9px] text-slate-500">WITA</p>
             </div>
+            @endif
 
-            <!-- Booking Card -->
-            <div class="lg:col-span-1">
-                <div class="bg-white border border-slate-200 rounded-2xl shadow-lg sticky top-24">
-                    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] p-6 text-white">
-                        <p class="text-xs uppercase text-white/70 mb-2">Harga Tiket</p>
-                        <h3 class="text-3xl font-black mb-1">Rp {{ number_format($objek->harga_tiket, 0, ',', '.') }}</h3>
-                        <p class="text-xs text-white/80">Per orang</p>
+            @if($objek->kapasitas_harian)
+            <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="h-7 w-7 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-people text-[#00a6eb] text-xs"></i>
                     </div>
-                    
-                    <div class="p-6">
-                        <a href="{{ url('wisata/beli/'.$objek->id_objek_wisata) }}" 
-                            class="block w-full py-3 bg-[#00a6eb] text-white text-center text-sm font-black rounded-xl shadow-lg hover:shadow-xl transition-all">
-                            <i class="bi bi-ticket-perforated mr-2"></i>Beli Tiket Sekarang
-                        </a>
-                        
-                        <div class="mt-4 pt-4 border-t border-slate-100">
-                            <div class="flex items-start gap-2">
-                                <i class="bi bi-info-circle text-slate-400 text-sm mt-0.5"></i>
-                                <p class="text-[10px] text-slate-500 leading-relaxed">
-                                    Tiket dapat digunakan pada tanggal yang Anda pilih. Tunjukkan QR code saat memasuki objek wisata.
-                                </p>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase">Kapasitas</p>
+                </div>
+                <p class="text-[10px] font-bold text-slate-800">{{ number_format($objek->kapasitas_harian, 0, ',', '.') }}</p>
+                <p class="text-[9px] text-slate-500">Orang/Hari</p>
+            </div>
+            @endif
+        </div>
+
+        <!-- Description -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+            <h2 class="text-sm font-black text-slate-800 mb-3">Tentang Objek Wisata</h2>
+            <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{{ $objek->deskripsi }}</p>
+        </div>
+
+        <!-- Harga Tiket Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] p-4 text-white">
+                <p class="text-[9px] uppercase text-white/70 mb-1">Harga Tiket</p>
+                @php
+                    $minPrice = $objek->kategoriTiket->min('harga') ?? $objek->harga_tiket ?? 0;
+                @endphp
+                <h3 class="text-2xl font-black mb-0.5">Rp {{ number_format($minPrice, 0, ',', '.') }}</h3>
+                <p class="text-[10px] text-white/80">Mulai dari</p>
+            </div>
+            
+            <div class="p-4">
+                @if($objek->kategoriTiket->count() > 0)
+                <div class="mb-4">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Kategori Tiket</p>
+                    <div class="space-y-2">
+                        @foreach($objek->kategoriTiket as $kategori)
+                        <div class="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg">
+                            <div>
+                                <p class="text-xs font-bold text-slate-800">{{ $kategori->nama_kategori }}</p>
+                                @if($kategori->deskripsi)
+                                <p class="text-[9px] text-slate-500">{{ $kategori->deskripsi }}</p>
+                                @endif
                             </div>
+                            <p class="text-sm font-black text-[#00a6eb]">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
                         </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                <a href="{{ url('wisata/beli/'.$objek->id_objek_wisata) }}" 
+                    class="block w-full py-3 bg-[#00a6eb] text-white text-center text-sm font-black rounded-xl shadow-lg hover:shadow-xl transition-all">
+                    <i class="bi bi-ticket-perforated mr-2"></i>Beli Tiket Sekarang
+                </a>
+                
+                <div class="mt-3 pt-3 border-t border-slate-100">
+                    <div class="flex items-start gap-2">
+                        <i class="bi bi-info-circle text-slate-400 text-xs mt-0.5"></i>
+                        <p class="text-[9px] text-slate-500 leading-relaxed">
+                            Tiket dapat digunakan pada tanggal yang Anda pilih. Tunjukkan QR code saat memasuki objek wisata.
+                        </p>
                     </div>
                 </div>
             </div>

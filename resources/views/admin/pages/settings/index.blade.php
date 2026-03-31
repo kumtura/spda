@@ -3,15 +3,14 @@
 @section('isi_menu')
 <div class="px-6 space-y-6">
     <!-- Header Page -->
-    <div class="bg-white/95 backdrop-blur-xl border border-white/20 p-6 rounded-3xl shadow-lg border-l-4 border-l-primary-light animate-in fade-in slide-in-from-bottom-4 duration-700 relative overflow-hidden">
-        <div class="absolute -right-10 -top-10 h-32 w-32 bg-primary-light/5 rounded-full blur-2xl"></div>
-        <div class="relative z-10 flexitems-center justify-between">
-            <div>
-                <h1 class="text-2xl font-black text-slate-800 tracking-tight leading-none mb-2">Pengaturan Website</h1>
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest leading-none">Manajemen Identitas Visual Sistem</p>
-            </div>
-            <div class="hidden sm:block">
-                <i class="bi bi-gear-fill text-5xl text-slate-100/50"></i>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight">Pengaturan Website</h1>
+            <p class="text-slate-500 font-medium text-sm">Manajemen identitas visual dan informasi dasar sistem.</p>
+        </div>
+        <div class="hidden sm:block">
+            <div class="h-12 w-12 rounded-xl bg-primary-light/10 text-primary-light flex items-center justify-center">
+                <i class="bi bi-gear-fill text-2xl"></i>
             </div>
         </div>
     </div>
@@ -126,14 +125,6 @@
                 @csrf
                 <div class="space-y-3">
                     <div>
-                        <label class="block mb-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Judul Slide (Opsional)</label>
-                        <input type="text" name="hero_title" placeholder="Mis: Nyepi 2026" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi Singkat / Subtitle</label>
-                        <input type="text" name="hero_deskripsi" placeholder="Teks kecil di bawah judul" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
-                    </div>
-                    <div>
                         <label class="block mb-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Gambar Slide</label>
                         <input type="file" name="hero_image" required accept="image/png,image/jpeg,image/webp" class="block w-full text-sm text-slate-500 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 file:mr-4 file:py-2.5 file:px-4 file:rounded-l-xl file:border-0 file:text-xs file:font-semibold file:bg-primary-light file:text-white hover:file:bg-primary-dark transition-all">
                         <p class="text-[9px] text-slate-400 mt-1 px-1">Format: JPG, PNG, WEBP. Maks: 5MB. Resolusi landscape untuk hasil terbaik.</p>
@@ -175,7 +166,7 @@
                     </div>
                 </div>
                 <div class="md:col-span-2 flex justify-end pt-4">
-                    <button type="submit" class="bg-slate-900 hover:bg-primary-dark text-white px-10 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl transition-all transform hover:-translate-y-1">
+                    <button type="submit" class="bg-primary-light hover:bg-primary-dark text-white px-10 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all transform hover:-translate-y-1">
                         Simpan Identitas Desa <i class="bi bi-check-lg ml-2"></i>
                     </button>
                 </div>
@@ -284,7 +275,7 @@
                 </div>
 
                 <div class="flex justify-end pt-4">
-                    <button type="submit" class="bg-slate-900 hover:bg-primary-dark text-white px-10 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl transition-all transform hover:-translate-y-1">
+                    <button type="submit" class="bg-primary-light hover:bg-primary-dark text-white px-10 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all transform hover:-translate-y-1">
                         Simpan Rekening Bank <i class="bi bi-check-lg ml-2"></i>
                     </button>
                 </div>

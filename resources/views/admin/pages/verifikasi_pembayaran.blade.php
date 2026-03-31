@@ -250,7 +250,7 @@
                                 <span class="text-[10px] text-slate-400">{{ $tiket->tanggal_kunjungan->translatedFormat('d M Y') }}</span>
                             </td>
                             <td class="px-4 py-4 text-center">
-                                <span class="text-xs font-bold text-slate-800">{{ $tiket->jumlah_tiket }} Tiket</span>
+                                <span class="text-xs font-bold text-slate-800">{{ $tiket->details->sum('jumlah') }} Tiket</span>
                             </td>
                             <td class="px-4 py-4 text-right">
                                 <span class="text-sm font-bold text-slate-800">Rp {{ number_format($tiket->total_harga, 0, ',', '.') }}</span>
@@ -404,7 +404,7 @@
                                         <i class="bi bi-geo-alt text-slate-400 text-xs"></i>
                                         <div>
                                             <p class="text-xs text-slate-600">{{ $item->objekWisata->nama_objek }}</p>
-                                            <p class="text-[10px] text-slate-400">{{ $item->jumlah_tiket }} Tiket - {{ $item->tanggal_kunjungan->translatedFormat('d M Y') }}</p>
+                                            <p class="text-[10px] text-slate-400">{{ $item->details->sum('jumlah') }} Tiket - {{ $item->tanggal_kunjungan->translatedFormat('d M Y') }}</p>
                                         </div>
                                     </div>
                                 @endif

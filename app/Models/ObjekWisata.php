@@ -26,4 +26,11 @@ class ObjekWisata extends Model
     {
         return $this->hasMany(TiketWisata::class, 'id_objek_wisata', 'id_objek_wisata');
     }
+
+    public function kategoriTiket()
+    {
+        return $this->hasMany(KategoriTiket::class, 'id_objek_wisata', 'id_objek_wisata')
+                    ->where('aktif', 1)
+                    ->orderBy('urutan');
+    }
 }

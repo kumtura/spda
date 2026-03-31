@@ -9,7 +9,7 @@ class Slides extends Model
     //public $timestamps = false; 
     //
     protected $primaryKey = 'id_gambar_home';
-    protected $fillable = ['id_gambar_home', 'image_name', 'title','aktif'];
+    protected $fillable = ['id_gambar_home', 'image_name', 'title', 'deskripsi', 'aktif'];
     protected $table='tb_gambar_home';
 
     public static function get_dataslides($request){

@@ -8,12 +8,15 @@
     </div>
 
     @php
-        $objekWisata = App\Models\ObjekWisata::where('aktif', '1')->where('status', 'aktif')->get();
+        $objekWisata = App\Models\ObjekWisata::with('kategoriTiket')->where('aktif', '1')->where('status', 'aktif')->get();
         $tiketHariIni = App\Models\TiketWisata::whereDate('created_at', today())
             ->where('status_pembayaran', 'completed')
+            ->with('details')
             ->get();
         $totalPenjualanHariIni = $tiketHariIni->sum('total_harga');
-        $totalTiketTerjual = $tiketHariIni->sum('jumlah_tiket');
+        $totalTiketTerjual = $tiketHariIni->sum(function($tiket) {
+            return $tiket->details->sum('jumlah');
+        });
     @endphp
 
     <!-- Stats Card -->
@@ -70,16 +73,15 @@
         </a>
     </div>
 
-    <!-- Manage Button -->
-    <a href="{{ url('administrator/kelian/tiket/objek') }}" 
-       class="block w-full bg-white border-2 border-[#00a6eb] text-[#00a6eb] text-center py-3 rounded-xl font-black text-sm shadow-sm hover:bg-[#00a6eb] hover:text-white transition-all">
-        <i class="bi bi-gear mr-2"></i>Kelola Objek Wisata
-    </a>
-
     <!-- Objek Wisata List -->
     <div>
         <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-bold text-slate-800">Objek Wisata</h3>
+            <a href="{{ url('administrator/kelian/tiket/objek/create') }}" 
+               class="h-9 px-3 bg-[#00a6eb] text-white rounded-xl flex items-center gap-1.5 shadow-lg shadow-[#00a6eb]/20 transition-all active:scale-95 text-[10px] font-bold">
+                <i class="bi bi-plus-lg"></i>
+                <span>Tambah Objek Wisata</span>
+            </a>
         </div>
         
         @if($objekWisata->count() > 0)
@@ -89,9 +91,13 @@
                 $tiketTerjualObjek = App\Models\TiketWisata::where('id_objek_wisata', $objek->id_objek_wisata)
                     ->whereDate('created_at', today())
                     ->where('status_pembayaran', 'completed')
-                    ->sum('jumlah_tiket');
+                    ->with('details')
+                    ->get()
+                    ->sum(function($tiket) {
+                        return $tiket->details->sum('jumlah');
+                    });
             @endphp
-            <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+            <a href="{{ url('administrator/kelian/tiket/objek/detail/'.$objek->id_objek_wisata) }}" class="block bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                 <div class="flex items-start gap-4 p-4">
                     <div class="h-16 w-16 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
                         @if($objek->foto)
@@ -104,16 +110,31 @@
                         <h3 class="text-sm font-black text-slate-800 mb-1">{{ $objek->nama_objek }}</h3>
                         <p class="text-[10px] text-slate-500 mb-2 line-clamp-1">{{ $objek->alamat }}</p>
                         <div class="flex items-center gap-2 mb-2">
+                            @php
+                                $pemasukanObjek = App\Models\TiketWisata::where('id_objek_wisata', $objek->id_objek_wisata)
+                                    ->whereDate('created_at', today())
+                                    ->where('status_pembayaran', 'completed')
+                                    ->sum('total_harga');
+                                $tiketTerjualObjek = App\Models\TiketWisata::where('id_objek_wisata', $objek->id_objek_wisata)
+                                    ->whereDate('created_at', today())
+                                    ->where('status_pembayaran', 'completed')
+                                    ->with('details')
+                                    ->get()
+                                    ->sum(function($tiket) {
+                                        return $tiket->details->sum('jumlah');
+                                    });
+                            @endphp
                             <span class="text-[9px] font-bold text-[#00a6eb] bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                                Rp {{ number_format($objek->harga_tiket, 0, ',', '.') }}
+                                Rp {{ number_format($pemasukanObjek, 0, ',', '.') }}
                             </span>
                             <span class="text-[9px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
                                 {{ $tiketTerjualObjek }} terjual hari ini
                             </span>
                         </div>
                     </div>
+                    <i class="bi bi-chevron-right text-slate-300 text-lg"></i>
                 </div>
-            </div>
+            </a>
             @endforeach
         </div>
         @else

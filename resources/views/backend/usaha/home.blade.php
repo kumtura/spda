@@ -179,7 +179,7 @@
             <div class="bg-white rounded-xl border border-slate-100 p-3.5">
                 <div class="flex items-start justify-between gap-3 mb-2">
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs font-bold text-slate-800 line-clamp-1 mb-1">{{ $loker->posisi ?? 'Posisi Tidak Disebutkan' }}</p>
+                        <p class="text-xs font-bold text-slate-800 line-clamp-1 mb-1">{{ $loker->judul ?? 'Posisi Tidak Disebutkan' }}</p>
                         <p class="text-[10px] text-slate-400">{{ \Carbon\Carbon::parse($loker->created_at)->translatedFormat('d M Y') }}</p>
                     </div>
                 </div>

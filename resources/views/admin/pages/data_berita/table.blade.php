@@ -150,7 +150,7 @@
 
                 <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
                     <button type="button" @click="view = 'table'" class="px-6 py-2.5 font-black text-[10px] uppercase text-slate-400">Batal</button>
-                    <button type="submit" class="px-8 py-2.5 bg-slate-900 hover:bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all transform hover:-translate-y-0.5">
+                    <button type="submit" class="px-8 py-2.5 bg-primary-light hover:bg-primary-dark text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all transform hover:-translate-y-0.5">
                         Simpan Artikel <i class="bi bi-check-lg ml-1"></i>
                     </button>
                 </div>

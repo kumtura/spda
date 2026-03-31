@@ -1,21 +1,24 @@
 @extends('mobile_layout')
 
 @section('isi_menu')
-<div class="bg-white min-h-screen pb-24">
-    <!-- Header -->
-    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-5 pt-8 pb-6">
-        <div class="flex items-center gap-3 mb-4">
-            <a href="{{ url('administrator/kelian/tiket') }}" class="h-8 w-8 bg-white/20 rounded-lg flex items-center justify-center">
-                <i class="bi bi-arrow-left text-white"></i>
+<div class="bg-white pb-24">
+    <!-- Header with gradient and back button -->
+    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-6 pb-8 text-white relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
+        <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
+        
+        <div class="relative z-10 flex items-center gap-3 mb-4">
+            <a href="{{ url('administrator/kelian/tiket') }}" class="h-9 w-9 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors">
+                <i class="bi bi-arrow-left text-white text-lg"></i>
             </a>
             <div>
-                <h1 class="text-lg font-black text-white">Kelola Objek Wisata</h1>
-                <p class="text-[10px] text-white/70">Tambah dan edit objek wisata</p>
+                <h1 class="text-lg font-black">Kelola Objek Wisata</h1>
+                <p class="text-[10px] text-white/80">Tambah dan edit objek wisata</p>
             </div>
         </div>
     </div>
 
-    <div class="px-5 -mt-3">
+    <div class="px-4 pt-4">
         @if(session('success'))
         <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-4">
             <div class="flex items-center gap-3">

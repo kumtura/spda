@@ -147,7 +147,7 @@
                         <td class="py-4 whitespace-nowrap text-right px-4">
                             <button type="button" 
                                     onclick="openEditModal({{ $channel->id_payment_channel }}, '{{ $channel->name }}', {{ $channel->is_active ? 'true' : 'false' }})"
-                                    class="h-8 w-8 bg-black text-white rounded-lg hover:bg-slate-800 transition-colors inline-flex items-center justify-center shadow-lg shadow-slate-100">
+                                    class="h-8 w-8 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-primary-light hover:border-primary-light transition-all inline-flex items-center justify-center shadow-sm">
                                 <i class="bi bi-pencil-square text-sm"></i>
                             </button>
                         </td>

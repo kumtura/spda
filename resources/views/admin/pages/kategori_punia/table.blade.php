@@ -104,7 +104,7 @@
             <div class="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl relative border border-slate-200" @click.away="show = false">
                 <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div class="flex items-center gap-4">
-                        <div class="h-12 w-12 rounded-xl bg-primary-light text-white flex items-center justify-center shadow-lg transform -rotate-2">
+                        <div class="h-12 w-12 rounded-xl bg-primary-light text-white flex items-center justify-center">
                             <i class="bi bi-tags text-2xl"></i>
                         </div>
                         <div>
@@ -151,7 +151,7 @@
 
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
                         <button type="button" @click="show = false" class="px-6 py-2.5 font-black text-[10px] uppercase text-slate-400">Batal</button>
-                        <button type="submit" class="px-8 py-2.5 bg-slate-900 hover:bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all transform hover:-translate-y-0.5">
+                        <button type="submit" class="px-8 py-2.5 bg-primary-light hover:bg-primary-dark text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all transform hover:-translate-y-0.5">
                             Simpan <i class="bi bi-check-lg ml-1"></i>
                         </button>
                     </div>

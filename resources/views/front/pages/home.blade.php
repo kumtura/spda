@@ -3,14 +3,14 @@
 @php
     $slides = \App\Models\Gambar\Slides\Slides::where('aktif', '1')->orderBy('id_gambar_home', 'desc')->get();
     $lokers = \App\Models\Loker::with('usaha.detail', 'usaha.kategori')->where('status', 'Buka')->orderBy('id_loker', 'desc')->take(3)->get();
+    $objekWisata = \App\Models\ObjekWisata::where('aktif', '1')->where('status', 'aktif')->orderBy('created_at', 'desc')->take(5)->get();
 @endphp
 
 @section('content')
 
 <!-- Hero Image Section -->
 <div class="relative w-full h-[300px] bg-slate-900 overflow-hidden" x-data="{ activeSlide: 0 }" x-init="
-    let slides = document.querySelectorAll('[data-slide]');
-    if(slides.length > 1) setInterval(() => { activeSlide = (activeSlide + 1) % slides.length }, 5000);
+    if({{ count($slides) }} > 1) setInterval(() => { activeSlide = (activeSlide + 1) % {{ count($slides) }} }, 5000);
 ">
     @if(count($slides) > 0)
         @foreach($slides as $i => $slide)
@@ -82,17 +82,17 @@
             </div>
             <span class="text-[10px] text-slate-500 font-bold">Donasi</span>
         </a>
-        <a href="{{ route('public.unit_usaha') }}" class="flex flex-col items-center gap-2 group">
+        <a href="{{ route('public.wisata') }}" class="flex flex-col items-center gap-2 group">
             <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">
-                <i class="bi bi-shop text-2xl text-[#00a6eb]"></i>
+                <i class="bi bi-ticket-perforated text-2xl text-[#00a6eb]"></i>
             </div>
-            <span class="text-[10px] text-slate-500 font-bold">Unit Usaha</span>
+            <span class="text-[10px] text-slate-500 font-bold">Objek Wisata</span>
         </a>
-        <a href="{{ route('public.berita') }}" class="flex flex-col items-center gap-2 group">
+        <a href="{{ route('public.agenda') }}" class="flex flex-col items-center gap-2 group">
             <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">
-                <i class="bi bi-journal-text text-2xl text-[#00a6eb]"></i>
+                <i class="bi bi-calendar3 text-xl text-[#00a6eb]"></i>
             </div>
-            <span class="text-[10px] text-slate-500 font-bold">Berita</span>
+            <span class="text-[10px] text-slate-500 font-bold text-center">Agenda Desa Adat</span>
         </a>
     </div>
 
@@ -127,6 +127,46 @@
             @empty
                 <div class="flex-shrink-0 w-full bg-slate-50 rounded-2xl border border-slate-100 border-dashed p-6 text-center">
                     <p class="text-xs font-bold text-slate-400">Belum ada program aktif.</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
+
+    <!-- Objek Wisata - Horizontal Scroll -->
+    <div>
+        <div class="flex items-center justify-between mb-4 px-1">
+            <h3 class="text-sm font-bold text-slate-800">Objek Wisata</h3>
+            <a href="{{ route('public.wisata') }}" class="text-[10px] font-bold text-[#00a6eb] hover:underline">Lihat Semua</a>
+        </div>
+        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
+            @forelse($objekWisata as $objek)
+                <a href="{{ route('public.wisata.detail', $objek->id_objek_wisata) }}" class="flex-shrink-0 w-64 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all group">
+                    <div class="h-32 bg-slate-50 relative flex items-center justify-center overflow-hidden">
+                        @if($objek->foto)
+                            <img src="{{ asset('storage/wisata/'.$objek->foto) }}" class="w-full h-full object-cover" alt="{{ $objek->nama_objek }}">
+                        @else
+                            <i class="bi bi-image text-3xl text-slate-200"></i>
+                        @endif
+                        <span class="absolute top-2 right-2 bg-[#00a6eb] text-white text-[8px] font-bold px-2 py-1 rounded-sm uppercase">Aktif</span>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="text-xs font-bold text-slate-800 leading-tight mb-2 group-hover:text-[#00a6eb] transition-colors line-clamp-2">{{ $objek->nama_objek }}</h4>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-[9px] text-slate-400 mb-0.5">Mulai dari</p>
+                                @php
+                                    $minPrice = $objek->kategoriTiket->min('harga') ?? $objek->harga_tiket ?? 0;
+                                @endphp
+                                <p class="text-[11px] font-bold text-[#00a6eb]">Rp {{ number_format($minPrice, 0, ',', '.') }}</p>
+                            </div>
+                            <span class="bg-slate-50 text-slate-600 group-hover:bg-[#00a6eb] group-hover:text-white transition-colors px-3 py-1.5 rounded-full text-[10px] font-bold">Beli Tiket</span>
+                        </div>
+                    </div>
+                </a>
+            @empty
+                <div class="flex-shrink-0 w-full bg-slate-50 rounded-2xl border border-slate-100 border-dashed p-6 text-center">
+                    <i class="bi bi-ticket-perforated text-3xl text-slate-300 mb-2 block"></i>
+                    <p class="text-xs font-bold text-slate-400">Belum ada objek wisata.</p>
                 </div>
             @endforelse
         </div>

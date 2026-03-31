@@ -39,12 +39,15 @@ class XenditWebhookController extends Controller
         // Extract External ID & Status (Unified for Invoice, VA, E-Wallet, QRIS)
         $external_id = $payload['external_id'] ?? 
                       ($payload['data']['reference_id'] ?? 
+                      ($payload['reference_id'] ?? 
                       ($payload['qr_code']['external_id'] ?? 
-                      ($payload['data']['external_id'] ?? null)));
+                      ($payload['data']['external_id'] ?? null))));
                       
         $status = $payload['status'] ?? 
                    ($payload['data']['status'] ?? 
                    ($payload['qr_code']['status'] ?? null));
+
+        Log::info("Xendit Webhook: Extracted external_id={$external_id}, status={$status}");
 
         if (!$external_id) {
             Log::warning('Xendit Webhook: External ID empty/missing.');
@@ -58,10 +61,40 @@ class XenditWebhookController extends Controller
             return response()->json(['message' => 'Processing non-standard format as success for Xendit check'], 200);
         }
 
+        // Determine type based on prefix
+        $prefix = $parts[0];
+        
+        if ($prefix === 'TKT') {
+            // Handle Tiket Wisata - extract kode_tiket (first 3 parts: TKT-timestamp-random)
+            $kode_tiket = $parts[0] . '-' . $parts[1] . '-' . $parts[2];
+            $tiket = \App\Models\TiketWisata::where('kode_tiket', $kode_tiket)->first();
+            
+            if (!$tiket) {
+                Log::error("Xendit Webhook: Tiket NOT FOUND: {$kode_tiket}");
+                return response()->json(['message' => 'Tiket not found but webhook reachable'], 200);
+            }
+            
+            $success_statuses = ['PAID', 'SETTLED', 'COMPLETED', 'SUCCEEDED'];
+            if (in_array(strtoupper($status), $success_statuses)) {
+                $tiket->update([
+                    'status_pembayaran' => 'completed',
+                    'aktif' => '1'
+                ]);
+                
+                Log::info("Xendit Webhook: Tiket #{$kode_tiket} COMPLETED.");
+            }
+            
+            Log::info('--- XENDIT WEBHOOK END ---');
+            return response()->json(['status' => 'success']);
+        }
+        
+        // Handle Punia/Donasi
         $id_numeric = $parts[1];
-        $type = str_contains($parts[0], 'PN') ? 'punia' : 'donasi';
-
-        $record = ($type === 'punia') ? Danapunia::find($id_numeric) : Sumbangan::find($id_numeric);
+        $type = str_contains($prefix, 'PN') ? 'punia' : 'donasi';
+        
+        $record = $type === 'punia' 
+            ? Danapunia::find($id_numeric) 
+            : Sumbangan::find($id_numeric);
 
         if (!$record) {
             Log::error("Xendit Webhook: Record NOT FOUND in database: {$external_id}");

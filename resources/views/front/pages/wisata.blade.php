@@ -1,78 +1,127 @@
-@extends('front.layout.template')
+@extends('mobile_layout_public')
 
 @section('content')
-<div class="bg-white">
-    <!-- Hero Section -->
-    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] py-16">
-        <div class="container mx-auto px-4">
-            <div class="max-w-3xl mx-auto text-center text-white">
-                <h1 class="text-4xl font-black mb-4">Objek Wisata Desa Adat</h1>
-                <p class="text-lg text-white/90">Jelajahi keindahan dan budaya desa adat kami</p>
-            </div>
+<div class="bg-slate-50 min-h-screen pb-24">
+    <!-- Header -->
+    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-8 pb-12 text-white relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
+        <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
+        
+        <div class="relative z-10">
+            <h1 class="text-xl font-black mb-1">Objek Wisata</h1>
+            <p class="text-white/80 text-xs">Jelajahi destinasi wisata desa adat</p>
         </div>
     </div>
 
-    <!-- Objek Wisata List -->
-    <div class="container mx-auto px-4 py-12">
+    <div class="px-4 -mt-6">
+        <!-- Search Bar -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-3 mb-4 relative z-10">
+            <div class="relative">
+                <input type="text" id="searchInput" 
+                    class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00a6eb]/20 focus:border-[#00a6eb]"
+                    placeholder="Cari objek wisata...">
+                <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            </div>
+        </div>
+
         @php
-            $objekWisata = App\Models\ObjekWisata::where('aktif', '1')->where('status', 'aktif')->get();
+            $objekWisata = App\Models\ObjekWisata::with('kategoriTiket')
+                ->where('aktif', '1')
+                ->where('status', 'aktif')
+                ->get();
         @endphp
 
         @if($objekWisata->count() > 0)
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="wisataGrid" class="grid grid-cols-2 gap-3">
             @foreach($objekWisata as $objek)
             <a href="{{ url('wisata/detail/'.$objek->id_objek_wisata) }}" 
-                class="bg-white rounded-2xl overflow-hidden shadow-lg border border-slate-100 hover:shadow-2xl transition-all group">
-                <div class="relative h-48 bg-slate-100 overflow-hidden">
+                class="wisata-card block bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-all"
+                data-name="{{ strtolower($objek->nama_objek) }}"
+                data-desc="{{ strtolower($objek->deskripsi) }}"
+                data-alamat="{{ strtolower($objek->alamat) }}">
+                <div class="relative h-32 bg-slate-100 overflow-hidden">
                     @if($objek->foto)
                     <img src="{{ asset('storage/wisata/'.$objek->foto) }}" 
-                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
+                        class="w-full h-full object-cover" 
                         alt="{{ $objek->nama_objek }}">
                     @else
                     <div class="w-full h-full flex items-center justify-center">
-                        <i class="bi bi-image text-slate-300 text-5xl"></i>
+                        <i class="bi bi-image text-slate-300 text-3xl"></i>
                     </div>
                     @endif
                 </div>
                 
-                <div class="p-5">
-                    <h3 class="text-lg font-black text-slate-800 mb-2 group-hover:text-[#00a6eb] transition-colors">
+                <div class="p-3">
+                    <h3 class="text-xs font-black text-slate-800 mb-1.5 line-clamp-2 leading-tight">
                         {{ $objek->nama_objek }}
                     </h3>
-                    <p class="text-xs text-slate-500 mb-3 line-clamp-2">{{ $objek->deskripsi }}</p>
                     
-                    <div class="flex items-center gap-2 mb-3">
-                        <i class="bi bi-geo-alt text-slate-400 text-xs"></i>
-                        <span class="text-xs text-slate-600">{{ $objek->alamat }}</span>
+                    <div class="flex items-start gap-1 mb-2">
+                        <i class="bi bi-geo-alt text-slate-400 text-[9px] mt-0.5 shrink-0"></i>
+                        <span class="text-[9px] text-slate-600 line-clamp-1">{{ $objek->alamat }}</span>
                     </div>
                     
-                    @if($objek->jam_buka && $objek->jam_tutup)
-                    <div class="flex items-center gap-2 mb-4">
-                        <i class="bi bi-clock text-slate-400 text-xs"></i>
-                        <span class="text-xs text-slate-600">{{ $objek->jam_buka }} - {{ $objek->jam_tutup }} WITA</span>
-                    </div>
-                    @endif
-                    
-                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
-                        <div>
-                            <p class="text-[9px] text-slate-400 uppercase mb-1">Harga Tiket</p>
-                            <p class="text-lg font-black text-[#00a6eb]">Rp {{ number_format($objek->harga_tiket, 0, ',', '.') }}</p>
-                        </div>
-                        <div class="h-10 w-10 bg-[#00a6eb] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <i class="bi bi-arrow-right text-white"></i>
-                        </div>
+                    <div class="pt-2 border-t border-slate-100">
+                        <p class="text-[8px] text-slate-400 uppercase mb-0.5">Mulai dari</p>
+                        @php
+                            $minPrice = $objek->kategoriTiket->min('harga') ?? $objek->harga_tiket ?? 0;
+                        @endphp
+                        <p class="text-sm font-black text-[#00a6eb]">Rp {{ number_format($minPrice, 0, ',', '.') }}</p>
                     </div>
                 </div>
             </a>
             @endforeach
         </div>
+
+        <div id="noResults" class="hidden text-center py-12">
+            <i class="bi bi-search text-slate-300 text-5xl mb-3"></i>
+            <h3 class="text-sm font-bold text-slate-800 mb-1">Tidak Ada Hasil</h3>
+            <p class="text-xs text-slate-500">Coba kata kunci lain</p>
+        </div>
         @else
-        <div class="max-w-md mx-auto text-center py-12">
-            <i class="bi bi-ticket-perforated text-slate-300 text-6xl mb-4"></i>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">Belum Ada Objek Wisata</h3>
-            <p class="text-sm text-slate-500">Objek wisata akan segera tersedia</p>
+        <div class="text-center py-12">
+            <i class="bi bi-ticket-perforated text-slate-300 text-5xl mb-3"></i>
+            <h3 class="text-sm font-bold text-slate-800 mb-1">Belum Ada Objek Wisata</h3>
+            <p class="text-xs text-slate-500">Objek wisata akan segera tersedia</p>
         </div>
         @endif
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const wisataCards = document.querySelectorAll('.wisata-card');
+    const wisataGrid = document.getElementById('wisataGrid');
+    const noResults = document.getElementById('noResults');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            wisataCards.forEach(card => {
+                const name = card.dataset.name;
+                const desc = card.dataset.desc;
+                const alamat = card.dataset.alamat;
+                
+                if (name.includes(searchTerm) || desc.includes(searchTerm) || alamat.includes(searchTerm)) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (visibleCount === 0 && searchTerm !== '') {
+                wisataGrid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+            } else {
+                wisataGrid.classList.remove('hidden');
+                noResults.classList.add('hidden');
+            }
+        });
+    }
+});
+</script>
 @endsection

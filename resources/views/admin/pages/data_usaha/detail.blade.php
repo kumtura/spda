@@ -316,10 +316,10 @@
                             </div>
                             @endforeach
                         </div>
-                        <div class="p-6 bg-slate-900 rounded-2xl shadow-xl flex items-center justify-between text-white relative overflow-hidden">
+                        <div class="p-6 bg-primary-light text-white rounded-2xl shadow-xl flex items-center justify-between relative overflow-hidden">
                             <div class="absolute right-0 bottom-0 opacity-10"><i class="bi bi-piggy-bank text-9xl"></i></div>
                             <div class="relative">
-                                <p class="text-[9px] font-black text-blue-300 uppercase tracking-widest mb-1">Total Akumulasi</p>
+                                <p class="text-[9px] font-black text-blue-200 uppercase tracking-widest mb-1">Total Akumulasi</p>
                                 <h3 class="text-2xl font-black">Rp. {{ number_format($total_usaha, 0, ',', '.') }}</h3>
                             </div>
                         </div>

@@ -1,4 +1,4 @@
-@extends('front.layout.template')
+@extends('mobile_layout_public')
 
 @section('content')
 <div class="bg-slate-50 min-h-screen py-12">

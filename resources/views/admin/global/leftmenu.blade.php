@@ -4,7 +4,8 @@
         openPunia: {{ Request::is('administrator/datapunia_wajib*') || Request::is('administrator/kategori_punia*') || Request::is('administrator/alokasi_punia*') ? 'true' : 'false' }},
         openDonasi: {{ Request::is('administrator/datasumbangan*') || Request::is('administrator/kategori_donasi*') || Request::is('administrator/program_donasi*') ? 'true' : 'false' }},
         openBlog: false,
-        openTenaga: false
+        openTenaga: false,
+        openAgenda: {{ Request::is('administrator/agenda*') || Request::is('administrator/kategori_agenda*') ? 'true' : 'false' }}
     }"
     :class="mobileSidebarOpen ? 'translate-x-0' : (sidebarOpen ? 'max-lg:-translate-x-full translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20')"
     class="fixed top-0 left-0 z-40 w-64 h-screen transition-all duration-300 sidebar-gradient border-r border-white/10 overflow-y-auto no-scrollbar shadow-2xl" 
@@ -139,6 +140,20 @@
             <ul x-show="openBlog && sidebarOpen" x-transition x-cloak class="py-2 space-y-1 ml-4 border-l border-white/10 pl-2">
                   <li><a href="{{ url('administrator/databerita') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/databerita') ? 'text-white bg-white/5' : '' }}">Daftar Berita</a></li>
                   <li><a href="{{ url('administrator/data_kategoriberita') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_kategoriberita*') ? 'text-white bg-white/5' : '' }}">Kategori</a></li>
+            </ul>
+          </li>
+
+          <!-- New Agenda Dropdown -->
+          <li>
+            <button type="button" @click="openAgenda = !openAgenda" 
+                    class="flex items-center w-full p-2.5 text-white transition duration-75 rounded-xl group hover:bg-white/10">
+                  <i class="bi bi-calendar-event w-5 h-5 text-white flex items-center justify-center"></i>
+                  <span class="flex-1 ms-3 text-left text-sm font-semibold tracking-tight" x-show="sidebarOpen">Agenda Desa Adat</span>
+                  <i class="bi bi-chevron-down w-3 h-3 transition-transform duration-300" :class="openAgenda ? 'rotate-180' : ''" x-show="sidebarOpen"></i>
+            </button>
+            <ul x-show="openAgenda && sidebarOpen" x-transition x-cloak class="py-2 space-y-1 ml-4 border-l border-white/10 pl-2">
+                  <li><a href="{{ url('administrator/agenda') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/agenda') ? 'text-white bg-white/5' : '' }}">Daftar Agenda</a></li>
+                  <li><a href="{{ url('administrator/kategori_agenda') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/kategori_agenda*') ? 'text-white bg-white/5' : '' }}">Kategori Agenda</a></li>
             </ul>
           </li>
 

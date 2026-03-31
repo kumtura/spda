@@ -12,15 +12,13 @@ class TiketWisata extends Model
     protected $fillable = [
         'kode_tiket',
         'id_objek_wisata',
-        'nama_pengunjung',
         'email',
-        'no_telp',
-        'jumlah_tiket',
-        'total_harga',
         'tanggal_kunjungan',
+        'total_harga',
         'metode_pembelian',
         'metode_pembayaran',
         'xendit_id',
+        'payment_data',
         'bukti_transfer',
         'status_verifikasi',
         'catatan_verifikasi',
@@ -45,5 +43,10 @@ class TiketWisata extends Model
     public function petugas()
     {
         return $this->belongsTo(User::class, 'petugas_scan', 'id');
+    }
+
+    public function details()
+    {
+        return $this->hasMany(TiketDetail::class, 'id_tiket', 'id_tiket');
     }
 }

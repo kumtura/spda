@@ -124,12 +124,12 @@
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 <button @click="openEdit({{ json_encode($rows) }})" 
-                                   class="h-8 w-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-emerald-500 hover:border-emerald-200 transition-all shadow-sm" title="Edit Cepat">
+                                   class="h-8 w-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary-light hover:border-primary-light transition-all shadow-sm" title="Edit Cepat">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
                                 @if($rows->aktif_status == "0")
                                 <a href="{{ url('administrator/approve_usaha/'.$rows->id_usaha) }}" 
-                                   class="h-8 w-8 flex items-center justify-center bg-emerald-500 border border-emerald-400 rounded-lg text-white hover:bg-emerald-600 transition-all shadow-sm" title="Konfirmasi">
+                                   class="h-8 w-8 flex items-center justify-center bg-primary-light border border-primary-light rounded-lg text-white hover:bg-primary-dark transition-all shadow-sm" title="Konfirmasi">
                                     <i class="bi bi-check2"></i>
                                 </a>
                                 @endif
@@ -202,7 +202,7 @@
                         <p class="text-[10px] text-slate-400 font-medium italic">* Perubahan akan berdampak pada akses login unit usaha terkait.</p>
                         <div class="flex items-center gap-3 w-full md:w-auto">
                             <button type="button" @click="showEditModal = false" class="flex-1 md:flex-none px-8 py-3 text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 transition-colors">Batal</button>
-                            <button type="submit" class="flex-1 md:flex-none px-10 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all transform hover:-translate-y-1 active:translate-y-0">Update Data</button>
+                            <button type="submit" class="flex-1 md:flex-none px-10 py-3 bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all transform hover:-translate-y-1 active:translate-y-0">Update Data</button>
                         </div>
                     </div>
                 </form>
@@ -216,7 +216,7 @@
             <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl relative border border-slate-200" @click.away="showAddModal = false">
                 <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div class="flex items-center gap-4">
-                        <div class="h-12 w-12 rounded-xl bg-primary-light text-white flex items-center justify-center shadow-lg transform -rotate-2">
+                        <div class="h-12 w-12 rounded-xl bg-primary-light text-white flex items-center justify-center">
                             <i class="bi bi-building-add text-2xl"></i>
                         </div>
                         <div>
@@ -294,7 +294,7 @@
                         <div class="ml-auto flex gap-3">
                             <button type="button" @click="showAddModal = false" class="px-6 py-2.5 bg-white border border-slate-200 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all">Batal</button>
                             <template x-if="activeTab !== 'auth'">
-                                <button type="button" @click="activeTab === 'detail' ? activeTab = 'pj' : (activeTab = 'auth', updateUsername())" class="px-8 py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-primary-light transition-all transform hover:-translate-y-0.5">Lanjut <i class="bi bi-arrow-right ml-1"></i></button>
+                                <button type="button" @click="activeTab === 'detail' ? activeTab = 'pj' : (activeTab = 'auth', updateUsername())" class="px-8 py-2.5 bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all transform hover:-translate-y-0.5">Lanjut <i class="bi bi-arrow-right ml-1"></i></button>
                             </template>
                             <template x-if="activeTab === 'auth'">
                                 <button type="submit" class="px-8 py-2.5 bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-100 hover:bg-primary-dark transition-all transform hover:-translate-y-0.5">Selesaikan Pendaftaran <i class="bi bi-check-lg ml-1"></i></button>

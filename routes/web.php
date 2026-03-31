@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Administrator\DashboardController;
+use App\Http\Controllers\Administrator\AgendaController;
+use App\Http\Controllers\Administrator\KategoriAgendaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -47,6 +49,8 @@ Route::get('/loker/{id}/apply', [LandingController::class, 'loker_apply_form'])-
 Route::post('/loker/{id}/apply', [LandingController::class, 'loker_apply'])->name('public.loker.apply');
 Route::get('/wisata', [LandingController::class, 'wisata'])->name('public.wisata')->middleware('public.redirect');
 Route::get('/wisata/detail/{id}', [LandingController::class, 'wisata_detail'])->name('public.wisata.detail')->middleware('public.redirect');
+Route::get('/agenda', [LandingController::class, 'agenda'])->name('public.agenda')->middleware('public.redirect');
+Route::get('/wisata/beli/{id}', [LandingController::class, 'wisata_beli'])->name('public.wisata.beli');
 Route::get('/wisata/beli/{id}', [LandingController::class, 'wisata_beli'])->name('public.wisata.beli');
 Route::post('/wisata/beli/submit', [LandingController::class, 'wisata_beli_submit'])->name('public.wisata.beli.submit');
 Route::get('/wisata/payment/methods', [LandingController::class, 'wisata_payment_methods'])->name('public.wisata.payment.methods');
@@ -54,6 +58,11 @@ Route::get('/wisata/payment/xendit', [LandingController::class, 'wisata_payment_
 Route::get('/wisata/payment/manual', [LandingController::class, 'wisata_payment_manual'])->name('public.wisata.payment.manual');
 Route::post('/wisata/payment/manual/submit', [LandingController::class, 'wisata_payment_manual_submit'])->name('public.wisata.payment.manual.submit');
 Route::get('/wisata/payment/manual/success', [LandingController::class, 'wisata_payment_manual_success'])->name('public.wisata.payment.manual.success');
+Route::get('/wisata/payment/result', [LandingController::class, 'wisata_payment_result'])->name('public.wisata.payment.result');
+Route::get('/wisata/payment/status', [LandingController::class, 'wisata_payment_status'])->name('public.wisata.payment.status');
+Route::post('/wisata/payment/simulate', [LandingController::class, 'wisata_payment_simulate'])->name('public.wisata.payment.simulate');
+Route::get('/wisata/tiket/success', [LandingController::class, 'wisata_tiket_success'])->name('public.wisata.tiket.success');
+Route::get('/wisata/tiket/download/{kode}', [LandingController::class, 'wisata_tiket_download'])->name('public.wisata.tiket.download');
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/register_usaha', function () {
@@ -151,12 +160,18 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             
             // Objek Wisata Management for Kelian
             Route::get('/kelian/tiket/objek', 'Administrator\ObjekWisataController@index_kelian');
+            Route::get('/kelian/tiket/objek/detail/{id}', 'Administrator\ObjekWisataController@detail_kelian');
             Route::get('/kelian/tiket/objek/create', 'Administrator\ObjekWisataController@create_kelian');
             Route::post('/kelian/tiket/objek/store', 'Administrator\ObjekWisataController@store');
             Route::get('/kelian/tiket/objek/edit/{id}', 'Administrator\ObjekWisataController@edit_kelian');
             Route::put('/kelian/tiket/objek/update/{id}', 'Administrator\ObjekWisataController@update');
             Route::get('/kelian/tiket/objek/delete/{id}', 'Administrator\ObjekWisataController@destroy');
             Route::get('/kelian/tiket/objek/toggle/{id}', 'Administrator\ObjekWisataController@toggle_status');
+            
+            // Kategori Tiket Management
+            Route::post('/kelian/tiket/kategori/store', 'Administrator\ObjekWisataController@store_kategori');
+            Route::put('/kelian/tiket/kategori/update/{id}', 'Administrator\ObjekWisataController@update_kategori');
+            Route::get('/kelian/tiket/kategori/delete/{id}', 'Administrator\ObjekWisataController@delete_kategori');
         });
 
 		// Karyawan / Tenaga Kerja
@@ -290,6 +305,18 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/verifikasi_pembayaran', 'Administrator\DashboardController@verifikasi_pembayaran');
             Route::post('/verifikasi_pembayaran/approve', 'Administrator\DashboardController@verifikasi_approve');
             Route::post('/verifikasi_pembayaran/reject', 'Administrator\DashboardController@verifikasi_reject');
+
+            // Agenda Desa Adat
+            Route::get('/agenda', [AgendaController::class, 'index']);
+            Route::post('/agenda/post', [AgendaController::class, 'store']);
+            Route::post('/agenda/update', [AgendaController::class, 'update']);
+            Route::get('/agenda/hapus/{id}', [AgendaController::class, 'destroy']);
+            Route::get('/agenda/toggle/{id}', [AgendaController::class, 'toggle_status']);
+
+            Route::get('/kategori_agenda', [KategoriAgendaController::class, 'index']);
+            Route::post('/kategori_agenda/post', [KategoriAgendaController::class, 'store']);
+            Route::post('/kategori_agenda/update', [KategoriAgendaController::class, 'update']);
+            Route::get('/kategori_agenda/hapus/{id}', [KategoriAgendaController::class, 'destroy']);
 		});
         
         // Admin Settings
@@ -297,6 +324,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/settings', 'Administrator\SettingController@index');
             Route::post('/settings/update_logo', 'Administrator\SettingController@update_logo');
             Route::post('/settings/upload_hero_slide', 'Administrator\SettingController@upload_hero_slide');
+            Route::post('/settings/update_hero_slide_metadata', 'Administrator\SettingController@update_hero_slide_metadata');
             Route::post('/settings/delete_hero_slide', 'Administrator\SettingController@delete_hero_slide');
             Route::post('/settings/update_village', 'Administrator\SettingController@update_village');
             Route::post('/settings/update_bank_accounts', 'Administrator\SettingController@update_bank_accounts');

@@ -25,14 +25,19 @@
                     <span class="text-xs font-bold text-slate-800">{{ $tiket->objekWisata->nama_objek }}</span>
                 </div>
                 
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                    <span class="text-[9px] text-slate-400 uppercase">Nama Pengunjung</span>
-                    <span class="text-xs font-bold text-slate-800">{{ $tiket->nama_pengunjung }}</span>
-                </div>
-                
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                    <span class="text-[9px] text-slate-400 uppercase">Jumlah Tiket</span>
-                    <span class="text-xs font-bold text-slate-800">{{ $tiket->jumlah_tiket }} Tiket</span>
+                <div class="pb-3 border-b border-slate-100">
+                    <span class="text-[9px] text-slate-400 uppercase block mb-2">Detail Tiket</span>
+                    <div class="space-y-1.5">
+                        @foreach($tiket->details as $detail)
+                        <div class="flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-800">{{ $detail->kategoriTiket->nama_kategori }}</span>
+                                <span class="text-[9px] text-slate-400">× {{ $detail->jumlah }}</span>
+                            </div>
+                            <span class="font-bold text-slate-700">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</span>
+                        </div>
+                        @endforeach
+                    </div>
                 </div>
                 
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -40,17 +45,22 @@
                     <span class="text-xs font-bold text-slate-800">{{ $tiket->tanggal_kunjungan->translatedFormat('d F Y') }}</span>
                 </div>
                 
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <span class="text-[9px] text-slate-400 uppercase">Metode Pembayaran</span>
+                    <span class="text-xs font-bold text-slate-800">{{ strtoupper($tiket->metode_pembayaran) }}</span>
+                </div>
+                
                 <div class="flex items-center justify-between">
-                    <span class="text-[9px] text-slate-400 uppercase">Total Harga</span>
-                    <span class="text-lg font-black text-[#00a6eb]">Rp {{ number_format($tiket->total_harga, 0, ',', '.') }}</span>
+                    <span class="text-sm font-bold text-slate-700 uppercase">TOTAL</span>
+                    <span class="text-xl font-black text-[#00a6eb]">Rp {{ number_format($tiket->total_harga, 0, ',', '.') }}</span>
                 </div>
             </div>
             
-            <div class="bg-slate-50 border-t border-slate-100 p-4">
+            <div class="bg-emerald-50 border-t border-emerald-100 p-4">
                 <div class="flex items-start gap-2">
-                    <i class="bi bi-info-circle text-slate-400 text-sm mt-0.5"></i>
-                    <p class="text-[10px] text-slate-500 leading-relaxed">
-                        Tiket ini dapat digunakan pada tanggal kunjungan yang dipilih. Pengunjung dapat menunjukkan kode tiket untuk validasi.
+                    <i class="bi bi-check-circle text-emerald-600 text-sm mt-0.5"></i>
+                    <p class="text-[10px] text-emerald-700 leading-relaxed font-medium">
+                        <strong>Pembayaran Lunas!</strong> Tiket sudah tercatat dan pengunjung dapat langsung masuk. Simpan kode tiket untuk referensi.
                     </p>
                 </div>
             </div>

@@ -80,8 +80,6 @@ class SettingController extends Controller
     {
         $request->validate([
             'hero_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'hero_title' => 'nullable|string|max:255',
-            'hero_deskripsi' => 'nullable|string|max:500',
         ]);
 
         if ($request->hasFile('hero_image')) {
@@ -97,9 +95,9 @@ class SettingController extends Controller
             // Save to tb_gambar_home
             $slide = new \App\Models\Gambar\Slides\Slides;
             $slide->image_name = $fileName;
-            $slide->title = $request->hero_title ?? 'Hero Slide';
-            $slide->deskripsi = $request->hero_deskripsi ?? '';
-            $slide->alt = $request->hero_title ?? '';
+            $slide->title = 'Hero Slide';
+            $slide->deskripsi = '';
+            $slide->alt = 'Hero Slide';
             $slide->url_path = '/GambarSlides/' . $fileName;
             $slide->aktif = '1';
             $slide->save();

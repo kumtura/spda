@@ -1,4 +1,4 @@
-@extends('front.layout.template')
+@extends('mobile_layout_public')
 
 @section('content')
 <div class="bg-slate-50 min-h-screen py-12">
@@ -50,18 +50,29 @@
                         <span class="text-slate-600">Objek Wisata</span>
                         <span class="font-bold text-slate-800">{{ $tiket->objekWisata->nama_objek }}</span>
                     </div>
+                    @if($tiket->email)
                     <div class="flex items-center justify-between text-sm">
-                        <span class="text-slate-600">Nama Pengunjung</span>
-                        <span class="font-bold text-slate-800">{{ $tiket->nama_pengunjung }}</span>
+                        <span class="text-slate-600">Email</span>
+                        <span class="font-bold text-slate-800">{{ $tiket->email }}</span>
                     </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-slate-600">Jumlah Tiket</span>
-                        <span class="font-bold text-slate-800">{{ $tiket->jumlah_tiket }} Tiket</span>
-                    </div>
+                    @endif
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-slate-600">Tanggal Kunjungan</span>
                         <span class="font-bold text-slate-800">{{ $tiket->tanggal_kunjungan->translatedFormat('d F Y') }}</span>
                     </div>
+                    
+                    @if($tiket->details && $tiket->details->count() > 0)
+                    <div class="pt-2 border-t border-slate-100">
+                        <p class="text-xs font-bold text-slate-700 mb-2">Detail Tiket:</p>
+                        @foreach($tiket->details as $detail)
+                        <div class="flex items-center justify-between text-xs mb-1">
+                            <span class="text-slate-600">{{ $detail->kategoriTiket->nama_kategori }} x{{ $detail->jumlah }}</span>
+                            <span class="text-slate-800">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</span>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+                    
                     <div class="flex items-center justify-between text-sm pt-3 border-t border-slate-200">
                         <span class="text-slate-600">Status</span>
                         <span class="text-xs font-bold uppercase bg-amber-100 text-amber-700 px-3 py-1 rounded-full border border-amber-200">

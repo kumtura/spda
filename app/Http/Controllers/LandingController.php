@@ -9,6 +9,8 @@ use App\Models\Usaha;
 use App\Models\PaymentChannel;
 use App\Models\ObjekWisata;
 use App\Models\TiketWisata;
+use App\Models\KategoriTiket;
+use App\Models\TiketDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -837,7 +839,8 @@ class LandingController extends Controller
 
     public function wisata_detail($id)
     {
-        $objek = ObjekWisata::where('id_objek_wisata', $id)
+        $objek = ObjekWisata::with('kategoriTiket')
+            ->where('id_objek_wisata', $id)
             ->where('aktif', '1')
             ->where('status', 'aktif')
             ->firstOrFail();
@@ -846,7 +849,8 @@ class LandingController extends Controller
 
     public function wisata_beli($id)
     {
-        $objek = ObjekWisata::where('id_objek_wisata', $id)
+        $objek = ObjekWisata::with('kategoriTiket')
+            ->where('id_objek_wisata', $id)
             ->where('aktif', '1')
             ->where('status', 'aktif')
             ->firstOrFail();
@@ -857,26 +861,41 @@ class LandingController extends Controller
     {
         $request->validate([
             'id_objek_wisata' => 'required',
-            'nama_pengunjung' => 'required',
-            'email' => 'required|email',
-            'no_telp' => 'required',
-            'jumlah_tiket' => 'required|integer|min:1',
+            'kategori' => 'required|array|min:1',
             'tanggal_kunjungan' => 'required|date|after_or_equal:today'
         ]);
 
-        $objek = ObjekWisata::findOrFail($request->id_objek_wisata);
-        $totalHarga = $objek->harga_tiket * $request->jumlah_tiket;
+        // Calculate total
+        $total = 0;
+        $kategoriData = [];
+        
+        foreach ($request->kategori as $kategoriId => $qty) {
+            if ($qty > 0) {
+                $kategori = KategoriTiket::findOrFail($kategoriId);
+                $subtotal = $kategori->harga * $qty;
+                $total += $subtotal;
+                
+                $kategoriData[] = [
+                    'id_kategori_tiket' => $kategoriId,
+                    'nama_kategori' => $kategori->nama_kategori,
+                    'jumlah' => $qty,
+                    'harga_satuan' => $kategori->harga,
+                    'subtotal' => $subtotal
+                ];
+            }
+        }
+
+        if ($total == 0) {
+            return back()->with('error', 'Pilih minimal 1 tiket');
+        }
 
         // Store in session for payment
         session([
             'tiket_data' => [
                 'id_objek_wisata' => $request->id_objek_wisata,
-                'nama_pengunjung' => $request->nama_pengunjung,
-                'email' => $request->email,
-                'no_telp' => $request->no_telp,
-                'jumlah_tiket' => $request->jumlah_tiket,
                 'tanggal_kunjungan' => $request->tanggal_kunjungan,
-                'total_harga' => $totalHarga
+                'total_harga' => $total,
+                'kategori' => $kategoriData
             ]
         ]);
 
@@ -891,17 +910,23 @@ class LandingController extends Controller
 
         $tiketData = session('tiket_data');
         $objek = ObjekWisata::findOrFail($tiketData['id_objek_wisata']);
+        $village = $this->getVillageData();
         
-        return view('front.pages.wisata_payment_methods', compact('tiketData', 'objek'));
+        $xendit = new \App\Services\XenditService();
+        $is_configured = $xendit->isConfigured();
+        $channels = PaymentChannel::where('is_active', true)->get();
+        
+        return view('front.pages.wisata_payment_methods', compact('tiketData', 'objek', 'village', 'is_configured', 'channels'));
     }
 
     public function wisata_payment_xendit(Request $request)
     {
-        if (!session('tiket_data')) {
-            return redirect()->to('wisata');
+        $tiketData = session('tiket_data');
+        
+        if (!$tiketData) {
+            return redirect()->to('wisata')->with('error', 'Data tiket tidak ditemukan. Silakan ulangi pemesanan.');
         }
 
-        $tiketData = session('tiket_data');
         $channel = $request->query('channel');
         $amount = $request->query('amount');
 
@@ -913,10 +938,7 @@ class LandingController extends Controller
         $tiket = TiketWisata::create([
             'kode_tiket' => $kodeTicket,
             'id_objek_wisata' => $tiketData['id_objek_wisata'],
-            'nama_pengunjung' => $tiketData['nama_pengunjung'],
-            'email' => $tiketData['email'],
-            'no_telp' => $tiketData['no_telp'],
-            'jumlah_tiket' => $tiketData['jumlah_tiket'],
+            'email' => null,
             'total_harga' => $tiketData['total_harga'],
             'tanggal_kunjungan' => $tiketData['tanggal_kunjungan'],
             'metode_pembelian' => 'online',
@@ -927,15 +949,68 @@ class LandingController extends Controller
             'aktif' => '1'
         ]);
 
-        // Clear session
+        // Create tiket details
+        foreach ($tiketData['kategori'] as $detail) {
+            TiketDetail::create([
+                'id_tiket' => $tiket->id_tiket,
+                'id_kategori_tiket' => $detail['id_kategori_tiket'],
+                'jumlah' => $detail['jumlah'],
+                'harga_satuan' => $detail['harga_satuan'],
+                'subtotal' => $detail['subtotal']
+            ]);
+        }
+
+        // Initialize Xendit service
+        $xendit = new \App\Services\XenditService();
+        
+        if (!$xendit->isConfigured()) {
+            // Clear session before redirect
+            session()->forget('tiket_data');
+            return redirect()->back()->with('error', 'Layanan pembayaran sedang tidak tersedia.');
+        }
+
+        $external_id = $kodeTicket . '-' . time();
+        $redirect_url = url('wisata/payment/result?order_id=' . $kodeTicket);
+        $response = null;
+
+        // Process payment based on channel type
+        if (str_ends_with($channel, '_VA')) {
+            $bank_code = str_replace('_VA', '', $channel);
+            $response = $xendit->createVA($external_id, $bank_code, 'Pengunjung', $amount);
+            
+        } elseif (in_array($channel, ['ID_OVO', 'ID_DANA', 'ID_SHOPEEPAY', 'ID_LINKAJA', 'ID_GOPAY'])) {
+            $response = $xendit->createEWalletCharge($external_id, $amount, $channel, $kodeTicket, $redirect_url);
+            
+        } elseif (in_array($channel, ['QRIS', 'ID_QRIS'])) {
+            $response = $xendit->createQRCode($external_id, $amount, $redirect_url);
+            
+        } else {
+            // Clear session before redirect
+            session()->forget('tiket_data');
+            return redirect()->back()->with('error', 'Metode pembayaran tidak valid.');
+        }
+
+        // Log the response
+        \Illuminate\Support\Facades\Log::info("=== PAYLOAD XENDIT WISATA {$channel} ===", $response ?? []);
+
+        // Check for errors
+        if (isset($response['status']) && $response['status'] === 'error') {
+            // Clear session before redirect
+            session()->forget('tiket_data');
+            return redirect()->back()->with('error', 'Gagal memproses ke Xendit: ' . ($response['message'] ?? 'Kesalahan tidak diketahui.'));
+        }
+
+        // Update ticket with payment data
+        $tiket->update([
+            'xendit_id' => $response['id'] ?? null,
+            'payment_data' => json_encode($response)
+        ]);
+
+        // Clear session after successful payment creation
         session()->forget('tiket_data');
 
-        // Redirect to payment processing
-        return redirect()->route('public.payment_initiate_wisata', [
-            'id' => $tiket->id_tiket,
-            'channel' => $channel,
-            'amount' => $amount
-        ]);
+        // Redirect to payment result page
+        return redirect()->to('wisata/payment/result?order_id=' . $kodeTicket);
     }
 
     public function wisata_payment_manual(Request $request)
@@ -984,10 +1059,7 @@ class LandingController extends Controller
         $tiket = TiketWisata::create([
             'kode_tiket' => $kodeTicket,
             'id_objek_wisata' => $tiketData['id_objek_wisata'],
-            'nama_pengunjung' => $tiketData['nama_pengunjung'],
-            'email' => $tiketData['email'],
-            'no_telp' => $tiketData['no_telp'],
-            'jumlah_tiket' => $tiketData['jumlah_tiket'],
+            'email' => null,
             'total_harga' => $tiketData['total_harga'],
             'tanggal_kunjungan' => $tiketData['tanggal_kunjungan'],
             'metode_pembelian' => 'online',
@@ -1000,6 +1072,17 @@ class LandingController extends Controller
             'aktif' => '1'
         ]);
 
+        // Create tiket details
+        foreach ($tiketData['kategori'] as $detail) {
+            TiketDetail::create([
+                'id_tiket' => $tiket->id_tiket,
+                'id_kategori_tiket' => $detail['id_kategori_tiket'],
+                'jumlah' => $detail['jumlah'],
+                'harga_satuan' => $detail['harga_satuan'],
+                'subtotal' => $detail['subtotal']
+            ]);
+        }
+
         // Clear session
         session()->forget('tiket_data');
 
@@ -1009,8 +1092,176 @@ class LandingController extends Controller
     public function wisata_payment_manual_success(Request $request)
     {
         $id = $request->query('id');
-        $tiket = TiketWisata::with('objekWisata')->findOrFail($id);
+        $tiket = TiketWisata::with(['objekWisata', 'details.kategoriTiket'])->findOrFail($id);
         return view('front.pages.wisata_payment_manual_success', compact('tiket'));
+    }
+
+    public function wisata_payment_result(Request $request)
+    {
+        $order_id = $request->query('order_id');
+        
+        $tiket = TiketWisata::where('kode_tiket', $order_id)->first();
+        
+        if (!$tiket || !$tiket->payment_data) {
+            return redirect()->to('wisata')->with('error', 'Transaksi tidak ditemukan.');
+        }
+
+        $payment_data = json_decode($tiket->payment_data, true);
+        $method = $tiket->metode_pembayaran;
+        
+        $xendit = new \App\Services\XenditService();
+        $is_sandbox = $xendit->isSandbox();
+        
+        $village = $this->getVillageData();
+        
+        // Get payment channel info from database
+        $channel = PaymentChannel::where('code', $method)->first();
+
+        return view('front.pages.wisata_payment_result', compact('tiket', 'payment_data', 'method', 'village', 'order_id', 'is_sandbox', 'channel'));
+    }
+
+    public function wisata_payment_status(Request $request)
+    {
+        $order_id = $request->query('order_id');
+        $tiket = TiketWisata::where('kode_tiket', $order_id)->first();
+
+        if (!$tiket) {
+            return response()->json(['status' => 'not_found'], 404);
+        }
+
+        return response()->json([
+            'status' => $tiket->status_pembayaran,
+        ]);
+    }
+
+    public function wisata_payment_simulate(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|string',
+            'amount' => 'required|numeric'
+        ]);
+
+        $xendit = new \App\Services\XenditService();
+        
+        if (!$xendit->isSandbox()) {
+            return response()->json(['status' => 'error', 'message' => 'Simulation only allowed in Sandbox mode'], 403);
+        }
+
+        $order_id = $request->order_id;
+        $amount = $request->amount;
+
+        $tiket = TiketWisata::where('kode_tiket', $order_id)->first();
+        if (!$tiket) {
+            return response()->json(['status' => 'error', 'message' => 'Tiket not found'], 404);
+        }
+
+        $payment_data = json_decode($tiket->payment_data, true);
+        
+        // If it's VA, call Xendit Simulator API
+        if (str_contains($tiket->metode_pembayaran, '_VA')) {
+            $external_id = $payment_data['external_id'] ?? null;
+            if ($external_id) {
+                $simResponse = $xendit->simulateVAPayment($external_id, $amount);
+                \Illuminate\Support\Facades\Log::info("Xendit VA Simulation Triggered for {$external_id}:", ['response' => $simResponse]);
+                return response()->json([
+                    'status' => 'success', 
+                    'message' => 'Permintaan simulasi telah dikirim ke Xendit. Mohon tunggu beberapa saat sampai webhook diterima sistem.'
+                ]);
+            } else {
+                \Illuminate\Support\Facades\Log::warning("Xendit Simulation Skipped: No external_id found for ticket #{$order_id}");
+                return response()->json(['status' => 'error', 'message' => 'ID Pembayaran tidak ditemukan untuk simulasi.'], 400);
+            }
+        }
+
+        // If it's E-Wallet or QRIS, simulation happens on the Mock Page
+        if (in_array($tiket->metode_pembayaran, ['ID_OVO', 'ID_DANA', 'ID_SHOPEEPAY', 'ID_LINKAJA', 'ID_GOPAY', 'QRIS', 'ID_QRIS'])) {
+            return response()->json([
+                'status' => 'redirect_to_checkout',
+                'message' => 'Untuk simulasi E-Wallet/QRIS, silakan gunakan tombol "Buka Aplikasi Pembayaran" untuk menuju ke halaman Simulator resmi Xendit.'
+            ]);
+        }
+
+        return response()->json(['status' => 'error', 'message' => 'Simulasi belum tersedia untuk metode ini.'], 400);
+    }
+
+    public function wisata_tiket_success(Request $request)
+    {
+        $order_id = $request->query('order_id');
+        
+        $tiket = TiketWisata::with(['objekWisata', 'details.kategoriTiket'])
+            ->where('kode_tiket', $order_id)
+            ->firstOrFail();
+        
+        $village = $this->getVillageData();
+        
+        return view('front.pages.wisata_tiket_success', compact('tiket', 'village'));
+    }
+
+    public function wisata_tiket_download($kode)
+    {
+        try {
+            $tiket = TiketWisata::with(['objekWisata', 'details.kategoriTiket'])
+                ->where('kode_tiket', $kode)
+                ->first();
+            
+            if (!$tiket) {
+                \Log::error("Tiket not found: {$kode}");
+                return redirect()->back()->with('error', 'Tiket tidak ditemukan.');
+            }
+            
+            // Check if payment is completed
+            if ($tiket->status_pembayaran !== 'completed') {
+                \Log::warning("Tiket payment not completed: {$kode}, status: {$tiket->status_pembayaran}");
+                return redirect()->back()->with('error', 'Tiket belum dapat didownload. Selesaikan pembayaran terlebih dahulu.');
+            }
+            
+            $village = $this->getVillageData();
+            
+            \Log::info("Generating PDF for ticket: {$kode}");
+            
+            // Fetch QR code image and convert to base64
+            try {
+                $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . urlencode($tiket->qr_code);
+                $qrImageData = @file_get_contents($qrUrl);
+                
+                if ($qrImageData !== false) {
+                    $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($qrImageData);
+                } else {
+                    // Fallback: no QR code
+                    $qrCodeBase64 = null;
+                }
+            } catch (\Exception $e) {
+                \Log::error("Error fetching QR code: " . $e->getMessage());
+                $qrCodeBase64 = null;
+            }
+            
+            $pdf = Pdf::loadView('pdf.tiket_wisata', compact('tiket', 'village', 'qrCodeBase64'));
+            return $pdf->download('Tiket_' . $kode . '.pdf');
+            
+        } catch (\Exception $e) {
+            \Log::error("Error downloading ticket PDF: " . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat membuat PDF. Silakan coba lagi.');
+        }
+    }
+
+    public function agenda(Request $request)
+    {
+        $selected_category = $request->get('kategori', 'all');
+        $village = $this->getVillageData();
+        
+        $query = \App\Models\Agenda::with('kategori')
+            ->where('aktif', '1')
+            ->where('status_agenda', 'Publish');
+            
+        if ($selected_category !== 'all') {
+            $query->where('id_kategori_agenda', $selected_category);
+        }
+        
+        $agendas = $query->orderBy('tanggal_agenda', 'desc')->orderBy('waktu_agenda', 'asc')->get();
+        $kategori_list = \App\Models\KategoriAgenda::where('aktif', '1')->orderBy('nama_kategori', 'asc')->get();
+        
+        return view('front.pages.agenda', compact('agendas', 'village', 'kategori_list', 'selected_category'));
     }
 
 }

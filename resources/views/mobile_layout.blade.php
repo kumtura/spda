@@ -87,9 +87,9 @@
                     <i class="bi bi-ticket-perforated text-xl"></i>
                     <span class="text-[10px] font-semibold">Tiket</span>
                 </a>
-                <a href="{{ url('administrator/kelian/usaha') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/kelian/usaha*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
-                    <i class="bi bi-building text-xl"></i>
-                    <span class="text-[10px] font-semibold">Usaha</span>
+                <a href="{{ url('administrator/kelian/pendatang') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/kelian/pendatang*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-people text-xl"></i>
+                    <span class="text-[10px] font-semibold">Pendatang</span>
                 </a>
             @endif
 

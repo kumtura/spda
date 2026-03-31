@@ -3,7 +3,7 @@
 @section('isi_menu')
 <div class="bg-white pb-24">
     <!-- Header with gradient and back button -->
-    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-6 pb-8 text-white relative overflow-hidden">
+    <div class="bg-linear-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-6 pb-8 text-white relative overflow-hidden">
         <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
         <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
         
@@ -79,7 +79,7 @@
                     </div>
 
                     <!-- Total Harga -->
-                    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] rounded-xl p-4 text-white">
+                    <div class="bg-linear-to-br from-[#00a6eb] to-[#0090d0] rounded-xl p-4 text-white">
                         <div class="space-y-2">
                             <div id="breakdown-list" class="space-y-1 text-xs"></div>
                             <div class="border-t border-white/20 pt-2 flex items-center justify-between">
@@ -100,7 +100,6 @@
 </div>
 
 @push('scripts')
-<script>
 @php
     $objekWisataJson = $objekWisata->map(function($objek) {
         return [

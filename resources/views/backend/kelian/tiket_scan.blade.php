@@ -81,6 +81,8 @@
     border-radius: 16px;
 }
 
+/* Empty - using Tailwind utilities for results */
+
 .status-indicator {
     height: 6px;
     width: 6px;
@@ -112,15 +114,6 @@
             <!-- Viewfinder -->
             <div id="scanner-container" class="relative bg-slate-900 overflow-hidden" style="height: 350px;">
                 <div id="qr-reader" style="width: 100%; height: 100%;"></div>
-                
-                <!-- Simple Info Overlay -->
-                <div class="absolute bottom-5 left-0 right-0 z-20 flex justify-center">
-                    <div class="bg-black/30 backdrop-blur-md px-5 py-2 rounded-full border border-white/5">
-                        <p class="text-[10px] text-white/80 font-semibold uppercase tracking-widest">
-                            Scan QR Code
-                        </p>
-                    </div>
-                </div>
             </div>
             
             <!-- Result Area -->
@@ -134,24 +127,16 @@
 
                 <!-- Match Found -->
                 <div id="match-result" class="hidden p-5 space-y-4">
-                    <div id="match-content" class="result-card p-4 border-l-4 border-l-[#00a6eb]"></div>
-                    <button @click="resetScanner()" class="w-full py-3.5 bg-[#00a6eb] text-white text-[11px] font-bold rounded-xl uppercase tracking-widest active:scale-95 transition-all">
+                    <div id="match-content"></div>
+                    <button onclick="resetScanner()" class="w-full py-3.5 bg-[#00a6eb] text-white text-[11px] font-bold rounded-xl uppercase tracking-widest active:scale-95 transition-all shadow-md">
                         Scan Tiket Lain
                     </button>
                 </div>
 
                 <!-- Error State -->
                 <div id="error-result" class="hidden p-5">
-                    <div class="result-card p-4 border-l-4 border-l-slate-400 flex items-start gap-3">
-                        <div class="h-8 w-8 bg-slate-50 rounded-full flex items-center justify-center shrink-0">
-                            <i class="bi bi-info-circle text-slate-400"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h4 id="error-title" class="text-[11px] font-bold text-slate-800 uppercase tracking-tight mb-0.5">Status Tiket</h4>
-                            <div id="error-text" class="text-[10px] text-slate-500 font-medium leading-relaxed"></div>
-                        </div>
-                    </div>
-                    <button @click="resetScanner()" class="w-full mt-4 py-3.5 border border-slate-200 text-slate-500 text-[11px] font-bold rounded-xl uppercase tracking-widest active:scale-95 transition-all">
+                    <div id="error-content"></div>
+                    <button onclick="resetScanner()" class="w-full mt-4 py-3 bg-[#00a6eb] text-white text-[11px] font-bold rounded-xl uppercase tracking-widest active:scale-95 transition-all shadow-md">
                         Coba Lagi
                     </button>
                 </div>
@@ -253,24 +238,37 @@ function showMatch(data) {
     hideAllResults();
     let kategoriList = '';
     data.kategori.forEach(k => {
-        kategoriList += `<div class="flex justify-between py-1 text-[11px]"><span class="text-slate-400 font-medium">${k.nama}</span><span class="text-slate-800 font-bold">${k.jumlah}x</span></div>`;
+        kategoriList += `<div class="flex justify-between py-2 text-[10px] border-b border-slate-50 last:border-0"><span class="text-slate-400 font-medium">${k.nama}</span><span class="text-slate-800 font-bold">${k.jumlah}x</span></div>`;
     });
 
     const content = `
-        <div class="space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-50">
-                <span class="text-[10px] font-bold text-[#00a6eb] uppercase tracking-widest">Tiket Valid</span>
-                <span class="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">${data.kode_tiket}</span>
-            </div>
-            
-            <div class="space-y-1">
-                <p class="text-[12px] font-bold text-slate-800">${data.objek_wisata}</p>
-                <div class="pt-1">${kategoriList}</div>
+        <div class="space-y-5">
+            <!-- Refined Info Badge (rounded-2xl) -->
+            <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-5">
+                <div class="flex items-start gap-4">
+                    <i class="bi bi-info-circle text-[#00a6eb] text-xl shrink-0"></i>
+                    <p class="text-[10px] text-slate-600 leading-relaxed pt-0.5">
+                        <strong class="text-slate-800">Berhasil!</strong> Tiket valid dan pengunjung dapat langsung masuk.
+                    </p>
+                </div>
             </div>
 
-            <div class="pt-3 border-t border-slate-50 flex justify-between items-center">
-                <span class="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Total Harga</span>
-                <span class="text-[13px] font-bold text-slate-800">Rp ${data.total_harga.toLocaleString('id-ID')}</span>
+            <!-- Detail Token -->
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 space-y-4 shadow-sm">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-50">
+                    <span class="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Kode Tiket</span>
+                    <span class="text-[10px] font-black text-slate-800">${data.kode_tiket}</span>
+                </div>
+                
+                <div class="space-y-1">
+                    <p class="text-[11px] font-bold text-slate-800 mb-2 truncate">${data.objek_wisata}</p>
+                    <div class="space-y-0.5">${kategoriList}</div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-50 flex justify-between items-center">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Bayar</span>
+                    <span class="text-[13px] font-black text-[#00a6eb]">Rp ${data.total_harga.toLocaleString('id-ID')}</span>
+                </div>
             </div>
         </div>
     `;
@@ -280,8 +278,17 @@ function showMatch(data) {
 
 function displayError(title, message) {
     hideAllResults();
-    document.getElementById('error-title').textContent = title;
-    document.getElementById('error-text').innerHTML = message;
+    
+    document.getElementById('error-content').innerHTML = `
+        <div class="bg-slate-50 border border-slate-200/50 rounded-2xl p-5">
+            <div class="flex items-start gap-4">
+                <i class="bi bi-exclamation-circle text-slate-400 text-xl shrink-0"></i>
+                <p class="text-[10px] text-slate-600 leading-relaxed pt-0.5">
+                    <strong class="text-slate-800">${title}:</strong> ${message}
+                </p>
+            </div>
+        </div>
+    `;
     document.getElementById('error-result').classList.remove('hidden');
 }
 

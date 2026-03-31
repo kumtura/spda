@@ -172,6 +172,35 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/kelian/tiket/kategori/store', 'Administrator\ObjekWisataController@store_kategori');
             Route::put('/kelian/tiket/kategori/update/{id}', 'Administrator\ObjekWisataController@update_kategori');
             Route::get('/kelian/tiket/kategori/delete/{id}', 'Administrator\ObjekWisataController@delete_kategori');
+            
+            // Pendatang Management
+            Route::get('/kelian/pendatang', 'Administrator\PendatangController@index');
+            Route::get('/kelian/pendatang/setting', 'Administrator\PendatangController@setting');
+            Route::post('/kelian/pendatang/setting/update', 'Administrator\PendatangController@updateSetting');
+            Route::get('/kelian/pendatang/create', 'Administrator\PendatangController@create');
+            Route::get('/kelian/pendatang/create-acara', 'Administrator\PendatangController@createAcara');
+            Route::get('/kelian/pendatang/detail/{id}', 'Administrator\PendatangController@detail');
+            Route::get('/kelian/pendatang/edit/{id}', 'Administrator\PendatangController@edit');
+            Route::get('/kelian/pendatang/add-punia/{id}', 'Administrator\PendatangController@addPunia');
+            Route::get('/kelian/pendatang/bayar/{id}', 'Administrator\PendatangController@bayarForm');
+            Route::post('/kelian/pendatang/store', 'Administrator\PendatangController@store');
+            Route::put('/kelian/pendatang/update/{id}', 'Administrator\PendatangController@update');
+            Route::get('/kelian/pendatang/delete/{id}', 'Administrator\PendatangController@delete');
+            Route::get('/kelian/pendatang/toggle/{id}', 'Administrator\PendatangController@toggle');
+            Route::get('/kelian/pendatang/generate-tagihan/{id}', 'Administrator\PendatangController@generateTagihan');
+            Route::post('/kelian/pendatang/update-punia-setting/{id}', 'Administrator\PendatangController@updatePuniaSetting');
+            Route::get('/kelian/pendatang/kartu-punia/{id}', 'Administrator\PendatangController@kartuPunia');
+            Route::post('/kelian/pendatang/kartu-punia/bayar', 'Administrator\PendatangController@bayarKartuPunia');
+            
+            // Punia Pendatang Management
+            Route::post('/kelian/pendatang/punia/store', 'Administrator\PendatangController@storePunia');
+            Route::post('/kelian/pendatang/punia/bayar/{id}', 'Administrator\PendatangController@bayarPunia');
+            Route::get('/kelian/pendatang/punia/delete/{id}', 'Administrator\PendatangController@deletePunia');
+            
+            // Acara Punia Management
+            Route::post('/kelian/pendatang/acara/store', 'Administrator\PendatangController@storeAcara');
+            Route::get('/kelian/pendatang/acara/delete/{id}', 'Administrator\PendatangController@deleteAcara');
+            Route::get('/kelian/pendatang/acara/toggle/{id}', 'Administrator\PendatangController@toggleAcara');
         });
 
 		// Karyawan / Tenaga Kerja

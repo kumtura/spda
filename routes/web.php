@@ -50,6 +50,9 @@ Route::post('/loker/{id}/apply', [LandingController::class, 'loker_apply'])->nam
 Route::get('/wisata', [LandingController::class, 'wisata'])->name('public.wisata')->middleware('public.redirect');
 Route::get('/wisata/detail/{id}', [LandingController::class, 'wisata_detail'])->name('public.wisata.detail')->middleware('public.redirect');
 Route::get('/agenda', [LandingController::class, 'agenda'])->name('public.agenda')->middleware('public.redirect');
+Route::get('/krama-tamiu', [LandingController::class, 'krama_tamiu'])->name('public.krama_tamiu')->middleware('public.redirect');
+Route::get('/krama-tamiu/daftar', [LandingController::class, 'krama_tamiu_register'])->name('public.krama_tamiu.register')->middleware('public.redirect');
+Route::post('/krama-tamiu/daftar/submit', [LandingController::class, 'krama_tamiu_register_submit'])->name('public.krama_tamiu.register.submit');
 Route::get('/wisata/beli/{id}', [LandingController::class, 'wisata_beli'])->name('public.wisata.beli');
 Route::get('/wisata/beli/{id}', [LandingController::class, 'wisata_beli'])->name('public.wisata.beli');
 Route::post('/wisata/beli/submit', [LandingController::class, 'wisata_beli_submit'])->name('public.wisata.beli.submit');
@@ -189,6 +192,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/kelian/pendatang/toggle/{id}', 'Administrator\PendatangController@toggle');
             Route::get('/kelian/pendatang/generate-tagihan/{id}', 'Administrator\PendatangController@generateTagihan');
             Route::post('/kelian/pendatang/update-punia-setting/{id}', 'Administrator\PendatangController@updatePuniaSetting');
+            Route::get('/kelian/pendatang/kartu-punia/print/{id}', 'Administrator\PendatangController@printKartuPunia');
             Route::get('/kelian/pendatang/kartu-punia/{id}', 'Administrator\PendatangController@kartuPunia');
             Route::post('/kelian/pendatang/kartu-punia/bayar', 'Administrator\PendatangController@bayarKartuPunia');
             

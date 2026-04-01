@@ -59,6 +59,16 @@
                 </div>
                 
                 <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-2">Banjar</label>
+                    <select name="id_data_banjar" class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb] bg-white">
+                        <option value="">— Pilih Banjar —</option>
+                        @foreach($banjarList as $banjar)
+                        <option value="{{ $banjar->id_data_banjar }}">{{ $banjar->nama_banjar }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <div>
                     <label class="block text-xs font-bold text-slate-700 mb-3">Pengaturan Punia Bulanan <span class="text-rose-500">*</span></label>
                     @php
                         $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);

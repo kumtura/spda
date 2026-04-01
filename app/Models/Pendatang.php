@@ -15,11 +15,17 @@ class Pendatang extends Model
         'asal',
         'no_hp',
         'alamat_tinggal',
+        'id_data_banjar',
         'punia_rutin_bulanan',
         'use_global_punia',
         'status',
         'aktif'
     ];
+    
+    public function banjar()
+    {
+        return $this->belongsTo(Banjar::class, 'id_data_banjar', 'id_data_banjar');
+    }
     
     public function puniaPendatang()
     {

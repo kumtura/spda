@@ -13,7 +13,7 @@
     </div>
 
     @php
-        $pendatangList = App\Models\Pendatang::where('aktif', '1')->orderBy('created_at', 'desc')->get();
+        $pendatangList = App\Models\Pendatang::with('banjar')->where('aktif', '1')->orderBy('created_at', 'desc')->get();
         $totalPendatang = $pendatangList->where('status', 'aktif')->count();
         $totalTagihanBelumBayar = App\Models\PuniaPendatang::where('status_pembayaran', 'belum_bayar')
             ->where('aktif', '1')
@@ -52,9 +52,10 @@
         </div>
     </div>
 
-    <!-- Add Button -->
-    <a href="{{ url('administrator/kelian/pendatang/create') }}" class="block w-full bg-[#00a6eb] text-white py-3 rounded-xl font-bold text-sm shadow-lg text-center">
-        <i class="bi bi-plus-lg mr-2"></i>Tambah Pendatang
+    <!-- Add Button - Floating -->
+    <a href="{{ url('administrator/kelian/pendatang/create') }}" class="fixed bottom-20 right-4 z-50 bg-[#00a6eb] text-white h-12 px-5 rounded-full font-bold text-sm shadow-lg flex items-center gap-2 hover:bg-[#0090d0] transition-colors">
+        <i class="bi bi-plus-lg"></i>
+        <span>Tambah</span>
     </a>
 
     <!-- Punia Acara Section -->
@@ -62,48 +63,48 @@
         <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-bold text-slate-800">Punia Acara</h3>
             <a href="{{ url('administrator/kelian/pendatang/create-acara') }}" 
-               class="h-9 px-3 bg-[#00a6eb] text-white rounded-xl flex items-center gap-1.5 shadow-lg shadow-[#00a6eb]/20 transition-all active:scale-95 text-[10px] font-bold">
+               class="text-[10px] font-bold text-[#00a6eb] flex items-center gap-1">
                 <i class="bi bi-plus-lg"></i>
                 <span>Buat Acara</span>
             </a>
         </div>
         @if(isset($acaraList) && $acaraList->count() > 0)
-        <div class="space-y-2.5">
+        <div class="space-y-2">
             @foreach($acaraList as $acara)
-            <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="flex items-start justify-between gap-3 mb-2">
+            @php
+                $totalPendatang = $acara->puniaPendatang->count();
+                $sudahBayar = $acara->puniaPendatang->where('status_pembayaran', 'lunas')->count();
+                $persen = $totalPendatang > 0 ? round(($sudahBayar / $totalPendatang) * 100) : 0;
+            @endphp
+            <div class="bg-white border border-slate-100 rounded-xl px-3 py-2.5">
+                <div class="flex items-center justify-between gap-2">
                     <div class="flex-1 min-w-0">
-                        <h4 class="text-xs font-bold text-slate-800 mb-1">{{ $acara->nama_acara }}</h4>
-                        @if($acara->tanggal_acara)
-                        <p class="text-[9px] text-slate-500 mb-1">
-                            <i class="bi bi-calendar mr-1"></i>{{ $acara->tanggal_acara->format('d M Y') }}
-                        </p>
-                        @endif
-                        <p class="text-sm font-bold text-[#00a6eb]">Rp {{ number_format($acara->nominal, 0, ',', '.') }}</p>
+                        <div class="flex items-center gap-2">
+                            <p class="text-xs font-medium text-slate-800 truncate">{{ $acara->nama_acara }}</p>
+                            @if($acara->tanggal_acara)
+                            <span class="text-[9px] text-slate-400 shrink-0">{{ $acara->tanggal_acara->format('d M Y') }}</span>
+                            @endif
+                        </div>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-[11px] font-medium text-slate-600">Rp {{ number_format($acara->nominal, 0, ',', '.') }}</span>
+                            <span class="text-[9px] text-slate-400">&middot;</span>
+                            <span class="text-[9px] text-slate-500">{{ $sudahBayar }}/{{ $totalPendatang }} bayar ({{ $persen }}%)</span>
+                        </div>
                     </div>
                     <div class="flex gap-1 shrink-0">
-                        <button onclick="toggleAcara({{ $acara->id_acara_punia }})" class="h-7 w-7 bg-slate-50 text-slate-600 rounded-lg flex items-center justify-center">
-                            <i class="bi bi-toggle-{{ $acara->status === 'aktif' ? 'on' : 'off' }} text-xs"></i>
+                        <button onclick="toggleAcara({{ $acara->id_acara_punia }})" class="h-7 w-7 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-50">
+                            <i class="bi bi-toggle-{{ $acara->status === 'aktif' ? 'on' : 'off' }} text-sm"></i>
                         </button>
-                        <button onclick="deleteAcara({{ $acara->id_acara_punia }})" class="h-7 w-7 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center">
+                        <button onclick="deleteAcara({{ $acara->id_acara_punia }})" class="h-7 w-7 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-50">
                             <i class="bi bi-trash text-xs"></i>
                         </button>
                     </div>
-                </div>
-                @php
-                    $totalPendatang = $acara->puniaPendatang->count();
-                    $sudahBayar = $acara->puniaPendatang->where('status_pembayaran', 'lunas')->count();
-                @endphp
-                <div class="bg-slate-50 rounded-lg p-2 flex items-center justify-between text-[9px]">
-                    <span class="text-slate-600">{{ $sudahBayar }}/{{ $totalPendatang }} sudah bayar</span>
-                    <span class="font-bold text-slate-800">{{ $totalPendatang > 0 ? round(($sudahBayar / $totalPendatang) * 100) : 0 }}%</span>
                 </div>
             </div>
             @endforeach
         </div>
         @else
         <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-4 text-center">
-            <i class="bi bi-calendar-event text-2xl text-slate-300 mb-1"></i>
             <p class="text-[10px] text-slate-400">Belum ada punia acara</p>
         </div>
         @endif
@@ -113,34 +114,34 @@
     <div>
         <h3 class="text-sm font-bold text-slate-800 mb-3">Daftar Pendatang</h3>
         @if($pendatangList->count() > 0)
-        <div class="space-y-3">
+        <div class="space-y-2">
             @foreach($pendatangList as $pendatang)
-            <a href="{{ url('administrator/kelian/pendatang/detail/'.$pendatang->id_pendatang) }}" class="block bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
-                <div class="flex items-start gap-4 p-4">
-                    <div class="h-12 w-12 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 text-slate-600 text-sm font-bold">
+            <a href="{{ url('administrator/kelian/pendatang/detail/'.$pendatang->id_pendatang) }}" class="block bg-white border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
+                <div class="flex items-center gap-3 px-3 py-2.5">
+                    <div class="h-9 w-9 bg-slate-100 rounded-lg flex items-center justify-center shrink-0 text-slate-500 text-[11px] font-medium">
                         {{ strtoupper(substr($pendatang->nama, 0, 2)) }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h3 class="text-sm font-black text-slate-800 mb-1">{{ $pendatang->nama }}</h3>
-                        <p class="text-[10px] text-slate-500 mb-1">{{ $pendatang->nik }}</p>
-                        <p class="text-[10px] text-slate-500 mb-2">{{ $pendatang->asal }}</p>
+                        <p class="text-xs font-medium text-slate-800 truncate">{{ $pendatang->nama }}</p>
+                        <p class="text-[10px] text-slate-400 truncate">{{ $pendatang->asal }} &middot; {{ $pendatang->nik }}@if($pendatang->banjar) &middot; {{ $pendatang->banjar->nama_banjar }}@endif</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
                         @php
                             $belumBayar = $pendatang->puniaPendatang->where('status_pembayaran', 'belum_bayar')->count();
                         @endphp
                         @if($belumBayar > 0)
-                        <span class="text-[9px] text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
-                            {{ $belumBayar }} tagihan
+                        <span class="text-[9px] text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">
+                            {{ $belumBayar }}
                         </span>
                         @endif
+                        <i class="bi bi-chevron-right text-slate-300 text-sm"></i>
                     </div>
-                    <i class="bi bi-chevron-right text-slate-300 text-lg"></i>
                 </div>
             </a>
             @endforeach
         </div>
         @else
         <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-6 text-center">
-            <i class="bi bi-people text-3xl text-slate-300 mb-2"></i>
             <p class="text-xs text-slate-400">Belum ada data pendatang</p>
         </div>
         @endif

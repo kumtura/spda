@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Pendatang;
 use App\Models\PuniaPendatang;
 use App\Models\AcaraPunia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PendatangController extends Controller
 {
@@ -64,7 +65,8 @@ class PendatangController extends Controller
     
     public function create()
     {
-        return view('backend.kelian.pendatang_create');
+        $banjarList = \App\Models\Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
+        return view('backend.kelian.pendatang_create', compact('banjarList'));
     }
     
     public function createAcara()
@@ -84,7 +86,8 @@ class PendatangController extends Controller
     public function edit($id)
     {
         $pendatang = Pendatang::findOrFail($id);
-        return view('backend.kelian.pendatang_edit', compact('pendatang'));
+        $banjarList = \App\Models\Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
+        return view('backend.kelian.pendatang_edit', compact('pendatang', 'banjarList'));
     }
     
     public function addPunia($id)
@@ -107,6 +110,7 @@ class PendatangController extends Controller
             'asal' => 'required|string|max:200',
             'no_hp' => 'required|string|max:20',
             'alamat_tinggal' => 'nullable|string',
+            'id_data_banjar' => 'nullable|integer|exists:tb_data_banjar,id_data_banjar',
             'use_global_punia' => 'required|boolean',
             'punia_rutin_bulanan' => 'required_if:use_global_punia,0|nullable|numeric|min:0'
         ]);
@@ -149,10 +153,20 @@ class PendatangController extends Controller
             'asal' => 'required|string|max:200',
             'no_hp' => 'required|string|max:20',
             'alamat_tinggal' => 'nullable|string',
+            'id_data_banjar' => 'nullable|integer|exists:tb_data_banjar,id_data_banjar',
             'punia_rutin_bulanan' => 'required|numeric|min:0'
         ]);
         
-        $pendatang->update($request->all());
+        $useGlobal = $request->has('use_global_punia') && $request->use_global_punia == '1';
+        $data = $request->only(['nama', 'nik', 'asal', 'no_hp', 'alamat_tinggal', 'id_data_banjar', 'punia_rutin_bulanan']);
+        $data['use_global_punia'] = $useGlobal;
+        
+        if ($useGlobal) {
+            $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
+            $data['punia_rutin_bulanan'] = $settings['punia_pendatang_global'] ?? 0;
+        }
+        
+        $pendatang->update($data);
         
         return redirect()->to('administrator/kelian/pendatang/detail/'.$id)->with('success', 'Data pendatang berhasil diupdate');
     }
@@ -229,6 +243,40 @@ class PendatangController extends Controller
         $currentDateFormatted = now()->translatedFormat('d M');
         
         return view('backend.kelian.pendatang_kartu_punia', compact('pendatang', 'payments', 'selectedYear', 'totalKontribusi', 'currentDateFormatted'));
+    }
+
+    public function printKartuPunia($id)
+    {
+        $pendatang = Pendatang::findOrFail($id);
+        $year = (int)request()->get('year', date('Y'));
+
+        $payments = PuniaPendatang::where('id_pendatang', $id)
+            ->where('jenis_punia', 'rutin')
+            ->where('aktif', '1')
+            ->where('status_pembayaran', 'lunas')
+            ->where('bulan_tahun', 'LIKE', $year . '-%')
+            ->get()
+            ->keyBy(function($item) {
+                return (int)substr($item->bulan_tahun, 5, 2);
+            });
+
+        $currentYear = (int)date('Y');
+        $currentMonth = (int)date('m');
+        $months = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        $settingsPath = storage_path('app/settings.json');
+        $village = file_exists($settingsPath)
+            ? json_decode(file_get_contents($settingsPath), true)
+            : ['name' => 'SPDA'];
+
+        $data = compact('pendatang', 'year', 'months', 'payments', 'village', 'currentYear', 'currentMonth');
+
+        $pdf = Pdf::loadView('pdf.kartu_punia_pendatang', $data);
+        return $pdf->download('Kartu_Punia_' . $pendatang->nama . '_' . $year . '.pdf');
     }
     
     public function bayarKartuPunia(Request $request)

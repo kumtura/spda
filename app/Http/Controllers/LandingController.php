@@ -48,8 +48,9 @@ class LandingController extends Controller
         $village = $this->getVillageData();
         $berita = Berita::where('aktif', '1')->orderBy('id_berita', 'desc')->take(5)->get();
         $programs = \App\Models\ProgramDonasi::where('aktif', '1')->orderBy('id_program_donasi', 'desc')->take(3)->get();
+        $totalKramaTamiu = \App\Models\Pendatang::where('aktif', '1')->where('status', 'aktif')->count();
 
-        return view('front.pages.home', compact('village', 'berita', 'programs'));
+        return view('front.pages.home', compact('village', 'berita', 'programs', 'totalKramaTamiu'));
     }
 
 
@@ -1262,6 +1263,63 @@ class LandingController extends Controller
         $kategori_list = \App\Models\KategoriAgenda::where('aktif', '1')->orderBy('nama_kategori', 'asc')->get();
         
         return view('front.pages.agenda', compact('agendas', 'village', 'kategori_list', 'selected_category'));
+    }
+
+    public function krama_tamiu()
+    {
+        $village = $this->getVillageData();
+        $banjarList = \App\Models\Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
+        
+        // Stats per banjar
+        $banjarStats = [];
+        foreach ($banjarList as $banjar) {
+            $count = \App\Models\Pendatang::where('id_data_banjar', $banjar->id_data_banjar)
+                ->where('aktif', '1')
+                ->where('status', 'aktif')
+                ->count();
+            $banjarStats[$banjar->id_data_banjar] = $count;
+        }
+        
+        $totalKramaTamiu = \App\Models\Pendatang::where('aktif', '1')->where('status', 'aktif')->count();
+        
+        return view('front.pages.krama_tamiu', compact('village', 'banjarList', 'banjarStats', 'totalKramaTamiu'));
+    }
+    
+    public function krama_tamiu_register()
+    {
+        $village = $this->getVillageData();
+        $banjarList = \App\Models\Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
+        return view('front.pages.krama_tamiu_register', compact('village', 'banjarList'));
+    }
+    
+    public function krama_tamiu_register_submit(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:100',
+            'nik' => 'required|string|max:20|unique:tb_pendatang,nik',
+            'asal' => 'required|string|max:200',
+            'no_hp' => 'required|string|max:20',
+            'alamat_tinggal' => 'required|string',
+            'id_data_banjar' => 'required|integer|exists:tb_data_banjar,id_data_banjar',
+        ]);
+        
+        $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
+        $puniaGlobal = $settings['punia_pendatang_global'] ?? 0;
+        
+        \App\Models\Pendatang::create([
+            'nama' => $request->nama,
+            'nik' => $request->nik,
+            'asal' => $request->asal,
+            'no_hp' => $request->no_hp,
+            'alamat_tinggal' => $request->alamat_tinggal,
+            'id_data_banjar' => $request->id_data_banjar,
+            'punia_rutin_bulanan' => $puniaGlobal,
+            'use_global_punia' => true,
+            'status' => 'aktif',
+            'aktif' => '1',
+        ]);
+        
+        return redirect()->route('public.krama_tamiu')->with('success', 'Pendaftaran berhasil! Data Anda akan diverifikasi oleh Kelian Banjar.');
     }
 
 }

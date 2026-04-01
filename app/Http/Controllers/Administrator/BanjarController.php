@@ -71,8 +71,12 @@ class BanjarController extends BaseController
 
             // echo $datalist;
             $datalist = Banjar::get_databanjar($request);
+            $kelianUsers = User::whereIn('id_level', [
+                config('myconfig.level.bendesa', 1), 
+                config('myconfig.level.kelian', 2)
+            ])->get();
 
-            return view('admin.pages.data_banjar.table' ,compact('datalist'));
+            return view('admin.pages.data_banjar.table' ,compact('datalist', 'kelianUsers'));
         }
 
 }

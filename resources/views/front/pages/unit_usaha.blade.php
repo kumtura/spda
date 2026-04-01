@@ -79,18 +79,25 @@
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-[#00a6eb]/30 transition-all group">
             <div class="flex gap-4">
                 <div class="h-16 w-16 rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-1 group-hover:shadow-md transition-shadow">
-                    @if($u->logo)
-                        @php
-                            // Check if file exists in public/usaha/icon, otherwise use storage path
-                            $logoPath = file_exists(public_path('usaha/icon/'.$u->logo)) 
-                                ? 'usaha/icon/'.$u->logo 
-                                : 'storage/usaha/icon/'.$u->logo;
-                        @endphp
-                        <img src="{{ asset($logoPath) }}" class="w-full h-full object-cover rounded-xl shadow-xs">
+                    @php
+                        $hasLogo = false;
+                        $logoUrl = '';
+                        if ($u->logo) {
+                            if (file_exists(public_path('usaha/icon/'.$u->logo))) {
+                                $hasLogo = true;
+                                $logoUrl = asset('usaha/icon/'.$u->logo);
+                            } elseif (file_exists(public_path('storage/usaha/icon/'.$u->logo))) {
+                                $hasLogo = true;
+                                $logoUrl = asset('storage/usaha/icon/'.$u->logo);
+                            }
+                        }
+                    @endphp
+                    @if($hasLogo)
+                        <img src="{{ $logoUrl }}" class="w-full h-full object-cover rounded-xl shadow-xs" alt="{{ $u->nama_usaha }}">
                     @else
-                        <div class="h-full w-full flex flex-col items-center justify-center text-slate-200 gap-1">
-                            <i class="bi bi-shop text-2xl"></i>
-                            <span class="text-[7px] font-bold uppercase tracking-tighter">SPDA Mitra</span>
+                        <div class="h-full w-full flex flex-col items-center justify-center text-slate-300 gap-0.5">
+                            <i class="bi bi-shop text-xl"></i>
+                            <span class="text-[6px] font-black uppercase tracking-tighter text-slate-300">Mitra</span>
                         </div>
                     @endif
                 </div>

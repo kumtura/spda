@@ -36,9 +36,13 @@ class AlokasiPuniaController extends Controller
 
         $fotoPaths = [];
         if ($request->hasFile('foto')) {
+            $uploadDir = public_path('storage/alokasi_punia');
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
             foreach ($request->file('foto') as $file) {
                 $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $file->move(public_path('storage/alokasi_punia'), $filename);
+                $file->move($uploadDir, $filename);
                 $fotoPaths[] = 'storage/alokasi_punia/' . $filename;
             }
         }
@@ -49,7 +53,7 @@ class AlokasiPuniaController extends Controller
             'deskripsi' => $request->deskripsi,
             'nominal' => $request->nominal,
             'tanggal_alokasi' => $request->tanggal_alokasi,
-            'foto' => !empty($fotoPaths) ? $fotoPaths : null,
+            'foto' => !empty($fotoPaths) ? $fotoPaths : [],
             'aktif' => '1'
         ]);
 
@@ -70,11 +74,19 @@ class AlokasiPuniaController extends Controller
 
         $alokasi = AlokasiPunia::findOrFail($request->id_alokasi_punia);
         
-        $fotoPaths = $alokasi->foto ?? [];
+        $fotoPaths = $alokasi->foto;
+        if (!is_array($fotoPaths)) {
+            $fotoPaths = $fotoPaths ? [$fotoPaths] : [];
+        }
+
         if ($request->hasFile('foto')) {
+            $uploadDir = public_path('storage/alokasi_punia');
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
             foreach ($request->file('foto') as $file) {
                 $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $file->move(public_path('storage/alokasi_punia'), $filename);
+                $file->move($uploadDir, $filename);
                 $fotoPaths[] = 'storage/alokasi_punia/' . $filename;
             }
         }
@@ -85,7 +97,7 @@ class AlokasiPuniaController extends Controller
             'deskripsi' => $request->deskripsi,
             'nominal' => $request->nominal,
             'tanggal_alokasi' => $request->tanggal_alokasi,
-            'foto' => !empty($fotoPaths) ? $fotoPaths : null
+            'foto' => $fotoPaths
         ]);
 
         return redirect()->back()->with('success', 'Alokasi Punia berhasil diperbarui!');

@@ -10,20 +10,23 @@
     banjarId: '',
     banjarName: '',
     banjarAddress: '',
+    kelianAdat: '',
 
     openAdd() {
         this.editMode = false;
         this.banjarId = '';
         this.banjarName = '';
         this.banjarAddress = '';
+        this.kelianAdat = '';
         this.showAddModal = true;
     },
 
-    openEdit(id, name, address) {
+    openEdit(id, name, address, kelian) {
         this.editMode = true;
         this.banjarId = id;
         this.banjarName = name;
         this.banjarAddress = address;
+        this.kelianAdat = kelian;
         this.showAddModal = true;
     },
 
@@ -85,6 +88,7 @@
                     <tr class="bg-slate-50/50">
                         <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">No</th>
                         <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Wilayah Banjar</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Kelian Adat</th>
                         <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Alamat / Lokasi</th>
                         <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Aksi</th>
                     </tr>
@@ -97,12 +101,15 @@
                         <td class="px-6 py-4">
                             <span class="text-xs font-black text-slate-700 tracking-tight group-hover:text-primary-light transition-colors">{{ $values->nama_banjar }}</span>
                         </td>
+                        <td class="px-6 py-4 text-[10px] font-medium text-slate-500 max-w-xs truncate">
+                            {{ $values->userKelian->name ?? '-' }}
+                        </td>
                         <td class="px-6 py-4 text-[10px] font-medium text-slate-500 italic max-w-xs truncate">
                             {{ $values->alamat_banjar }}
                         </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex items-center justify-end gap-1.5">
-                                <button @click="openEdit('{{ $values->id_data_banjar }}', '{{ $values->nama_banjar }}', '{{ $values->alamat_banjar }}')"
+                                <button @click="openEdit('{{ $values->id_data_banjar }}', '{{ $values->nama_banjar }}', '{{ $values->alamat_banjar }}', '{{ $values->id_user_kelian }}')"
                                         class="h-8 w-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary-light hover:border-primary-light transition-all shadow-sm">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
@@ -150,6 +157,17 @@
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Banjar</label>
                             <input type="text" name="t_nama_banjar" required x-model="banjarName"
                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Kelian Adat</label>
+                            <select name="t_kelian_adat" x-model="kelianAdat"
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                                <option value="">-- Tidak ada Kelian --</option>
+                                @foreach($kelianUsers as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="space-y-1.5">

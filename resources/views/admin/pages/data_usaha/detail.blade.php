@@ -357,28 +357,102 @@
 
     <!-- Modals (Edit, Pay, DetailPay) - standardized with reduced rounded corners -->
     <template x-teleport="body">
-        <div x-show="showEditModal" class="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 backdrop-blur-md px-4 py-8" x-cloak>
-            <div class="bg-white w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl border border-slate-200" @click.away="showEditModal = false">
-                <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                    <h3 class="text-xl font-black text-slate-800 tracking-tight">Update Data Usaha</h3>
-                    <button @click="showEditModal = false" class="text-slate-400 hover:text-rose-500"><i class="bi bi-x-lg"></i></button>
+        <div x-show="showEditModal" 
+             class="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4 py-8 overflow-y-auto" 
+             x-cloak
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100">
+            
+            <div class="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl my-auto relative" @click.away="showEditModal = false">
+                <!-- Close Button -->
+                <button @click="showEditModal = false" class="absolute top-6 right-6 h-10 w-10 bg-slate-50 hover:bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all z-10">
+                    <i class="bi bi-x-lg text-lg"></i>
+                </button>
+
+                <div class="p-8 pb-4">
+                    <h3 class="text-2xl font-black text-[#1e293b] tracking-tight mb-1">Koreksi Data Usaha</h3>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.05em]">Penyesuaian identitas dan administrasi unit</p>
                 </div>
-                <form action="{{ url('administrator/update_post_add_usaha') }}" method="POST" class="p-6 space-y-5">
+
+                <form action="{{ url('administrator/update_post_add_usaha') }}" method="POST" enctype="multipart/form-data" class="p-8 pt-4 space-y-8">
                     @csrf @method('PUT')
                     <input type="hidden" name="tb_hidden_usaha" value="{{ $rows->id_usaha }}">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-1.5">
+                    <input type="hidden" name="tb_hidden_detail_usaha" value="{{ $rows->id_detail_usaha }}">
+                    <input type="hidden" name="tb_hidden_pj" value="{{ $rows->id_penanggung_jawab }}">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                        <!-- Nama Usaha -->
+                        <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Usaha</label>
-                            <input type="text" name="text_title_new" value="{{ $rows->nama_usaha }}" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold">
+                            <input type="text" name="text_title_new" value="{{ $rows->nama_usaha }}" required 
+                                   class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
                         </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Min Setoran</label>
-                            <input type="number" name="text_minimal_pembayaran" value="{{ $rows->minimal_bayar }}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold">
+                        <!-- Email -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">E-Mail Usaha</label>
+                            <input type="email" name="text_email_usaha_new" value="{{ $rows->email_usaha }}" required 
+                                   class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                        </div>
+
+                        <!-- Banjar -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Banjar Wilayah</label>
+                            <select name="text_desc_new" class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none appearance-none focus:border-primary-light transition-all">
+                                @foreach($banjar as $b)
+                                <option value="{{ $b->id_data_banjar }}" {{ $rows->id_banjar == $b->id_data_banjar ? 'selected' : '' }}>{{ $b->nama_banjar }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <!-- Kategori -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Kategori Usaha</label>
+                            <select name="cmb_kategori_usaha" class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none appearance-none focus:border-primary-light transition-all">
+                                @foreach($kategori as $kat)
+                                <option value="{{ $kat->id_kategori_usaha }}" {{ $rows->id_jenis_usaha == $kat->id_kategori_usaha ? 'selected' : '' }}>{{ $kat->nama_kategori_usaha }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- No WA -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">No. WhatsApp (Aktif)</label>
+                            <input type="text" name="text_notelp_was" value="{{ $rows->no_wa }}" required 
+                                   class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-emerald-600 outline-none focus:border-primary-light transition-all">
+                        </div>
+                        <!-- Min Punia -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Min. Punia Wajib (Rp)</label>
+                            <input type="number" name="text_minimal_pembayaran" value="{{ $rows->minimal_bayar }}" required 
+                                   class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                        </div>
+
+                        <!-- Logo Upload -->
+                        <div class="md:col-span-2 space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Logo Unit Usaha (Upload)</label>
+                            <div class="flex items-center gap-4 p-4 bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-2xl group hover:border-primary-light transition-all">
+                                <i class="bi bi-image text-2xl text-slate-300 group-hover:text-primary-light"></i>
+                                <input type="file" name="logo_usaha" accept="image/*" 
+                                       class="text-xs font-bold text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary-light file:text-white hover:file:bg-primary-light/90 transition-all cursor-pointer">
+                            </div>
+                        </div>
+
+                        <!-- Alamat -->
+                        <div class="md:col-span-2 space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Lengkap</label>
+                            <textarea name="t_alamat_usaha" rows="2" 
+                                      class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">{{ $rows->alamat_banjar }}</textarea>
                         </div>
                     </div>
-                    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                        <button type="button" @click="showEditModal = false" class="px-6 py-2.5 text-[10px] font-black uppercase text-slate-400">Tutup</button>
-                        <button type="submit" class="px-8 py-2.5 bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg">Simpan</button>
+
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-slate-100">
+                        <p class="text-[10px] italic text-slate-400 font-medium">* Perubahan akan berdampak pada akses login unit usaha terkait.</p>
+                        <div class="flex items-center gap-4 w-full md:w-auto">
+                            <button type="button" @click="showEditModal = false" class="flex-1 md:flex-none px-6 py-4 text-[10px] font-black uppercase text-slate-400 hover:text-rose-500 transition-colors">Batal</button>
+                            <button type="submit" class="flex-1 md:flex-none px-10 py-4 bg-primary-light hover:bg-primary-dark text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-900/20 transition-all active:scale-95">
+                                Update Data
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

@@ -71,6 +71,16 @@
             </a>
          </li>
 
+         <!-- Data Pendatang (Bendesa / Kelian Access) -->
+         @if(Session::get('level') == "1" || Session::get('level') == "2")
+         <li>
+            <a href="{{ url('administrator/kelian/pendatang') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/kelian/pendatang*') ? 'bg-white/15' : '' }}" target="_blank">
+               <i class="bi bi-person-walking w-5 h-5 text-white flex items-center justify-center"></i>
+               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Data Pendatang</span>
+            </a>
+         </li>
+         @endif
+
          <!-- Data Usaha -->
          <li>
             <a href="{{ url('administrator/data_usaha') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/data_usaha*') ? 'bg-white/15' : '' }}">

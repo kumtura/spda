@@ -39,7 +39,18 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-2">Alamat <span class="text-rose-500">*</span></label>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">Banjar / Wilayah <span class="text-rose-500">*</span></label>
+                        <select name="id_data_banjar" required
+                            class="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb]">
+                            <option value="">-- Pilih Banjar --</option>
+                            @foreach($banjar as $b)
+                            <option value="{{ $b->id_data_banjar }}">{{ $b->nama_banjar }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">Alamat Lengkap <span class="text-rose-500">*</span></label>
                         <textarea name="alamat" rows="2" required
                             class="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb]"
                             placeholder="Alamat lengkap objek wisata"></textarea>

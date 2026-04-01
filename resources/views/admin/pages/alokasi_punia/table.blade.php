@@ -47,6 +47,7 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50">
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Preview</th>
                         <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Tanggal</th>
                         <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Kategori</th>
                         <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Judul Keperluan</th>
@@ -57,6 +58,24 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse($alokasi as $item)
                         <tr class="group hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4">
+                                @if($item->foto && is_array($item->foto) && count($item->foto) > 0)
+                                    @php
+                                        $path = $item->foto[0];
+                                        // Handle legacy paths without storage/alokasi_punia prefix
+                                        if (!str_contains($path, '/')) {
+                                            $path = 'storage/alokasi_punia/' . $path;
+                                        }
+                                    @endphp
+                                    <div class="h-12 w-16 bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                                        <img src="{{ asset($path) }}" class="w-full h-full object-cover" alt="">
+                                    </div>
+                                @else
+                                    <div class="h-12 w-16 bg-slate-50 rounded-lg border border-dashed border-slate-200 flex items-center justify-center text-slate-300">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 text-xs font-bold text-slate-500 whitespace-nowrap">{{ \Carbon\Carbon::parse($item->tanggal_alokasi)->translatedFormat('d F Y') }}</td>
                             <td class="px-6 py-4">
                                 <div class="inline-flex items-center gap-1.5 bg-blue-50 text-[#00a6eb] px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">
@@ -72,7 +91,14 @@
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-1.5">
                                     <button type="button" 
-                                            @click="$dispatch('edit-modal', { id: '{{ $item->id_alokasi_punia }}', kategori: '{{ $item->id_kategori_punia }}', judul: '{{ addslashes($item->judul) }}', deskripsi: '{{ addslashes($item->deskripsi) }}', nominal: '{{ $item->nominal }}', tanggal: '{{ $item->tanggal_alokasi }}' })"
+                                            @click="$dispatch('edit-modal', { 
+                                                id_alokasi_punia: '{{ $item->id_alokasi_punia }}', 
+                                                id_kategori_punia: '{{ $item->id_kategori_punia }}', 
+                                                judul: '{{ addslashes($item->judul) }}', 
+                                                deskripsi: '{{ addslashes($item->deskripsi) }}', 
+                                                nominal: '{{ $item->nominal }}', 
+                                                tanggal_alokasi: '{{ $item->tanggal_alokasi }}' 
+                                            })"
                                             class="h-8 w-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary-light hover:border-primary-light transition-all shadow-sm">
                                         <i class="bi bi-pencil-square"></i>
                                     </button>

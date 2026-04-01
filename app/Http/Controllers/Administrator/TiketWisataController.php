@@ -26,10 +26,16 @@ class TiketWisataController extends Controller
 
     public function jual()
     {
-        $objekWisata = ObjekWisata::with('kategoriTiket')
+        $query = ObjekWisata::with('kategoriTiket')
             ->where('aktif', '1')
-            ->where('status', 'aktif')
-            ->get();
+            ->where('status', 'aktif');
+            
+        if (auth()->user()->id_level != config('myconfig.level.bendesa', 1)) {
+            $idBanjar = auth()->user()->id_banjar ?? 0;
+            $query->where('id_data_banjar', $idBanjar);
+        }
+            
+        $objekWisata = $query->get();
         return view('backend.kelian.tiket_jual', compact('objekWisata'));
     }
 

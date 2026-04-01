@@ -146,8 +146,8 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/usaha/berita/detail/{id}', [LandingController::class, 'usaha_berita_detail']);
         });
 
-        // Kelian Adat (Level 2)
-        Route::group(['middleware' => 'role:2'], function() {
+        // Kelian Adat (Level 2) & Bendesa (Level 1)
+        Route::group(['middleware' => 'role:1,2'], function() {
             Route::get('/kelian/punia', function() { return view('backend.kelian.punia'); });
             Route::get('/kelian/donasi', function() { return view('backend.kelian.donasi'); });
             Route::get('/kelian/verifikasi', [DashboardController::class, 'verifikasi_pembayaran']);

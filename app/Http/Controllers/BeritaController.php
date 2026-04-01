@@ -354,16 +354,12 @@ class BeritaController extends BaseController
     	//echo $request->input('DSC');
     	//return;
     	$profile      = $request->file('uploadinput');
-        
-        $filename     = str_shuffle("abcdefghijklmnopqrstuvwxyz0123456789").time() . '.' . $profile->guessExtension();
-        
-        $profile->move(storage_path('app/public/berita/foto'), $filename);
+        $filename = "";
 
-        // $video      = $request->file('videoinput');
-        
-        // $videoname     = str_shuffle("abcdefghijklmnopqrstuvwxyz0123456789").time() . '.' . $video->guessExtension();
-        
-        // $video->move(public_path('berita/video'), $videoname);
+        if ($profile != null) {
+            $filename     = str_shuffle("abcdefghijklmnopqrstuvwxyz0123456789").time() . '.' . $profile->guessExtension();
+            $profile->move(storage_path('app/public/berita/foto'), $filename);
+        }
 
 	    $list          				= new Berita;
 	    $list->judul_berita    		= $request->input('judul');
@@ -504,27 +500,14 @@ class BeritaController extends BaseController
         if($profile != null){
             $filename     = str_shuffle("abcdefghijklmnopqrstuvwxyz0123456789").time() . '.' . $profile->guessExtension();
         
-            $profile->move(public_path('berita/foto'), $filename);
-    
-    
+            $profile->move(storage_path('app/public/berita/foto'), $filename);
     
             Berita::where('id_berita', $request->input('t_idberita'))->update(array(
                     'judul_berita' =>  $request->input('judul') , 'foto' => $filename , 'slug' =>  $request->input('judul') , 'isi_berita' => $request->input('DSC'), 'id_kategori_berita' => $request->input('kategori')));
-    
-    
         }
         else{
-
-            $filename     = str_shuffle("abcdefghijklmnopqrstuvwxyz0123456789").time() . '.' . $profile->guessExtension();
-        
-            $profile->move(public_path('berita/foto'), $filename);
-    
-    
-    
             Berita::where('id_berita', $request->input('t_idberita'))->update(array(
                     'judul_berita' =>  $request->input('judul') , 'slug' =>  $request->input('judul') , 'isi_berita' => $request->input('DSC'), 'id_kategori_berita' => $request->input('kategori')));
-    
-    
         }
         
        

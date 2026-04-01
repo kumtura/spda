@@ -8,9 +8,15 @@
     </div>
 
     @php
-        $objekWisata = App\Models\ObjekWisata::with('kategoriTiket')->where('aktif', '1')->where('status', 'aktif')->get();
+        $idBanjar = auth()->user()->id_banjar ?? 0;
+        $objekWisata = App\Models\ObjekWisata::with('kategoriTiket')
+            ->where('id_data_banjar', $idBanjar)
+            ->where('aktif', '1')
+            ->where('status', 'aktif')
+            ->get();
         $tiketHariIni = App\Models\TiketWisata::whereDate('created_at', today())
             ->where('status_pembayaran', 'completed')
+            ->whereIn('id_objek_wisata', $objekWisata->pluck('id_objek_wisata'))
             ->with('details')
             ->get();
         $totalPenjualanHariIni = $tiketHariIni->sum('total_harga');

@@ -12,26 +12,41 @@ class ObjekWisataController extends Controller
 {
     public function index()
     {
-        $objekWisata = ObjekWisata::orderBy('created_at', 'desc')->get();
+        $objekWisata = ObjekWisata::with('banjar')
+        ->withSum(['tiket as total_pemasukan' => function($q) {
+            $q->where('status_pembayaran', 'paid');
+        }], 'total_harga')
+        ->withCount(['tiket as total_tiket_terjual' => function($q) {
+            $q->where('status_pembayaran', 'paid');
+        }])
+        ->orderBy('created_at', 'desc')
+        ->get();
         return view('admin.pages.objek_wisata.index', compact('objekWisata'));
     }
 
     public function create()
     {
-        return view('admin.pages.objek_wisata.create');
+        $banjar = \App\Models\Banjar::where('aktif', '1')->get();
+        return view('admin.pages.objek_wisata.create', compact('banjar'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $rules = [
             'nama_objek' => 'required',
             'deskripsi' => 'required',
             'alamat' => 'required',
+            'id_data_banjar' => 'required|exists:tb_data_banjar,id_data_banjar',
             'harga_tiket' => 'nullable|numeric',
-            'foto.*' => 'nullable|image|max:2048',
-            'kategori_aktif' => 'required|array|min:1',
-            'harga' => 'required|array'
-        ]);
+            'foto.*' => 'nullable|image|max:2048'
+        ];
+
+        if ($request->has('kategori_aktif')) {
+            $rules['kategori_aktif'] = 'required|array|min:1';
+            $rules['harga'] = 'required|array';
+        }
+
+        $request->validate($rules);
 
         $data = $request->except(['foto', 'kategori_aktif', 'harga']);
         
@@ -80,20 +95,22 @@ class ObjekWisataController extends Controller
             'truk' => ['nama' => 'Truk', 'tipe' => 'kendaraan']
         ];
 
-        // Create kategori tiket
-        $urutan = 1;
-        foreach ($request->kategori_aktif as $key) {
-            if (isset($kategoriMapping[$key]) && isset($request->harga[$key]) && $request->harga[$key] > 0) {
-                KategoriTiket::create([
-                    'id_objek_wisata' => $objek->id_objek_wisata,
-                    'nama_kategori' => $kategoriMapping[$key]['nama'],
-                    'tipe_kategori' => $kategoriMapping[$key]['tipe'],
-                    'harga' => $request->harga[$key],
-                    'deskripsi' => null,
-                    'urutan' => $urutan,
-                    'aktif' => 1
-                ]);
-                $urutan++;
+        // Create kategori tiket if present
+        if ($request->has('kategori_aktif')) {
+            $urutan = 1;
+            foreach ($request->kategori_aktif as $key) {
+                if (isset($kategoriMapping[$key]) && isset($request->harga[$key]) && $request->harga[$key] > 0) {
+                    KategoriTiket::create([
+                        'id_objek_wisata' => $objek->id_objek_wisata,
+                        'nama_kategori' => $kategoriMapping[$key]['nama'],
+                        'tipe_kategori' => $kategoriMapping[$key]['tipe'],
+                        'harga' => $request->harga[$key],
+                        'deskripsi' => null,
+                        'urutan' => $urutan,
+                        'aktif' => 1
+                    ]);
+                    $urutan++;
+                }
             }
         }
 
@@ -102,13 +119,14 @@ class ObjekWisataController extends Controller
             return redirect()->to('administrator/kelian/tiket')->with('success', 'Objek wisata berhasil ditambahkan');
         }
 
-        return redirect()->to('administrator/objek_wisata')->with('success', 'Objek wisata berhasil ditambahkan');
+        return redirect()->to('administrator/objek_wisata/edit/'.$objek->id_objek_wisata)->with('success', 'Informasi Dasar berhasil dibuat! Silakan tambahkan Kategori Tiket untuk melengkapi.');
     }
 
     public function edit($id)
     {
         $objek = ObjekWisata::findOrFail($id);
-        return view('admin.pages.objek_wisata.edit', compact('objek'));
+        $banjar = \App\Models\Banjar::where('aktif', '1')->get();
+        return view('admin.pages.objek_wisata.edit', compact('objek', 'banjar'));
     }
 
     public function update(Request $request, $id)
@@ -117,6 +135,7 @@ class ObjekWisataController extends Controller
             'nama_objek' => 'required',
             'deskripsi' => 'required',
             'alamat' => 'required',
+            'id_data_banjar' => 'required|exists:tb_data_banjar,id_data_banjar',
             'harga_tiket' => 'nullable|numeric',
             'foto' => 'nullable|image|max:2048'
         ]);
@@ -179,7 +198,14 @@ class ObjekWisataController extends Controller
     // Kelian Mobile Views
     public function index_kelian()
     {
-        $objekWisata = ObjekWisata::orderBy('created_at', 'desc')->get();
+        if (auth()->user()->id_level == config('myconfig.level.bendesa', 1)) {
+            $objekWisata = ObjekWisata::orderBy('created_at', 'desc')->get();
+        } else {
+            $idBanjar = auth()->user()->id_banjar ?? 0;
+            $objekWisata = ObjekWisata::where('id_data_banjar', $idBanjar)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
         return view('backend.kelian.tiket_objek', compact('objekWisata'));
     }
 
@@ -191,13 +217,15 @@ class ObjekWisataController extends Controller
 
     public function create_kelian()
     {
-        return view('backend.kelian.tiket_objek_create');
+        $banjar = \App\Models\Banjar::where('aktif', '1')->get();
+        return view('backend.kelian.tiket_objek_create', compact('banjar'));
     }
 
     public function edit_kelian($id)
     {
         $objek = ObjekWisata::findOrFail($id);
-        return view('backend.kelian.tiket_objek_edit', compact('objek'));
+        $banjar = \App\Models\Banjar::where('aktif', '1')->get();
+        return view('backend.kelian.tiket_objek_edit', compact('objek', 'banjar'));
     }
 
     // Kategori Tiket Management

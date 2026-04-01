@@ -52,18 +52,19 @@
         </div>
     </div>
 
-    <!-- Add Button - Floating -->
-    <a href="{{ url('administrator/kelian/pendatang/create') }}" class="fixed bottom-20 right-4 z-50 bg-[#00a6eb] text-white h-12 px-5 rounded-full font-bold text-sm shadow-lg flex items-center gap-2 hover:bg-[#0090d0] transition-colors">
-        <i class="bi bi-plus-lg"></i>
-        <span>Tambah</span>
-    </a>
+    <!-- Add Button - Floating Centered -->
+    <div class="fixed bottom-[75px] left-1/2 -translate-x-1/2 w-full max-w-[480px] px-5 z-40">
+        <a href="{{ url('administrator/kelian/pendatang/create') }}" class="w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/30 transition-all active:scale-95 flex items-center justify-center gap-2 border border-white/20">
+            <i class="bi bi-plus-lg"></i> Tambah Data Pendatang
+        </a>
+    </div>
 
     <!-- Punia Acara Section -->
     <div>
         <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-bold text-slate-800">Punia Acara</h3>
             <a href="{{ url('administrator/kelian/pendatang/create-acara') }}" 
-               class="text-[10px] font-bold text-[#00a6eb] flex items-center gap-1">
+               class="h-9 px-3 bg-[#00a6eb] text-white rounded-xl flex items-center gap-1.5 shadow-lg shadow-[#00a6eb]/20 transition-all active:scale-95 text-[10px] font-bold">
                 <i class="bi bi-plus-lg"></i>
                 <span>Buat Acara</span>
             </a>
@@ -80,7 +81,7 @@
                 <div class="flex items-center justify-between gap-2">
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
-                            <p class="text-xs font-medium text-slate-800 truncate">{{ $acara->nama_acara }}</p>
+                            <p class="text-xs font-bold text-slate-800 truncate">{{ $acara->nama_acara }}</p>
                             @if($acara->tanggal_acara)
                             <span class="text-[9px] text-slate-400 shrink-0">{{ $acara->tanggal_acara->format('d M Y') }}</span>
                             @endif
@@ -92,9 +93,6 @@
                         </div>
                     </div>
                     <div class="flex gap-1 shrink-0">
-                        <button onclick="toggleAcara({{ $acara->id_acara_punia }})" class="h-7 w-7 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-50">
-                            <i class="bi bi-toggle-{{ $acara->status === 'aktif' ? 'on' : 'off' }} text-sm"></i>
-                        </button>
                         <button onclick="deleteAcara({{ $acara->id_acara_punia }})" class="h-7 w-7 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-50">
                             <i class="bi bi-trash text-xs"></i>
                         </button>

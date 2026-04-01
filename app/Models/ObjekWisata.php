@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Banjar;
 
 class ObjekWisata extends Model
 {
@@ -13,6 +14,7 @@ class ObjekWisata extends Model
         'nama_objek',
         'deskripsi',
         'alamat',
+        'id_data_banjar',
         'foto',
         'harga_tiket',
         'kapasitas_harian',
@@ -21,6 +23,11 @@ class ObjekWisata extends Model
         'status',
         'aktif'
     ];
+
+    public function banjar()
+    {
+        return $this->belongsTo(Banjar::class, 'id_data_banjar', 'id_data_banjar');
+    }
 
     public function tiket()
     {

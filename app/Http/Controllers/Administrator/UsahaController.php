@@ -136,10 +136,16 @@ class UsahaController extends BaseController
         
         public function update_post_add_usaha(Request $request){
             $usaha = Usaha::update_data_usaha($request);
-            //echo "tes";
+            
+            // Handle logo upload if provided via the edit modal
+            if ($request->hasFile('logo_usaha')) {
+                $usahaRecord = Usaha::where('id_usaha', $request->tb_hidden_usaha)->first();
+                if ($usahaRecord) {
+                    Detail_Usaha::update_logo_usaha($request, $usahaRecord->id_detail_usaha);
+                }
+            }
             
             return redirect("administrator/data_usaha");
-           // return view('admin.pages.data_usaha.table',compact('usaha'));
         }
         
         public function get_pembayaran_detail(Request $request,$index){

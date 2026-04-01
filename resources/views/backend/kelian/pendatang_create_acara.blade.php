@@ -13,7 +13,7 @@
                 <span class="text-xs">Kembali</span>
             </a>
             
-            <h1 class="text-lg font-black">Buat Acara Punia</h1>
+            <h1 class="text-lg font-black uppercase tracking-tight">Buat Acara Punia</h1>
             <p class="text-white/80 text-[10px] mt-1">Tagihan otomatis untuk semua pendatang aktif</p>
         </div>
     </div>

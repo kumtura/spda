@@ -154,7 +154,7 @@
                     <button @click="showEditModal = false" class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all"><i class="bi bi-x-lg"></i></button>
                 </div>
                 
-                <form action="{{ url('administrator/update_post_add_usaha') }}" method="POST" class="p-8 space-y-6">
+                <form action="{{ url('administrator/update_post_add_usaha') }}" method="POST" enctype="multipart/form-data" class="p-8 space-y-6">
                     @csrf @method('PUT')
                     <input type="hidden" name="tb_hidden_usaha" :value="editData.id_usaha">
                     <input type="hidden" name="tb_hidden_detail_usaha" :value="editData.id_detail_usaha">
@@ -192,6 +192,17 @@
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Min. Punia Wajib (Rp)</label>
                             <input type="number" name="text_minimal_pembayaran" x-model="editData.minimal_bayar" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black text-slate-800 focus:bg-white focus:ring-4 focus:ring-primary-light/5 focus:border-primary-light transition-all outline-none">
                         </div>
+
+                        <!-- Logo Upload (Added) -->
+                        <div class="md:col-span-2 space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Logo Unit Usaha (Ganti)</label>
+                            <div class="flex items-center gap-4 p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl group hover:border-primary-light transition-all">
+                                <i class="bi bi-image text-2xl text-slate-300 group-hover:text-primary-light"></i>
+                                <input type="file" name="logo_usaha" accept="image/*" 
+                                       class="text-xs font-bold text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary-light file:text-white hover:file:bg-primary-light/90 transition-all cursor-pointer">
+                            </div>
+                        </div>
+
                         <div class="md:col-span-2 space-y-1.5">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Lengkap</label>
                             <textarea name="t_alamat_usaha" x-model="editData.alamat" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-primary-light/5 focus:border-primary-light transition-all outline-none resize-none"></textarea>
@@ -202,7 +213,7 @@
                         <p class="text-[10px] text-slate-400 font-medium italic">* Perubahan akan berdampak pada akses login unit usaha terkait.</p>
                         <div class="flex items-center gap-3 w-full md:w-auto">
                             <button type="button" @click="showEditModal = false" class="flex-1 md:flex-none px-8 py-3 text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 transition-colors">Batal</button>
-                            <button type="submit" class="flex-1 md:flex-none px-10 py-3 bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all transform hover:-translate-y-1 active:translate-y-0">Update Data</button>
+                            <button type="submit" class="flex-1 md:flex-none px-10 py-3 bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-900/20 transition-all transform hover:-translate-y-1 active:translate-y-0">Update Data</button>
                         </div>
                     </div>
                 </form>

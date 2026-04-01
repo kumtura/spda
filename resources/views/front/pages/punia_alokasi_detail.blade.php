@@ -80,10 +80,14 @@
         <h3 class="text-sm font-bold text-slate-800 mb-4">Alokasi Lainnya</h3>
         <div class="space-y-3">
             @foreach($recent_alokasi as $item)
-                <a href="{{ route('public.punia.alokasi.detail', $item->id_alokasi_punia) }}" class="flex gap-3 items-center group">
+                <a href="{{ route('public.punia.alokasi.detail', $item->id_alokasi_punia) }}" class="flex gap-3 items-center group bg-white border border-slate-50 p-2 rounded-2xl hover:border-blue-100 transition-all shadow-sm">
                     <div class="h-14 w-14 bg-slate-100 rounded-xl overflow-hidden shrink-0">
                         @if($item->foto && is_array($item->foto) && count($item->foto) > 0)
-                            <img src="{{ asset($item->foto[0]) }}" class="h-full w-full object-cover" alt="">
+                            @php
+                                $itemPath = $item->foto[0];
+                                if (!str_contains($itemPath, '/')) $itemPath = 'storage/alokasi_punia/' . $itemPath;
+                            @endphp
+                            <img src="{{ asset($itemPath) }}" class="h-full w-full object-cover" alt="">
                         @else
                             <div class="h-full w-full flex items-center justify-center">
                                 <i class="bi bi-image text-slate-200"></i>
@@ -91,12 +95,11 @@
                         @endif
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="text-xs font-bold text-slate-800 leading-snug group-hover:text-[#00a6eb] transition-colors line-clamp-1">{{ $item->judul }}</h4>
-                        <p class="text-[9px] text-slate-500 line-clamp-2 leading-relaxed mt-1">{{ Str::limit($item->deskripsi, 80) }}</p>
+                        <h4 class="text-xs font-black text-slate-800 leading-snug group-hover:text-[#00a6eb] transition-colors line-clamp-1 tracking-tight">{{ $item->judul }}</h4>
                         <div class="flex items-center gap-2 mt-1">
-                            <p class="text-[9px] text-slate-400">{{ \Carbon\Carbon::parse($item->tanggal_alokasi)->translatedFormat('d M Y') }}</p>
+                            <p class="text-[9px] font-bold text-slate-400 capitalize">{{ \Carbon\Carbon::parse($item->tanggal_alokasi)->translatedFormat('d M Y') }}</p>
                             <span class="text-[9px] text-slate-300">•</span>
-                            <p class="text-[9px] font-bold text-[#00a6eb]">Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
+                            <p class="text-[9px] font-black text-[#00a6eb]">Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
                         </div>
                     </div>
                 </a>
@@ -107,7 +110,7 @@
 
     <!-- Lightbox Modal -->
     @if($alokasi->foto && is_array($alokasi->foto) && count($alokasi->foto) > 0)
-    <div id="lightbox" class="hidden fixed inset-0 z-[70] bg-black/95 backdrop-blur-sm" onclick="closeLightbox()">
+    <div id="lightbox" class="hidden fixed inset-0 z-70 bg-black/95 backdrop-blur-sm" onclick="closeLightbox()">
         <button onclick="closeLightbox()" class="absolute top-6 right-6 h-10 w-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors z-10">
             <i class="bi bi-x text-2xl"></i>
         </button>

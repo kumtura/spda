@@ -23,17 +23,47 @@ class PendatangController extends Controller
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'LIKE', '%'.$search.'%')
+                  ->orWhere('nik', 'LIKE', '%'.$search.'%')
+                  ->orWhere('no_hp', 'LIKE', '%'.$search.'%');
+            });
+        }
 
         $pendatangList = $query->orderBy('created_at', 'desc')->get();
         $banjarList = Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
-        $acaraList = AcaraPunia::where('aktif', '1')->orderBy('created_at', 'desc')->get();
         $totalAktif = Pendatang::where('aktif', '1')->where('status', 'aktif')->count();
         $totalPendatang = Pendatang::where('aktif', '1')->count();
         $totalBelumBayar = PuniaPendatang::where('status_pembayaran', 'belum_bayar')->where('aktif', '1')->count();
 
+        // Fund summary
+        $currentMonth = date('m');
+        $currentYear = date('Y');
+        $currentMonthKey = $currentYear.'-'.str_pad($currentMonth, 2, '0', STR_PAD_LEFT);
+
+        $totalDanaMasukBulanIni = PuniaPendatang::where('status_pembayaran', 'lunas')
+            ->where('aktif', '1')
+            ->where('bulan_tahun', 'LIKE', $currentMonthKey.'%')
+            ->sum('nominal');
+
+        $totalDanaMasukTotal = PuniaPendatang::where('status_pembayaran', 'lunas')
+            ->where('aktif', '1')
+            ->sum('nominal');
+
+        // Recent payments (last 20)
+        $recentPayments = PuniaPendatang::with('pendatang')
+            ->where('status_pembayaran', 'lunas')
+            ->where('aktif', '1')
+            ->orderBy('tanggal_bayar', 'desc')
+            ->limit(20)
+            ->get();
+
         return view('admin.pages.pendatang.index', compact(
-            'pendatangList', 'banjarList', 'acaraList',
-            'totalAktif', 'totalPendatang', 'totalBelumBayar'
+            'pendatangList', 'banjarList',
+            'totalAktif', 'totalPendatang', 'totalBelumBayar',
+            'totalDanaMasukBulanIni', 'totalDanaMasukTotal', 'recentPayments'
         ));
     }
 

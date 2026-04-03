@@ -456,4 +456,357 @@ class PendatangController extends Controller
         
         return redirect()->back()->with('success', 'Status acara berhasil diubah');
     }
+
+    // =========================================================================
+    // BENDESA DESKTOP METHODS
+    // =========================================================================
+
+    public function settingBendesa()
+    {
+        return view('admin.pages.pendatang.setting');
+    }
+
+    public function createBendesa()
+    {
+        $banjarList = Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
+        return view('admin.pages.pendatang.create', compact('banjarList'));
+    }
+
+    public function createAcaraBendesa()
+    {
+        return view('admin.pages.pendatang.create_acara');
+    }
+
+    public function detailBendesa($id)
+    {
+        $pendatang = Pendatang::with(['puniaPendatang' => function($q) {
+            $q->orderBy('created_at', 'desc');
+        }])->findOrFail($id);
+
+        return view('admin.pages.pendatang.detail', compact('pendatang'));
+    }
+
+    public function editBendesa($id)
+    {
+        $pendatang = Pendatang::findOrFail($id);
+        $banjarList = Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
+        return view('admin.pages.pendatang.edit', compact('pendatang', 'banjarList'));
+    }
+
+    public function addPuniaBendesa($id)
+    {
+        $pendatang = Pendatang::findOrFail($id);
+        return view('admin.pages.pendatang.add_punia', compact('pendatang'));
+    }
+
+    public function bayarFormBendesa($id)
+    {
+        $punia = PuniaPendatang::with('pendatang')->findOrFail($id);
+        return view('admin.pages.pendatang.bayar', compact('punia'));
+    }
+
+    public function storeBendesa(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:100',
+            'nik' => 'required|string|max:20|unique:tb_pendatang,nik',
+            'asal' => 'required|string|max:200',
+            'no_hp' => 'required|string|max:20',
+            'alamat_tinggal' => 'nullable|string',
+            'id_data_banjar' => 'nullable|integer|exists:tb_data_banjar,id_data_banjar',
+            'use_global_punia' => 'required|boolean',
+            'punia_rutin_bulanan' => 'required_if:use_global_punia,0|nullable|numeric|min:0'
+        ]);
+
+        $data = $request->all();
+
+        if ($request->use_global_punia) {
+            $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
+            $data['punia_rutin_bulanan'] = $settings['punia_pendatang_global'] ?? 0;
+        }
+
+        $pendatang = Pendatang::create($data);
+
+        if ($pendatang->punia_rutin_bulanan > 0) {
+            $bulanTahun = now()->format('Y-m');
+            PuniaPendatang::create([
+                'id_pendatang' => $pendatang->id_pendatang,
+                'jenis_punia' => 'rutin',
+                'periode_rutin' => 'bulanan',
+                'bulan_tahun' => $bulanTahun,
+                'nominal' => $pendatang->punia_rutin_bulanan,
+                'keterangan' => 'Punia rutin bulan ' . now()->translatedFormat('F Y'),
+                'petugas_id' => auth()->id()
+            ]);
+        }
+
+        return redirect(url('administrator/pendatang'))->with('success', 'Data pendatang berhasil ditambahkan');
+    }
+
+    public function updateBendesa(Request $request, $id)
+    {
+        $pendatang = Pendatang::findOrFail($id);
+
+        $request->validate([
+            'nama' => 'required|string|max:100',
+            'nik' => 'required|string|max:20|unique:tb_pendatang,nik,'.$id.',id_pendatang',
+            'asal' => 'required|string|max:200',
+            'no_hp' => 'required|string|max:20',
+            'alamat_tinggal' => 'nullable|string',
+            'id_data_banjar' => 'nullable|integer|exists:tb_data_banjar,id_data_banjar',
+            'punia_rutin_bulanan' => 'required|numeric|min:0'
+        ]);
+
+        $useGlobal = $request->has('use_global_punia') && $request->use_global_punia == '1';
+        $data = $request->only(['nama', 'nik', 'asal', 'no_hp', 'alamat_tinggal', 'id_data_banjar', 'punia_rutin_bulanan']);
+        $data['use_global_punia'] = $useGlobal;
+
+        if ($useGlobal) {
+            $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
+            $data['punia_rutin_bulanan'] = $settings['punia_pendatang_global'] ?? 0;
+        }
+
+        $pendatang->update($data);
+
+        return redirect()->to('administrator/pendatang/detail/'.$id)->with('success', 'Data pendatang berhasil diupdate');
+    }
+
+    public function deleteBendesa($id)
+    {
+        $pendatang = Pendatang::findOrFail($id);
+        $pendatang->delete();
+
+        return redirect(url('administrator/pendatang'))->with('success', 'Data pendatang berhasil dihapus');
+    }
+
+    public function toggleBendesa($id)
+    {
+        $pendatang = Pendatang::findOrFail($id);
+        $pendatang->status = $pendatang->status === 'aktif' ? 'nonaktif' : 'aktif';
+        $pendatang->save();
+
+        return redirect()->back()->with('success', 'Status pendatang berhasil diubah');
+    }
+
+    public function generateTagihanBendesa($id)
+    {
+        $pendatang = Pendatang::findOrFail($id);
+
+        if ($pendatang->punia_rutin_bulanan <= 0) {
+            return redirect()->back()->with('error', 'Nominal punia rutin bulanan belum diatur');
+        }
+
+        $bulanTahun = now()->format('Y-m');
+
+        $exists = PuniaPendatang::where('id_pendatang', $id)
+            ->where('jenis_punia', 'rutin')
+            ->where('bulan_tahun', $bulanTahun)
+            ->where('aktif', '1')
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()->with('error', 'Tagihan bulan ini sudah ada');
+        }
+
+        PuniaPendatang::create([
+            'id_pendatang' => $id,
+            'jenis_punia' => 'rutin',
+            'periode_rutin' => 'bulanan',
+            'bulan_tahun' => $bulanTahun,
+            'nominal' => $pendatang->punia_rutin_bulanan,
+            'keterangan' => 'Punia rutin bulan ' . now()->translatedFormat('F Y'),
+            'petugas_id' => auth()->id()
+        ]);
+
+        return redirect()->back()->with('success', 'Tagihan punia bulan ini berhasil dibuat');
+    }
+
+    public function updatePuniaSettingBendesa(Request $request, $id)
+    {
+        $useGlobal = $request->has('use_global_punia') && $request->use_global_punia == '1';
+
+        $request->validate([
+            'punia_rutin_bulanan' => $useGlobal ? 'nullable' : 'required|numeric|min:0'
+        ]);
+
+        $pendatang = Pendatang::findOrFail($id);
+        $data = ['use_global_punia' => $useGlobal];
+
+        if ($useGlobal) {
+            $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
+            $data['punia_rutin_bulanan'] = $settings['punia_pendatang_global'] ?? 0;
+        } else {
+            $data['punia_rutin_bulanan'] = $request->punia_rutin_bulanan;
+        }
+
+        $pendatang->update($data);
+
+        return redirect()->back()->with('success', 'Setting punia berhasil diupdate');
+    }
+
+    public function kartuPuniaBendesa($id)
+    {
+        $pendatang = Pendatang::findOrFail($id);
+        $selectedYear = (int)request()->get('year', date('Y'));
+
+        $payments = PuniaPendatang::where('id_pendatang', $id)
+            ->where('jenis_punia', 'rutin')
+            ->where('aktif', '1')
+            ->where('status_pembayaran', 'lunas')
+            ->where('bulan_tahun', 'LIKE', $selectedYear . '-%')
+            ->get()
+            ->keyBy(function($item) {
+                return (int)substr($item->bulan_tahun, 5, 2);
+            });
+
+        $totalKontribusi = $payments->sum('nominal');
+        $currentDateFormatted = now()->translatedFormat('d M');
+
+        return view('admin.pages.pendatang.kartu_punia', compact('pendatang', 'payments', 'selectedYear', 'totalKontribusi', 'currentDateFormatted'));
+    }
+
+    public function bayarKartuPuniaBendesa(Request $request)
+    {
+        $request->validate([
+            'id_pendatang' => 'required|exists:tb_pendatang,id_pendatang',
+            'bulan' => 'required|integer|min:1|max:12',
+            'tahun' => 'required|integer',
+            'metode_pembayaran' => 'required|in:cash,qris'
+        ]);
+
+        $pendatang = Pendatang::findOrFail($request->id_pendatang);
+        $bulanTahun = $request->tahun . '-' . str_pad($request->bulan, 2, '0', STR_PAD_LEFT);
+
+        $punia = PuniaPendatang::where('id_pendatang', $request->id_pendatang)
+            ->where('jenis_punia', 'rutin')
+            ->where('bulan_tahun', $bulanTahun)
+            ->where('aktif', '1')
+            ->first();
+
+        if (!$punia) {
+            $punia = PuniaPendatang::create([
+                'id_pendatang' => $request->id_pendatang,
+                'jenis_punia' => 'rutin',
+                'periode_rutin' => 'bulanan',
+                'bulan_tahun' => $bulanTahun,
+                'nominal' => $pendatang->punia_rutin_bulanan,
+                'keterangan' => 'Punia rutin bulan ' . \Carbon\Carbon::createFromFormat('Y-m', $bulanTahun)->translatedFormat('F Y'),
+                'petugas_id' => auth()->id()
+            ]);
+        }
+
+        $punia->update([
+            'status_pembayaran' => 'lunas',
+            'metode_pembayaran' => $request->metode_pembayaran,
+            'tanggal_bayar' => now(),
+            'petugas_id' => auth()->id()
+        ]);
+
+        return redirect()->back()->with('success', 'Pembayaran punia berhasil dicatat');
+    }
+
+    public function storePuniaBendesa(Request $request)
+    {
+        $request->validate([
+            'id_pendatang' => 'required|exists:tb_pendatang,id_pendatang',
+            'jenis_punia' => 'required|in:rutin,acara',
+            'nama_acara' => 'required_if:jenis_punia,acara',
+            'periode_rutin' => 'required_if:jenis_punia,rutin|in:bulanan,tahunan',
+            'bulan_tahun' => 'required_if:jenis_punia,rutin',
+            'nominal' => 'required|numeric|min:0',
+            'keterangan' => 'nullable|string'
+        ]);
+
+        PuniaPendatang::create([
+            'id_pendatang' => $request->id_pendatang,
+            'jenis_punia' => $request->jenis_punia,
+            'nama_acara' => $request->nama_acara,
+            'periode_rutin' => $request->periode_rutin,
+            'bulan_tahun' => $request->bulan_tahun,
+            'nominal' => $request->nominal,
+            'keterangan' => $request->keterangan,
+            'petugas_id' => auth()->id()
+        ]);
+
+        return redirect()->to('administrator/pendatang/detail/'.$request->id_pendatang)->with('success', 'Tagihan punia berhasil ditambahkan');
+    }
+
+    public function bayarPuniaBendesa(Request $request, $id)
+    {
+        $punia = PuniaPendatang::findOrFail($id);
+
+        $request->validate([
+            'metode_pembayaran' => 'required|in:cash,qris'
+        ]);
+
+        $punia->update([
+            'status_pembayaran' => 'lunas',
+            'metode_pembayaran' => $request->metode_pembayaran,
+            'tanggal_bayar' => now(),
+            'petugas_id' => auth()->id()
+        ]);
+
+        return redirect()->to('administrator/pendatang/detail/'.$punia->id_pendatang)->with('success', 'Pembayaran punia berhasil dicatat');
+    }
+
+    public function deletePuniaBendesa($id)
+    {
+        $punia = PuniaPendatang::findOrFail($id);
+        $idPendatang = $punia->id_pendatang;
+        $punia->delete();
+
+        return redirect()->to('administrator/pendatang/detail/'.$idPendatang)->with('success', 'Tagihan punia berhasil dihapus');
+    }
+
+    public function storeAcaraBendesa(Request $request)
+    {
+        $request->validate([
+            'nama_acara' => 'required|string|max:200',
+            'deskripsi' => 'nullable|string',
+            'nominal' => 'required|numeric|min:0',
+            'tanggal_acara' => 'nullable|date',
+            'batas_pembayaran' => 'nullable|date'
+        ]);
+
+        $acara = AcaraPunia::create([
+            'nama_acara' => $request->nama_acara,
+            'deskripsi' => $request->deskripsi,
+            'nominal' => $request->nominal,
+            'tanggal_acara' => $request->tanggal_acara,
+            'batas_pembayaran' => $request->batas_pembayaran,
+            'created_by' => auth()->id()
+        ]);
+
+        $pendatangAktif = Pendatang::where('status', 'aktif')->where('aktif', '1')->get();
+
+        foreach ($pendatangAktif as $pendatang) {
+            PuniaPendatang::create([
+                'id_pendatang' => $pendatang->id_pendatang,
+                'id_acara_punia' => $acara->id_acara_punia,
+                'jenis_punia' => 'acara',
+                'nama_acara' => $acara->nama_acara,
+                'nominal' => $acara->nominal,
+                'petugas_id' => auth()->id()
+            ]);
+        }
+
+        return redirect(url('administrator/pendatang'))->with('success', 'Acara berhasil dibuat dan tagihan telah ditambahkan ke semua pendatang aktif');
+    }
+
+    public function deleteAcaraBendesa($id)
+    {
+        $acara = AcaraPunia::findOrFail($id);
+        $acara->delete();
+
+        return redirect()->back()->with('success', 'Acara dan semua tagihan terkait berhasil dihapus');
+    }
+
+    public function toggleAcaraBendesa($id)
+    {
+        $acara = AcaraPunia::findOrFail($id);
+        $acara->status = $acara->status === 'aktif' ? 'selesai' : 'aktif';
+        $acara->save();
+
+        return redirect()->back()->with('success', 'Status acara berhasil diubah');
+    }
 }

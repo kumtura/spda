@@ -175,8 +175,10 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/kelian/tiket/kategori/store', 'Administrator\ObjekWisataController@store_kategori');
             Route::put('/kelian/tiket/kategori/update/{id}', 'Administrator\ObjekWisataController@update_kategori');
             Route::get('/kelian/tiket/kategori/delete/{id}', 'Administrator\ObjekWisataController@delete_kategori');
-            
-            // Pendatang Management
+        });
+
+        // Kelian Adat only (Level 2) - Mobile Pendatang Pages
+        Route::group(['middleware' => 'role:2'], function() {
             Route::get('/kelian/pendatang', 'Administrator\PendatangController@index');
             Route::get('/kelian/pendatang/setting', 'Administrator\PendatangController@setting');
             Route::post('/kelian/pendatang/setting/update', 'Administrator\PendatangController@updateSetting');
@@ -231,6 +233,29 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 
 			// Pendatang Management for Bendesa (Desktop Admin)
 			Route::get('/pendatang', 'Administrator\PendatangController@indexBendesa');
+			Route::get('/pendatang/setting', 'Administrator\PendatangController@settingBendesa');
+			Route::post('/pendatang/setting/update', 'Administrator\PendatangController@updateSetting');
+			Route::get('/pendatang/create', 'Administrator\PendatangController@createBendesa');
+			Route::get('/pendatang/create-acara', 'Administrator\PendatangController@createAcaraBendesa');
+			Route::get('/pendatang/detail/{id}', 'Administrator\PendatangController@detailBendesa');
+			Route::get('/pendatang/edit/{id}', 'Administrator\PendatangController@editBendesa');
+			Route::get('/pendatang/add-punia/{id}', 'Administrator\PendatangController@addPuniaBendesa');
+			Route::get('/pendatang/bayar/{id}', 'Administrator\PendatangController@bayarFormBendesa');
+			Route::post('/pendatang/store', 'Administrator\PendatangController@storeBendesa');
+			Route::put('/pendatang/update/{id}', 'Administrator\PendatangController@updateBendesa');
+			Route::get('/pendatang/delete/{id}', 'Administrator\PendatangController@deleteBendesa');
+			Route::get('/pendatang/toggle/{id}', 'Administrator\PendatangController@toggleBendesa');
+			Route::get('/pendatang/generate-tagihan/{id}', 'Administrator\PendatangController@generateTagihanBendesa');
+			Route::post('/pendatang/update-punia-setting/{id}', 'Administrator\PendatangController@updatePuniaSettingBendesa');
+			Route::get('/pendatang/kartu-punia/print/{id}', 'Administrator\PendatangController@printKartuPunia');
+			Route::get('/pendatang/kartu-punia/{id}', 'Administrator\PendatangController@kartuPuniaBendesa');
+			Route::post('/pendatang/kartu-punia/bayar', 'Administrator\PendatangController@bayarKartuPuniaBendesa');
+			Route::post('/pendatang/punia/store', 'Administrator\PendatangController@storePuniaBendesa');
+			Route::post('/pendatang/punia/bayar/{id}', 'Administrator\PendatangController@bayarPuniaBendesa');
+			Route::get('/pendatang/punia/delete/{id}', 'Administrator\PendatangController@deletePuniaBendesa');
+			Route::post('/pendatang/acara/store', 'Administrator\PendatangController@storeAcaraBendesa');
+			Route::get('/pendatang/acara/delete/{id}', 'Administrator\PendatangController@deleteAcaraBendesa');
+			Route::get('/pendatang/acara/toggle/{id}', 'Administrator\PendatangController@toggleAcaraBendesa');
 			
 			Route::get('/datapunia_wajib','Administrator\DanaPuniaController@list_datapunia_wajib');
 			Route::get('/datapunia_wajib/{index}/{tanggal}','Administrator\DanaPuniaController@list_datapunia_wajib_param');

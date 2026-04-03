@@ -46,18 +46,22 @@ class Sumbangan extends Model
         $tgl_akhir = "";
         $data = array();
 
-        if(isset($_GET['dateawal']) && !isset($_GET['dateakhir'])){
+        $query = Sumbangan::leftJoin("tb_bank", "tb_bank.id_bank", "tb_sumbangan_sukarela.id_bank")
+            ->leftJoin("tb_usaha", "tb_usaha.id_usaha", "tb_sumbangan_sukarela.id_usaha")
+            ->where("tb_sumbangan_sukarela.aktif","1");
+
+        if(isset($_GET['dateawal']) && $_GET['dateawal'] != '' && (!isset($_GET['dateakhir']) || $_GET['dateakhir'] == '')){
             $tgl_awal = $_GET['dateawal'];
-            $data = Sumbangan::join("tb_bank", "tb_bank.id_bank" , "tb_sumbangan_sukarela.id_bank")->where("tb_sumbangan_sukarela.tanggal","=",$tgl_awal)->where("tb_sumbangan_sukarela.aktif","1")->orderBy("tb_sumbangan_sukarela.id_sumbangan_sukarela" , "desc")->get();
+            $query->where("tb_sumbangan_sukarela.tanggal","=",$tgl_awal);
         }
-        else if(isset($_GET['dateakhir'])){
-            $tgl_awal = $_GET['dateawal'];
+        else if(isset($_GET['dateakhir']) && $_GET['dateakhir'] != ''){
+            $tgl_awal = $_GET['dateawal'] ?? '';
             $tgl_akhir = $_GET['dateakhir'];
-            $data = Sumbangan::join("tb_bank", "tb_bank.id_bank" , "tb_sumbangan_sukarela.id_bank")->where("tb_sumbangan_sukarela.tanggal",">=",$tgl_awal)->where("tb_sumbangan_sukarela.tanggal","<=",$tgl_akhir)->where("tb_sumbangan_sukarela.aktif","1")->orderBy("tb_sumbangan_sukarela.id_sumbangan_sukarela" , "desc")->get();
+            if($tgl_awal != '') $query->where("tb_sumbangan_sukarela.tanggal",">=",$tgl_awal);
+            $query->where("tb_sumbangan_sukarela.tanggal","<=",$tgl_akhir);
         }
-        else{
-            $data = Sumbangan::join("tb_bank", "tb_bank.id_bank" , "tb_sumbangan_sukarela.id_bank")->where("tb_sumbangan_sukarela.aktif","1")->orderBy("tb_sumbangan_sukarela.id_sumbangan_sukarela" , "desc")->get();
-        }
+
+        $data = $query->orderBy("tb_sumbangan_sukarela.id_sumbangan_sukarela", "desc")->get();
 
         return $data;
 

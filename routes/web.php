@@ -331,6 +331,11 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::post('submit_post_add_sumbangan','Administrator\SumbanganController@submit_post_add_sumbangan');
 			Route::get('download_pdf_sumbangan','Administrator\SumbanganController@download_pdf_sumbangan');
 
+			// Keuangan (Finance)
+			Route::get('keuangan','Administrator\KeuanganController@index');
+			Route::post('keuangan/store','Administrator\KeuanganController@store');
+			Route::get('keuangan/hapus/{id}','Administrator\KeuanganController@destroy');
+
 			// Kategori Donasi Routes
 			Route::get('/kategori_donasi','Administrator\KategoriDonasiController@index');
 			Route::post('/kategori_donasi/post','Administrator\KategoriDonasiController@store');

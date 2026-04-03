@@ -50,12 +50,13 @@ class SumbanganController extends BaseController
 
             $total_all = $total_anonim + $total_usaha + $total_karyawan;
             
-            // print_r($usaha);
-            // return;
+            // Map usaha names for investor donations
+            $usahaMap = [];
+            foreach($usaha as $u) {
+                $usahaMap[$u->id_usaha] = $u->nama_usaha;
+            }
             
-             return view('admin.pages.data_sumbangan.table',compact('sumbangan','total_anonim','total_usaha','total_karyawan','total_all','karyawan','usaha'));
-            //$datalist = Banjar::get_databanjar($request);
-            //echo $datalist;
+             return view('admin.pages.data_sumbangan.table',compact('sumbangan','total_anonim','total_usaha','total_karyawan','total_all','karyawan','usaha','usahaMap'));
         }
         
         public function submit_post_add_sumbangan(Request $request){

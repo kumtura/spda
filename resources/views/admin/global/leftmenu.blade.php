@@ -131,6 +131,14 @@
             </a>
           </li>
 
+          <!-- Keuangan (Standalone) -->
+          <li>
+            <a href="{{ url('administrator/keuangan') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/keuangan*') ? 'bg-white/15' : '' }}">
+               <i class="bi bi-bank w-5 h-5 text-yellow-400 flex items-center justify-center"></i>
+               <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Keuangan</span>
+            </a>
+          </li>
+
           <!-- Objek Wisata (Standalone) -->
           <li>
             <a href="{{ url('administrator/objek_wisata') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/objek_wisata*') ? 'bg-white/15' : '' }}">

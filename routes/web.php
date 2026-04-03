@@ -228,6 +228,9 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::get('/verifikasi_pembayaran', [DashboardController::class, 'verifikasi_pembayaran'])->name('verifikasi_pembayaran');
 			Route::post('/verifikasi_pembayaran/approve', [DashboardController::class, 'verifikasi_approve'])->name('verifikasi.approve');
 			Route::post('/verifikasi_pembayaran/reject', [DashboardController::class, 'verifikasi_reject'])->name('verifikasi.reject');
+
+			// Pendatang Management for Bendesa (Desktop Admin)
+			Route::get('/pendatang', 'Administrator\PendatangController@indexBendesa');
 			
 			Route::get('/datapunia_wajib','Administrator\DanaPuniaController@list_datapunia_wajib');
 			Route::get('/datapunia_wajib/{index}/{tanggal}','Administrator\DanaPuniaController@list_datapunia_wajib_param');

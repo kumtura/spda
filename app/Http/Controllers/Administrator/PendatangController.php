@@ -7,10 +7,36 @@ use Illuminate\Http\Request;
 use App\Models\Pendatang;
 use App\Models\PuniaPendatang;
 use App\Models\AcaraPunia;
+use App\Models\Banjar;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 class PendatangController extends Controller
 {
+    public function indexBendesa(Request $request)
+    {
+        $query = Pendatang::with(['banjar', 'puniaPendatang'])->where('aktif', '1');
+
+        if ($request->filled('banjar')) {
+            $query->where('id_data_banjar', $request->banjar);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $pendatangList = $query->orderBy('created_at', 'desc')->get();
+        $banjarList = Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
+        $acaraList = AcaraPunia::where('aktif', '1')->orderBy('created_at', 'desc')->get();
+        $totalAktif = Pendatang::where('aktif', '1')->where('status', 'aktif')->count();
+        $totalPendatang = Pendatang::where('aktif', '1')->count();
+        $totalBelumBayar = PuniaPendatang::where('status_pembayaran', 'belum_bayar')->where('aktif', '1')->count();
+
+        return view('admin.pages.pendatang.index', compact(
+            'pendatangList', 'banjarList', 'acaraList',
+            'totalAktif', 'totalPendatang', 'totalBelumBayar'
+        ));
+    }
+
     public function index()
     {
         $acaraList = AcaraPunia::where('aktif', '1')->orderBy('created_at', 'desc')->get();

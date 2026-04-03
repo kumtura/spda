@@ -13,11 +13,24 @@
     </div>
 
     @php
-        $pendatangList = App\Models\Pendatang::with('banjar')->where('aktif', '1')->orderBy('created_at', 'desc')->get();
+        $user = Auth::user();
+        $kelianBanjar = $user->banjar;
+        
+        $pendatangQuery = App\Models\Pendatang::with('banjar')->where('aktif', '1');
+        $tagihanQuery = App\Models\PuniaPendatang::where('status_pembayaran', 'belum_bayar')->where('aktif', '1');
+        
+        // Kelihan (level 2): filter by their banjar only
+        if(Session::get('level') == '2' && $kelianBanjar) {
+            $pendatangQuery->where('id_data_banjar', $kelianBanjar->id_data_banjar);
+            $pendatangIds = App\Models\Pendatang::where('aktif', '1')
+                ->where('id_data_banjar', $kelianBanjar->id_data_banjar)
+                ->pluck('id_pendatang');
+            $tagihanQuery->whereIn('id_pendatang', $pendatangIds);
+        }
+        
+        $pendatangList = $pendatangQuery->orderBy('created_at', 'desc')->get();
         $totalPendatang = $pendatangList->where('status', 'aktif')->count();
-        $totalTagihanBelumBayar = App\Models\PuniaPendatang::where('status_pembayaran', 'belum_bayar')
-            ->where('aktif', '1')
-            ->count();
+        $totalTagihanBelumBayar = $tagihanQuery->count();
     @endphp
 
     @if(session('success'))

@@ -503,42 +503,10 @@ function keuanganPage() {
             tarik: { field: null, dir: 'asc' }
         },
 
-        // Raw data from server
-        rawPemasukan: @json($pemasukan->map(function($row) {
-            return [
-                'tanggal' => $row['tanggal'],
-                'tanggal_fmt' => \Carbon\Carbon::parse($row['tanggal'])->format('d M Y'),
-                'sumber' => $row['sumber'],
-                'nama' => $row['nama'],
-                'keterangan' => $row['keterangan'],
-                'metode' => $row['metode'],
-                'nominal' => (float)$row['nominal'],
-            ];
-        })->values()),
-
-        rawPengeluaran: @json($pengeluaran->map(function($row) {
-            return [
-                'id_keuangan' => $row->id_keuangan,
-                'tanggal' => \Carbon\Carbon::parse($row->tanggal)->format('Y-m-d'),
-                'kategori' => $row->kategori,
-                'penerima' => $row->penerima,
-                'keterangan' => $row->keterangan,
-                'metode_pembayaran' => $row->metode_pembayaran,
-                'nominal' => (float)$row->nominal,
-            ];
-        })->values()),
-
-        rawTarik: @json($tarik->map(function($row) {
-            return [
-                'id_keuangan' => $row->id_keuangan,
-                'tanggal' => \Carbon\Carbon::parse($row->tanggal)->format('Y-m-d'),
-                'penerima' => $row->penerima,
-                'nama_bank' => $row->nama_bank,
-                'no_rekening' => $row->no_rekening,
-                'keterangan' => $row->keterangan,
-                'nominal' => (float)$row->nominal,
-            ];
-        })->values()),
+        // Raw data from server (pre-formatted in controller)
+        rawPemasukan: @json($jsonPemasukan),
+        rawPengeluaran: @json($jsonPengeluaran),
+        rawTarik: @json($jsonTarik),
 
         get sortedPemasukan() {
             return this.applySorting('pemasukan', this.rawPemasukan);

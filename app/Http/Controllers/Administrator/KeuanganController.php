@@ -132,9 +132,47 @@ class KeuanganController extends BaseController
         $pemasukanTransfer = $pemasukan->where('metode', 'Transfer')->sum('nominal');
         $pemasukanCash = $pemasukan->where('metode', 'Cash')->sum('nominal');
 
+        // Pre-format data for JSON (avoid closures in Blade @json)
+        $jsonPemasukan = $pemasukan->map(function($row) {
+            return [
+                'tanggal' => $row['tanggal'],
+                'tanggal_fmt' => \Carbon\Carbon::parse($row['tanggal'])->format('d M Y'),
+                'sumber' => $row['sumber'],
+                'nama' => $row['nama'],
+                'keterangan' => $row['keterangan'],
+                'metode' => $row['metode'],
+                'nominal' => (float)$row['nominal'],
+            ];
+        })->values();
+
+        $jsonPengeluaran = $pengeluaran->map(function($row) {
+            return [
+                'id_keuangan' => $row->id_keuangan,
+                'tanggal' => \Carbon\Carbon::parse($row->tanggal)->format('Y-m-d'),
+                'kategori' => $row->kategori,
+                'penerima' => $row->penerima,
+                'keterangan' => $row->keterangan,
+                'metode_pembayaran' => $row->metode_pembayaran,
+                'nominal' => (float)$row->nominal,
+            ];
+        })->values();
+
+        $jsonTarik = $tarik->map(function($row) {
+            return [
+                'id_keuangan' => $row->id_keuangan,
+                'tanggal' => \Carbon\Carbon::parse($row->tanggal)->format('Y-m-d'),
+                'penerima' => $row->penerima,
+                'nama_bank' => $row->nama_bank,
+                'no_rekening' => $row->no_rekening,
+                'keterangan' => $row->keterangan,
+                'nominal' => (float)$row->nominal,
+            ];
+        })->values();
+
         return view('admin.pages.keuangan.index', compact(
             'tab', 'dateAwal', 'dateAkhir',
             'pemasukan', 'pengeluaran', 'tarik',
+            'jsonPemasukan', 'jsonPengeluaran', 'jsonTarik',
             'totalPemasukan', 'totalPengeluaran', 'totalTarik', 'saldo',
             'pemasukanOnline', 'pemasukanTransfer', 'pemasukanCash'
         ));

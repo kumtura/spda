@@ -138,10 +138,14 @@ class PendatangController extends Controller
             'alamat_tinggal' => 'nullable|string',
             'id_data_banjar' => 'nullable|integer|exists:tb_data_banjar,id_data_banjar',
             'use_global_punia' => 'required|boolean',
-            'punia_rutin_bulanan' => 'required_if:use_global_punia,0|nullable|numeric|min:0'
+            'punia_rutin_bulanan' => 'required_if:use_global_punia,0|nullable|numeric|min:0',
+            'tinggal_dari' => 'nullable|date',
+            'tinggal_sampai' => 'nullable|date|after_or_equal:tinggal_dari',
+            'tinggal_belum_yakin' => 'nullable|boolean'
         ]);
         
         $data = $request->all();
+        $data['tinggal_belum_yakin'] = $request->has('tinggal_belum_yakin');
         
         // If using global setting, get from settings.json
         if ($request->use_global_punia) {
@@ -180,12 +184,16 @@ class PendatangController extends Controller
             'no_hp' => 'required|string|max:20',
             'alamat_tinggal' => 'nullable|string',
             'id_data_banjar' => 'nullable|integer|exists:tb_data_banjar,id_data_banjar',
-            'punia_rutin_bulanan' => 'required|numeric|min:0'
+            'punia_rutin_bulanan' => 'required|numeric|min:0',
+            'tinggal_dari' => 'nullable|date',
+            'tinggal_sampai' => 'nullable|date|after_or_equal:tinggal_dari',
+            'tinggal_belum_yakin' => 'nullable|boolean'
         ]);
         
         $useGlobal = $request->has('use_global_punia') && $request->use_global_punia == '1';
-        $data = $request->only(['nama', 'nik', 'asal', 'no_hp', 'alamat_tinggal', 'id_data_banjar', 'punia_rutin_bulanan']);
+        $data = $request->only(['nama', 'nik', 'asal', 'no_hp', 'alamat_tinggal', 'id_data_banjar', 'punia_rutin_bulanan', 'tinggal_dari', 'tinggal_sampai']);
         $data['use_global_punia'] = $useGlobal;
+        $data['tinggal_belum_yakin'] = $request->has('tinggal_belum_yakin');
         
         if ($useGlobal) {
             $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
@@ -515,10 +523,14 @@ class PendatangController extends Controller
             'alamat_tinggal' => 'nullable|string',
             'id_data_banjar' => 'nullable|integer|exists:tb_data_banjar,id_data_banjar',
             'use_global_punia' => 'required|boolean',
-            'punia_rutin_bulanan' => 'required_if:use_global_punia,0|nullable|numeric|min:0'
+            'punia_rutin_bulanan' => 'required_if:use_global_punia,0|nullable|numeric|min:0',
+            'tinggal_dari' => 'nullable|date',
+            'tinggal_sampai' => 'nullable|date|after_or_equal:tinggal_dari',
+            'tinggal_belum_yakin' => 'nullable|boolean'
         ]);
 
         $data = $request->all();
+        $data['tinggal_belum_yakin'] = $request->has('tinggal_belum_yakin');
 
         if ($request->use_global_punia) {
             $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
@@ -554,12 +566,16 @@ class PendatangController extends Controller
             'no_hp' => 'required|string|max:20',
             'alamat_tinggal' => 'nullable|string',
             'id_data_banjar' => 'nullable|integer|exists:tb_data_banjar,id_data_banjar',
-            'punia_rutin_bulanan' => 'required|numeric|min:0'
+            'punia_rutin_bulanan' => 'required|numeric|min:0',
+            'tinggal_dari' => 'nullable|date',
+            'tinggal_sampai' => 'nullable|date|after_or_equal:tinggal_dari',
+            'tinggal_belum_yakin' => 'nullable|boolean'
         ]);
 
         $useGlobal = $request->has('use_global_punia') && $request->use_global_punia == '1';
-        $data = $request->only(['nama', 'nik', 'asal', 'no_hp', 'alamat_tinggal', 'id_data_banjar', 'punia_rutin_bulanan']);
+        $data = $request->only(['nama', 'nik', 'asal', 'no_hp', 'alamat_tinggal', 'id_data_banjar', 'punia_rutin_bulanan', 'tinggal_dari', 'tinggal_sampai']);
         $data['use_global_punia'] = $useGlobal;
+        $data['tinggal_belum_yakin'] = $request->has('tinggal_belum_yakin');
 
         if ($useGlobal) {
             $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);

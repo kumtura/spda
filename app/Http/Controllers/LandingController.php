@@ -1301,6 +1301,9 @@ class LandingController extends Controller
             'no_hp' => 'required|string|max:20',
             'alamat_tinggal' => 'required|string',
             'id_data_banjar' => 'required|integer|exists:tb_data_banjar,id_data_banjar',
+            'tinggal_dari' => 'nullable|date',
+            'tinggal_sampai' => 'nullable|date|after_or_equal:tinggal_dari',
+            'tinggal_belum_yakin' => 'nullable|boolean'
         ]);
         
         $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
@@ -1315,6 +1318,9 @@ class LandingController extends Controller
             'id_data_banjar' => $request->id_data_banjar,
             'punia_rutin_bulanan' => $puniaGlobal,
             'use_global_punia' => true,
+            'tinggal_dari' => $request->tinggal_dari,
+            'tinggal_sampai' => $request->tinggal_sampai,
+            'tinggal_belum_yakin' => $request->has('tinggal_belum_yakin'),
             'status' => 'aktif',
             'aktif' => '1',
         ]);

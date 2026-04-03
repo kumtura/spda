@@ -76,6 +76,34 @@
                 </div>
             </div>
 
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5" x-data="{ belumYakin: {{ $pendatang->tinggal_belum_yakin ? 'true' : 'false' }} }">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Lama Tinggal</h3>
+
+                <div class="flex items-center justify-between bg-slate-50 rounded-xl p-4">
+                    <div>
+                        <p class="text-sm font-bold text-slate-700">Belum yakin / Not sure yet</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Centang jika belum menentukan durasi tinggal</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="tinggal_belum_yakin" value="1" x-model="belumYakin" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-light"></div>
+                    </label>
+                </div>
+
+                <div x-show="!belumYakin" x-transition class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Dari Tanggal</label>
+                        <input type="date" name="tinggal_dari" value="{{ old('tinggal_dari', $pendatang->tinggal_dari ? $pendatang->tinggal_dari->format('Y-m-d') : '') }}"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/10 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Sampai Tanggal</label>
+                        <input type="date" name="tinggal_sampai" value="{{ old('tinggal_sampai', $pendatang->tinggal_sampai ? $pendatang->tinggal_sampai->format('Y-m-d') : '') }}"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/10 transition-all">
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5" x-data="{ useGlobal: {{ $pendatang->use_global_punia ? 'true' : 'false' }} }">
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Pengaturan Iuran (Punia)</h3>
                 <div class="bg-slate-50 rounded-xl p-4 space-y-4">

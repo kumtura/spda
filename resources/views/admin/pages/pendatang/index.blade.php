@@ -60,61 +60,6 @@
         </div>
     </div>
 
-    <!-- Punia Acara Section -->
-    @if($acaraList->count() > 0)
-    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <h3 class="text-lg font-black text-slate-800 tracking-tight">Punia Acara</h3>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Acara yang sedang berjalan</p>
-            </div>
-            <a href="{{ url('administrator/kelian/pendatang/create-acara') }}" class="flex items-center gap-2 bg-primary-light hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all">
-                <i class="bi bi-plus-lg"></i> Buat Acara
-            </a>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            @foreach($acaraList as $acara)
-            @php
-                $totalPendatangAcara = $acara->puniaPendatang->count();
-                $sudahBayar = $acara->puniaPendatang->where('status_pembayaran', 'lunas')->count();
-                $persen = $totalPendatangAcara > 0 ? round(($sudahBayar / $totalPendatangAcara) * 100) : 0;
-            @endphp
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                <div class="flex items-center justify-between mb-2">
-                    <p class="text-sm font-bold text-slate-800">{{ $acara->nama_acara }}</p>
-                    <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded-md {{ $acara->status === 'aktif' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-200 text-slate-500' }}">{{ $acara->status }}</span>
-                </div>
-                <div class="flex items-center gap-3 text-xs text-slate-500">
-                    <span>Rp {{ number_format($acara->nominal, 0, ',', '.') }}</span>
-                    <span>&middot;</span>
-                    <span>{{ $sudahBayar }}/{{ $totalPendatangAcara }} bayar ({{ $persen }}%)</span>
-                </div>
-                <div class="w-full bg-slate-200 rounded-full h-1.5 mt-2">
-                    <div class="bg-primary-light h-1.5 rounded-full" style="width: {{ $persen }}%"></div>
-                </div>
-                <div class="flex items-center gap-2 mt-3">
-                    <a href="{{ url('administrator/kelian/pendatang/acara/toggle/'.$acara->id_acara_punia) }}" class="text-[10px] font-bold text-slate-500 hover:text-primary-light">
-                        <i class="bi bi-arrow-repeat"></i> Toggle
-                    </a>
-                    <button onclick="if(confirm('Hapus acara ini?')) window.location='{{ url('administrator/kelian/pendatang/acara/delete/'.$acara->id_acara_punia) }}'" class="text-[10px] font-bold text-rose-400 hover:text-rose-600">
-                        <i class="bi bi-trash"></i> Hapus
-                    </button>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @else
-    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <div class="flex items-center justify-between">
-            <p class="text-sm text-slate-400">Belum ada punia acara.</p>
-            <a href="{{ url('administrator/kelian/pendatang/create-acara') }}" class="flex items-center gap-2 bg-primary-light hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all">
-                <i class="bi bi-plus-lg"></i> Buat Acara
-            </a>
-        </div>
-    </div>
-    @endif
-
     <!-- Filter -->
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div class="flex flex-wrap items-center gap-3">

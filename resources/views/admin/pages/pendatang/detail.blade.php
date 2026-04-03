@@ -91,6 +91,20 @@
                         <span class="text-slate-700 font-medium">{{ $pendatang->alamat_tinggal }}</span>
                     </div>
                     @endif
+                    <div class="flex items-center gap-2 text-sm">
+                        <i class="bi bi-calendar-range text-slate-400"></i>
+                        <span class="text-slate-500">Lama Tinggal:</span>
+                        @if($pendatang->tinggal_belum_yakin)
+                        <span class="text-amber-600 font-medium italic">Belum ditentukan</span>
+                        @elseif($pendatang->tinggal_dari || $pendatang->tinggal_sampai)
+                        <span class="text-slate-700 font-medium">
+                            {{ $pendatang->tinggal_dari ? $pendatang->tinggal_dari->format('d M Y') : '?' }}
+                            — {{ $pendatang->tinggal_sampai ? $pendatang->tinggal_sampai->format('d M Y') : '?' }}
+                        </span>
+                        @else
+                        <span class="text-slate-400 italic">Belum diisi</span>
+                        @endif
+                    </div>
                 </div>
             </div>
 

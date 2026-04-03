@@ -88,6 +88,35 @@
                 </div>
             </div>
 
+            <!-- Lama Tinggal Section -->
+            <div class="space-y-4" x-data="{ belumYakin: false }">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest px-1">Lama Tinggal</h3>
+
+                <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+                    <div>
+                        <p class="text-xs font-bold text-slate-700">Belum yakin / Not sure yet</p>
+                        <p class="text-[9px] text-slate-400">Centang jika belum menentukan durasi tinggal</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="tinggal_belum_yakin" value="1" x-model="belumYakin" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a6eb]"></div>
+                    </label>
+                </div>
+
+                <div x-show="!belumYakin" x-transition class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Dari Tanggal</label>
+                        <input type="date" name="tinggal_dari"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-[#00a6eb]/10 transition-all">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Sampai Tanggal</label>
+                        <input type="date" name="tinggal_sampai"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-[#00a6eb]/10 transition-all">
+                    </div>
+                </div>
+            </div>
+
             <!-- Hidden Punia Settings -->
             <input type="hidden" name="use_global_punia" value="1">
             <input type="hidden" name="punia_rutin_bulanan" value="0">

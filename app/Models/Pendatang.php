@@ -15,11 +15,20 @@ class Pendatang extends Model
         'asal',
         'no_hp',
         'alamat_tinggal',
+        'tinggal_dari',
+        'tinggal_sampai',
+        'tinggal_belum_yakin',
         'id_data_banjar',
         'punia_rutin_bulanan',
         'use_global_punia',
         'status',
         'aktif'
+    ];
+
+    protected $casts = [
+        'tinggal_dari' => 'date',
+        'tinggal_sampai' => 'date',
+        'tinggal_belum_yakin' => 'boolean',
     ];
     
     public function banjar()

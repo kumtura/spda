@@ -1,6 +1,10 @@
 @extends('mobile_layout_public')
 
 @section('content')
+<style>
+    nav.fixed.bottom-0 { display: none !important; }
+    .mobile-container { padding-bottom: 0 !important; }
+</style>
 @php
     $orangWna = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'wna');
     $orangLocal = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'local');
@@ -9,19 +13,29 @@
     $hasMultipleMarkets = ($orangWna->count() > 0 && $orangLocal->count() > 0);
     $defaultMarket = $orangLocal->count() > 0 ? 'local' : ($orangWna->count() > 0 ? 'wna' : 'all');
     $todayStr = date('Y-m-d');
+    $cheapestPrice = $objek->kategoriTiket->min('harga') ?? 0;
+    $todaySold = \App\Models\TiketDetail::query()
+        ->join('tb_tiket_wisata', 'tb_tiket_wisata.id_tiket', '=', 'tb_tiket_detail.id_tiket')
+        ->where('tb_tiket_wisata.id_objek_wisata', $objek->id_objek_wisata)
+        ->whereIn('tb_tiket_wisata.status_pembayaran', ['paid', 'completed', 'pending'])
+        ->where('tb_tiket_wisata.tanggal_kunjungan', $todayStr)
+        ->sum('tb_tiket_detail.jumlah');
 @endphp
 
-<div class="bg-white pb-24" x-data="{
+<div class="bg-white pb-48" x-data="{
     selectedDate: '',
     quantities: {},
     summaryItems: {},
     totalPrice: 0,
+    totalQty: 0,
     marketFilter: '{{ $defaultMarket }}',
     availabilityInfo: null,
     checkingAvailability: false,
     showCalendar: false,
     calMonth: new Date().getMonth(),
     calYear: new Date().getFullYear(),
+    calAvail: {},
+    calLoading: false,
     _today: null,
     _months: ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
     _days: ['Min','Sen','Sel','Rab','Kam','Jum','Sab'],
@@ -33,6 +47,27 @@
 
     openCalendar: function() {
         this.showCalendar = true;
+        this.fetchAvail();
+    },
+
+    fetchAvail: function() {
+        @if($objek->batas_tiket_harian)
+        var self = this;
+        var key = self.calYear + '-' + (self.calMonth+1);
+        if (self.calAvail['_loaded_' + key]) return;
+        self.calLoading = true;
+        var url = '{{ url("wisata/check-availability") }}?id_objek_wisata={{ (int) $objek->id_objek_wisata }}&month=' + (self.calMonth+1) + '&year=' + self.calYear;
+        fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.unlimited && data.dates) {
+                    for (var d in data.dates) { self.calAvail[d] = data.dates[d]; }
+                }
+                self.calAvail['_loaded_' + key] = true;
+            })
+            .catch(function() {})
+            .finally(function() { self.calLoading = false; });
+        @endif
     },
 
     get calTitle() {
@@ -47,7 +82,9 @@
         for (var d = 1; d <= last.getDate(); d++) {
             var dt = new Date(this.calYear, this.calMonth, d);
             var str = this.calYear + '-' + String(this.calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-            cells.push({ day: d, dateStr: str, isPast: dt < this._today });
+            var avail = this.calAvail[str];
+            var isSold = avail && avail.available <= 0;
+            cells.push({ day: d, dateStr: str, isPast: dt < this._today, avail: avail || null, isSold: isSold });
         }
         return cells;
     },
@@ -55,35 +92,27 @@
     prevMonth: function() {
         if (this.calMonth === 0) { this.calMonth = 11; this.calYear--; }
         else { this.calMonth--; }
+        this.fetchAvail();
     },
 
     nextMonth: function() {
         if (this.calMonth === 11) { this.calMonth = 0; this.calYear++; }
         else { this.calMonth++; }
+        this.fetchAvail();
     },
 
-    pickDate: function(dateStr) {
+    pickDate: function(dateStr, isSold) {
+        if (isSold) return;
         var self = this;
         self.selectedDate = dateStr;
         self.showCalendar = false;
         self.availabilityInfo = null;
-
-        @if($objek->batas_tiket_harian)
-        self.checkingAvailability = true;
-        var dt = new Date(dateStr + 'T00:00:00');
-        var url = '{{ url("wisata/check-availability") }}?id_objek_wisata={{ (int) $objek->id_objek_wisata }}&month=' + (dt.getMonth()+1) + '&year=' + dt.getFullYear();
-        fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.unlimited) { self.availabilityInfo = { unlimited: true }; }
-                else if (data.dates && data.dates[self.selectedDate]) { self.availabilityInfo = { unlimited: false, available: data.dates[self.selectedDate].available }; }
-                else { self.availabilityInfo = { unlimited: true }; }
-            })
-            .catch(function() { self.availabilityInfo = null; })
-            .finally(function() { self.checkingAvailability = false; });
-        @else
-        self.availabilityInfo = { unlimited: true };
-        @endif
+        var avail = self.calAvail[dateStr];
+        if (avail) {
+            self.availabilityInfo = { unlimited: false, available: avail.available };
+        } else {
+            self.availabilityInfo = { unlimited: true };
+        }
     },
 
     fmtDate: function(ds) {
@@ -115,13 +144,18 @@
             delete this.summaryItems[id];
         }
         this.totalPrice = Object.values(this.summaryItems).reduce(function(sum, item) { return sum + item.subtotal; }, 0);
+        this.totalQty = Object.values(this.summaryItems).reduce(function(sum, item) { return sum + item.qty; }, 0);
+    },
+
+    get summaryText() {
+        var items = Object.values(this.summaryItems);
+        if (items.length === 0) return '';
+        return items.map(function(i) { return i.name + ' x' + i.qty; }).join(', ');
     },
 
     submitForm: function() {
         if (!this.selectedDate) { alert('Pilih tanggal kunjungan terlebih dahulu'); return; }
-        var hasTicket = false;
-        for (var id in this.quantities) { if (this.quantities[id] > 0) { hasTicket = true; break; } }
-        if (!hasTicket) { alert('Pilih minimal 1 tiket'); return; }
+        if (this.totalQty === 0) { alert('Pilih minimal 1 tiket'); return; }
         document.getElementById('formBeli').submit();
     }
 }">
@@ -192,7 +226,7 @@
 
             <!-- Pilih Tiket -->
             @if($objek->kategoriTiket->count() > 0)
-            <div class="space-y-4">
+            <div id="section-tiket" class="space-y-4">
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Pilih Tiket</h3>
 
                 @if($hasMultipleMarkets)
@@ -306,37 +340,36 @@
             </div>
             @endif
 
-            <!-- Summary -->
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-3">Ringkasan</h3>
-                
-                <div class="space-y-2 mb-3 text-xs">
-                    <template x-if="Object.keys(summaryItems).length === 0">
-                        <p class="text-slate-400 text-center py-2 text-[10px]">Pilih tiket terlebih dahulu</p>
-                    </template>
-                    <template x-for="(item, id) in summaryItems" :key="id">
-                        <div class="flex items-center justify-between">
-                            <span class="text-slate-600" x-text="item.name + ' x' + item.qty"></span>
-                            <span class="font-bold text-slate-800" x-text="'Rp ' + item.subtotal.toLocaleString('id-ID')"></span>
-                        </div>
-                    </template>
-                </div>
-                
-                <div class="pt-3 border-t border-slate-300">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm font-black text-slate-800">Total</span>
-                        <span class="text-xl font-black text-[#00a6eb]" x-text="'Rp ' + totalPrice.toLocaleString('id-ID')"></span>
-                    </div>
-                </div>
-            </div>
         </form>
+    </div>
 
-        <!-- Submit Button -->
-        <button type="button" @click="submitForm()"
-                class="w-full bg-gradient-to-r from-[#00a6eb] to-[#0090d0] text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-blue-200/50 hover:shadow-xl hover:shadow-blue-300/50 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-            <span>Lanjutkan Pembayaran</span>
-            <i class="bi bi-arrow-right"></i>
-        </button>
+    <!-- Floating Bottom Bar -->
+    <div class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        <div class="max-w-lg mx-auto px-4 py-3">
+            <!-- State 1: No tickets selected -->
+            <div x-show="totalQty === 0" class="flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] text-slate-400 font-medium">Mulai dari</p>
+                    <p class="text-lg font-black text-slate-800">IDR {{ number_format($cheapestPrice, 0, ',', '.') }}</p>
+                    <p class="text-[9px] text-slate-400">Terjual {{ (int) $todaySold }} hari ini</p>
+                </div>
+                <a href="#section-tiket" class="bg-[#00a6eb] text-white px-6 py-3 rounded-xl font-black text-sm shadow-lg shadow-blue-200/50 active:scale-95 transition-all flex items-center gap-1.5">
+                    <span>Beli Tiket</span>
+                    <i class="bi bi-arrow-down text-xs"></i>
+                </a>
+            </div>
+            <!-- State 2: Tickets selected -->
+            <div x-show="totalQty > 0" x-cloak class="flex items-center justify-between gap-3">
+                <div class="flex-1 min-w-0">
+                    <p class="text-[10px] text-slate-400 font-medium">Total (<span x-text="totalQty"></span> pax):</p>
+                    <p class="text-lg font-black text-slate-800" x-text="'IDR ' + totalPrice.toLocaleString('id-ID')"></p>
+                    <p class="text-[9px] text-slate-400 truncate" x-text="summaryText"></p>
+                </div>
+                <button type="button" @click="submitForm()" class="bg-[#00a6eb] text-white px-6 py-3 rounded-xl font-black text-sm shadow-lg shadow-blue-200/50 active:scale-95 transition-all shrink-0">
+                    Pesan
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Calendar Bottom Sheet -->
@@ -392,15 +425,25 @@
                             </template>
                             <template x-if="cell !== null">
                                 <button type="button"
-                                    :disabled="cell.isPast"
-                                    @click="!cell.isPast && pickDate(cell.dateStr)"
-                                    class="aspect-square w-full rounded-xl flex items-center justify-center text-xs font-semibold transition-all"
+                                    :disabled="cell.isPast || cell.isSold"
+                                    @click="!cell.isPast && !cell.isSold && pickDate(cell.dateStr, cell.isSold)"
+                                    class="w-full rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-all py-1" style="min-height: 44px;"
                                     :class="{
                                         'bg-[#00a6eb] text-white shadow-md shadow-blue-200 font-black scale-105': cell.dateStr === selectedDate,
-                                        'text-slate-800 hover:bg-[#00a6eb]/10 active:scale-95': !cell.isPast && cell.dateStr !== selectedDate,
-                                        'text-slate-300 cursor-not-allowed': cell.isPast
+                                        'text-slate-800 hover:bg-[#00a6eb]/10 active:scale-95': !cell.isPast && !cell.isSold && cell.dateStr !== selectedDate,
+                                        'text-slate-300 cursor-not-allowed': cell.isPast,
+                                        'text-rose-300 cursor-not-allowed bg-rose-50/50': cell.isSold && !cell.isPast
                                     }">
                                     <span x-text="cell.day"></span>
+                                    <template x-if="!cell.isPast && cell.avail && cell.avail.available > 0 && cell.dateStr !== selectedDate">
+                                        <span class="text-emerald-500 font-bold leading-none mt-0.5" style="font-size:7px;" x-text="cell.avail.available"></span>
+                                    </template>
+                                    <template x-if="!cell.isPast && cell.isSold && cell.dateStr !== selectedDate">
+                                        <span class="text-rose-400 font-bold leading-none mt-0.5" style="font-size:7px;">Sold</span>
+                                    </template>
+                                    <template x-if="!cell.isPast && !cell.avail && !cell.isSold && cell.dateStr !== selectedDate">
+                                        <span class="text-emerald-400 font-bold leading-none mt-0.5" style="font-size:7px;">&#10003;</span>
+                                    </template>
                                 </button>
                             </template>
                         </div>

@@ -1016,7 +1016,9 @@ class LandingController extends Controller
         if (!session('tiket_data')) {
             return redirect()->to('wisata');
         }
-        return view('front.pages.wisata_data_pengunjung');
+        $tiketData = session('tiket_data');
+        $objek = ObjekWisata::findOrFail($tiketData['id_objek_wisata']);
+        return view('front.pages.wisata_data_pengunjung', compact('objek'));
     }
 
     public function wisata_data_pengunjung_submit(Request $request)

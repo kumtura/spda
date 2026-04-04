@@ -7,9 +7,15 @@
 </style>
 <div class="bg-slate-50 min-h-screen pb-12">
     <!-- Header -->
-    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-8 pb-12 text-white relative overflow-hidden">
+    <div class="px-4 pt-8 pb-12 text-white relative overflow-hidden" style="min-height: 200px;">
+        @if($objek->foto)
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ asset('storage/wisata/'.$objek->foto) }}');"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"></div>
+        @else
+        <div class="absolute inset-0 bg-gradient-to-br from-[#00a6eb] to-[#0090d0]"></div>
         <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
         <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
+        @endif
 
         <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-white/80 hover:text-white text-xs font-bold transition-colors mb-6 relative z-10">
             <i class="bi bi-arrow-left"></i> Kembali

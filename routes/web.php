@@ -55,7 +55,7 @@ Route::get('/agenda', [LandingController::class, 'agenda'])->name('public.agenda
 Route::get('/krama-tamiu', [LandingController::class, 'krama_tamiu'])->name('public.krama_tamiu')->middleware('public.redirect');
 Route::get('/krama-tamiu/daftar', [LandingController::class, 'krama_tamiu_register'])->name('public.krama_tamiu.register')->middleware('public.redirect');
 Route::post('/krama-tamiu/daftar/submit', [LandingController::class, 'krama_tamiu_register_submit'])->name('public.krama_tamiu.register.submit');
-Route::get('/wisata/beli/{id}', [LandingController::class, 'wisata_beli'])->name('public.wisata.beli');
+Route::get('/wisata/beli/{slug}', [LandingController::class, 'wisata_beli'])->name('public.wisata.beli');
 Route::post('/wisata/beli/submit', [LandingController::class, 'wisata_beli_submit'])->name('public.wisata.beli.submit');
 Route::get('/wisata/data-pengunjung', [LandingController::class, 'wisata_data_pengunjung'])->name('public.wisata.data_pengunjung');
 Route::post('/wisata/data-pengunjung/submit', [LandingController::class, 'wisata_data_pengunjung_submit'])->name('public.wisata.data_pengunjung.submit');

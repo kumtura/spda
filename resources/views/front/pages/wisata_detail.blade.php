@@ -180,7 +180,7 @@
                 </div>
                 @endif
 
-                <a href="{{ url('wisata/beli/'.$objek->id_objek_wisata) }}" 
+                <a href="{{ url('wisata/beli/' . \Illuminate\Support\Str::slug($objek->nama_objek) . '-' . $objek->id_objek_wisata) }}" 
                     class="block w-full py-3 bg-[#00a6eb] text-white text-center text-sm font-black rounded-xl shadow-lg hover:shadow-xl transition-all">
                     <i class="bi bi-ticket-perforated mr-2"></i>Beli Tiket Sekarang
                 </a>

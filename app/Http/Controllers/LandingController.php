@@ -943,8 +943,11 @@ class LandingController extends Controller
         return view('front.pages.wisata_detail', compact('objek'));
     }
 
-    public function wisata_beli($id)
+    public function wisata_beli($slug)
     {
+        // Extract ID from slug format: "judul-tiket-{id}"
+        $parts = explode('-', $slug);
+        $id = end($parts);
         $objek = ObjekWisata::with('kategoriTiket')
             ->where('id_objek_wisata', $id)
             ->where('aktif', '1')

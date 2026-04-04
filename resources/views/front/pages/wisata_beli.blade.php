@@ -61,9 +61,15 @@
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (!data.unlimited && data.dates) {
-                    for (var d in data.dates) { self.calAvail[d] = data.dates[d]; }
+                    var updated = Object.assign({}, self.calAvail);
+                    for (var d in data.dates) { updated[d] = data.dates[d]; }
+                    updated['_loaded_' + key] = true;
+                    self.calAvail = updated;
+                } else {
+                    var updated = Object.assign({}, self.calAvail);
+                    updated['_loaded_' + key] = true;
+                    self.calAvail = updated;
                 }
-                self.calAvail['_loaded_' + key] = true;
             })
             .catch(function() {})
             .finally(function() { self.calLoading = false; });
@@ -103,15 +109,14 @@
 
     pickDate: function(dateStr, isSold) {
         if (isSold) return;
-        var self = this;
-        self.selectedDate = dateStr;
-        self.showCalendar = false;
-        self.availabilityInfo = null;
-        var avail = self.calAvail[dateStr];
+        this.selectedDate = dateStr;
+        this.showCalendar = false;
+        this.availabilityInfo = null;
+        var avail = this.calAvail[dateStr];
         if (avail) {
-            self.availabilityInfo = { unlimited: false, available: avail.available };
+            this.availabilityInfo = { unlimited: false, available: avail.available };
         } else {
-            self.availabilityInfo = { unlimited: true };
+            this.availabilityInfo = { unlimited: true };
         }
     },
 
@@ -177,6 +182,9 @@
         <div class="relative z-10">
             <h1 class="text-2xl font-black mb-2 drop-shadow-md">Beli Tiket</h1>
             <p class="text-white/90 text-xs font-medium drop-shadow">{{ $objek->nama_objek }}</p>
+            @if($objek->alamat)
+            <p class="text-white/70 text-[10px] mt-1 flex items-center gap-1 drop-shadow"><i class="bi bi-geo-alt"></i> {{ $objek->alamat }}</p>
+            @endif
         </div>
     </div>
 
@@ -341,6 +349,68 @@
             @endif
 
         </form>
+
+        <!-- Info Sections -->
+        <div class="space-y-4">
+            @if($objek->alamat)
+            <div class="bg-white rounded-2xl border border-slate-100 p-5">
+                <div class="flex items-start gap-3">
+                    <div class="h-8 w-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="bi bi-geo-alt-fill text-[#00a6eb] text-sm"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-1">Alamat Lokasi</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">{{ $objek->alamat }}</p>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($objek->deskripsi)
+            <div class="bg-white rounded-2xl border border-slate-100 p-5">
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="bi bi-info-circle-fill text-[#00a6eb]"></i> Deskripsi
+                </h4>
+                <div class="text-xs text-slate-600 leading-relaxed prose prose-sm max-w-none">{!! nl2br(e($objek->deskripsi)) !!}</div>
+            </div>
+            @endif
+
+            @if($objek->detail_termasuk)
+            <div class="bg-white rounded-2xl border border-slate-100 p-5">
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="bi bi-ticket-perforated-fill text-[#00a6eb]"></i> Deskripsi Tiket
+                </h4>
+                <div class="text-xs text-slate-600 leading-relaxed">{!! nl2br(e($objek->detail_termasuk)) !!}</div>
+            </div>
+            @endif
+
+            @if($objek->cara_penggunaan)
+            <div class="bg-white rounded-2xl border border-slate-100 p-5">
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="bi bi-journal-check text-[#00a6eb]"></i> Cara Penggunaan
+                </h4>
+                <div class="text-xs text-slate-600 leading-relaxed">{!! nl2br(e($objek->cara_penggunaan)) !!}</div>
+            </div>
+            @endif
+
+            @if($objek->pembatalan)
+            <div class="bg-white rounded-2xl border border-slate-100 p-5">
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="bi bi-x-circle-fill text-rose-400"></i> Kebijakan Pembatalan
+                </h4>
+                <div class="text-xs text-slate-600 leading-relaxed">{!! nl2br(e($objek->pembatalan)) !!}</div>
+            </div>
+            @endif
+
+            @if($objek->syarat_ketentuan)
+            <div class="bg-white rounded-2xl border border-slate-100 p-5">
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="bi bi-shield-check text-[#00a6eb]"></i> Syarat & Ketentuan
+                </h4>
+                <div class="text-xs text-slate-600 leading-relaxed">{!! nl2br(e($objek->syarat_ketentuan)) !!}</div>
+            </div>
+            @endif
+        </div>
     </div>
 
     <!-- Floating Bottom Bar -->

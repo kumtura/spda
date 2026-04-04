@@ -54,7 +54,7 @@ class ObjekWisataController extends Controller
 
         $request->validate($rules);
 
-        $data = $request->except(['foto', 'kategori_aktif', 'kategori_aktif_local', 'kategori_aktif_wna', 'kategori_aktif_dual', 'harga', 'harga_local', 'harga_wna', 'market_type', 'tipe_kategori_utama', 'custom_nama_kendaraan', 'bedakan_harga']);
+        $data = $request->except(['foto', 'kategori_aktif', 'kategori_aktif_local', 'kategori_aktif_wna', 'kategori_aktif_dual', 'harga', 'harga_local', 'harga_wna', 'market_type', 'tipe_kategori_utama', 'custom_nama_kendaraan', 'custom_harga_kendaraan', 'bedakan_harga']);
         
         // Set kapasitas_harian to null if empty
         if (empty($data['kapasitas_harian'])) {
@@ -188,26 +188,6 @@ class ObjekWisataController extends Controller
         } elseif ($request->has('kategori_aktif')) {
             // Single pricing mode (market_type = 'all')
             foreach ($request->kategori_aktif as $key) {
-                // Handle custom kendaraan entry
-                if ($key === 'custom_kendaraan') {
-                    $customNama = $request->input('custom_nama_kendaraan');
-                    $customHarga = $request->harga['custom_kendaraan'] ?? 0;
-                    if ($customNama && $customHarga > 0) {
-                        KategoriTiket::create([
-                            'id_objek_wisata' => $objek->id_objek_wisata,
-                            'nama_kategori' => $customNama,
-                            'tipe_kategori' => 'kendaraan',
-                            'market_type' => 'all',
-                            'harga' => $customHarga,
-                            'deskripsi' => null,
-                            'urutan' => $urutan,
-                            'aktif' => 1
-                        ]);
-                        $urutan++;
-                    }
-                    continue;
-                }
-
                 if (isset($kategoriMapping[$key]) && isset($request->harga[$key]) && $request->harga[$key] > 0) {
                     KategoriTiket::create([
                         'id_objek_wisata' => $objek->id_objek_wisata,
@@ -220,6 +200,28 @@ class ObjekWisataController extends Controller
                         'aktif' => 1
                     ]);
                     $urutan++;
+                }
+            }
+
+            // Handle multiple custom kendaraan
+            if ($request->has('custom_nama_kendaraan')) {
+                $customNames = $request->input('custom_nama_kendaraan');
+                $customPrices = $request->input('custom_harga_kendaraan', []);
+                foreach ($customNames as $i => $name) {
+                    $price = $customPrices[$i] ?? 0;
+                    if (!empty($name) && $price > 0) {
+                        KategoriTiket::create([
+                            'id_objek_wisata' => $objek->id_objek_wisata,
+                            'nama_kategori' => $name,
+                            'tipe_kategori' => 'kendaraan',
+                            'market_type' => 'all',
+                            'harga' => $price,
+                            'deskripsi' => null,
+                            'urutan' => $urutan,
+                            'aktif' => 1
+                        ]);
+                        $urutan++;
+                    }
                 }
             }
         }

@@ -172,7 +172,7 @@
 
                     <!-- ORANG SAMA - DUAL PRICE -->
                     <div id="orang-sama-dual" style="display:none;" class="space-y-3">
-                        <div class="bg-emerald-900/30 p-4 rounded-xl border border-emerald-700/50">
+                        <div class="bg-slate-700/50 p-4 rounded-xl border border-emerald-500/40">
                             <span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-lg inline-block mb-2"><i class="bi bi-geo-alt mr-1"></i>Lokal</span>
                             <label class="text-[10px] font-bold text-slate-400 block mb-1">Tiket Umum</label>
                             <div class="flex items-center gap-2">
@@ -182,7 +182,7 @@
                             </div>
                             <input type="hidden" name="kategori_aktif_local[]" value="umum">
                         </div>
-                        <div class="bg-violet-900/30 p-4 rounded-xl border border-violet-700/50">
+                        <div class="bg-slate-700/50 p-4 rounded-xl border border-violet-500/40">
                             <span class="text-[9px] font-bold text-violet-400 bg-violet-500/20 px-2 py-0.5 rounded-lg inline-block mb-2"><i class="bi bi-globe mr-1"></i>WNA</span>
                             <label class="text-[10px] font-bold text-slate-400 block mb-1">Tiket Umum</label>
                             <div class="flex items-center gap-2">
@@ -256,22 +256,12 @@
                             </div>
                         </div>
                         @endforeach
-                        <!-- Lainnya (Custom) -->
-                        <div class="bg-slate-700/50 p-3 rounded-xl border border-dashed border-slate-500 group-item">
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox" name="kategori_aktif[]" value="custom_kendaraan" class="h-4 w-4 rounded bg-slate-800 border-none text-amber-500 checkbox-trigger">
-                                <div class="flex-1">
-                                    <span class="text-[10px] block font-bold text-amber-400 mb-1"><i class="bi bi-plus-circle mr-1"></i>Lainnya (Custom)</span>
-                                    <input type="text" name="custom_nama_kendaraan" placeholder="Nama kendaraan, cth: Sepeda, ATV..."
-                                        class="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-2.5 py-1.5 text-[10px] text-white placeholder-slate-500 focus:ring-1 focus:ring-amber-500 mb-2">
-                                    <div class="flex items-center gap-1">
-                                        <span class="text-[10px] text-slate-500">Rp</span>
-                                        <input type="number" name="harga[custom_kendaraan]" placeholder="0" min="0"
-                                            class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Dynamic Custom Kendaraan -->
+                        <div id="custom-kendaraan-container"></div>
+                        <button type="button" id="btn-add-custom" onclick="addCustomKendaraan()"
+                            class="w-full py-2.5 border border-dashed border-amber-500/40 rounded-xl text-amber-400 text-[10px] font-bold hover:bg-slate-700/50 transition-all">
+                            <i class="bi bi-plus-lg mr-1"></i>Tambah Kendaraan Lainnya
+                        </button>
                     </div>
                 </div>
 
@@ -327,9 +317,10 @@
 @push('scripts')
 <script>
 // State
-let tipeKategori = '';
-let opsiHarga = '';
-let bedakanHarga = false;
+var tipeKategori = '';
+var opsiHarga = '';
+var bedakanHarga = false;
+var customCount = 0;
 
 function setTipe(tipe) {
     tipeKategori = tipe;
@@ -337,7 +328,6 @@ function setTipe(tipe) {
     bedakanHarga = false;
     document.getElementById('bedakan_harga_input').value = '0';
 
-    // Button styles
     document.getElementById('btn-orang').className = tipe === 'orang'
         ? 'py-3 rounded-xl text-xs font-bold transition-all text-center bg-[#00a6eb] text-white ring-2 ring-[#00a6eb]/50'
         : 'py-3 rounded-xl text-xs font-bold transition-all text-center bg-slate-700 text-slate-300';
@@ -345,13 +335,12 @@ function setTipe(tipe) {
         ? 'py-3 rounded-xl text-xs font-bold transition-all text-center bg-amber-500 text-white ring-2 ring-amber-500/50'
         : 'py-3 rounded-xl text-xs font-bold transition-all text-center bg-slate-700 text-slate-300';
 
-    // Step visibility
     document.getElementById('step-format').style.display = tipe === 'orang' ? 'block' : 'none';
     document.getElementById('step-bedakan').style.display = 'none';
     document.getElementById('opsi-harga').value = '';
 
     if (tipe === 'kendaraan') {
-        showPricing('kendaraan');
+        showPricing('kendaraan-options');
     } else {
         hidePricing();
     }
@@ -367,7 +356,7 @@ function setBedakan(value) {
         ? 'py-2.5 rounded-xl text-[10px] font-bold transition-all text-center bg-blue-500 text-white ring-2 ring-blue-500/50'
         : 'py-2.5 rounded-xl text-[10px] font-bold transition-all text-center bg-slate-700 text-slate-300';
     document.getElementById('btn-harga-beda').className = value
-        ? 'py-2.5 rounded-xl text-[10px] font-bold transition-all text-center bg-gradient-to-r from-emerald-500 to-violet-500 text-white ring-2 ring-emerald-500/50'
+        ? 'py-2.5 rounded-xl text-[10px] font-bold transition-all text-center bg-emerald-500 text-white ring-2 ring-emerald-500/50'
         : 'py-2.5 rounded-xl text-[10px] font-bold transition-all text-center bg-slate-700 text-slate-300';
     document.getElementById('bedakan-hint').style.display = value ? 'block' : 'none';
 
@@ -401,12 +390,10 @@ function updatePricing() {
 }
 
 function showPricing(mode) {
-    const area = document.getElementById('pricing-area');
-    area.style.display = 'block';
+    document.getElementById('pricing-area').style.display = 'block';
     document.getElementById('pricing-placeholder').style.display = 'none';
     document.getElementById('step-num').textContent = (tipeKategori === 'kendaraan') ? '2' : '4';
 
-    // Hide all sections
     ['orang-sama-single', 'orang-sama-dual', 'orang-kategori-single', 'orang-kategori-dual', 'kendaraan-options'].forEach(function(id) {
         document.getElementById(id).style.display = 'none';
     });
@@ -422,15 +409,37 @@ function hidePricing() {
     });
 }
 
+// Multiple custom kendaraan
+function addCustomKendaraan() {
+    customCount++;
+    var container = document.getElementById('custom-kendaraan-container');
+    var div = document.createElement('div');
+    div.className = 'bg-slate-700/50 p-3 rounded-xl border border-dashed border-slate-500 group-item';
+    div.id = 'custom-row-' + customCount;
+    div.innerHTML = '<div class="flex items-center gap-2 mb-2">'
+        + '<span class="text-[10px] font-bold text-amber-400"><i class="bi bi-plus-circle mr-1"></i>Custom</span>'
+        + '<button type="button" onclick="removeCustomKendaraan(\'custom-row-' + customCount + '\')" class="ml-auto text-rose-400 hover:text-rose-300 text-xs"><i class="bi bi-x-circle"></i></button>'
+        + '</div>'
+        + '<input type="text" name="custom_nama_kendaraan[]" placeholder="Nama kendaraan, cth: Sepeda, ATV..." class="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-2.5 py-1.5 text-[10px] text-white placeholder-slate-500 focus:ring-1 focus:ring-amber-500 mb-2">'
+        + '<div class="flex items-center gap-1"><span class="text-[10px] text-slate-500">Rp</span>'
+        + '<input type="number" name="custom_harga_kendaraan[]" placeholder="0" min="0" class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white"></div>';
+    container.appendChild(div);
+}
+
+function removeCustomKendaraan(id) {
+    var el = document.getElementById(id);
+    if (el) el.remove();
+}
+
 // Photo preview
 document.getElementById('foto-input').addEventListener('change', function(e) {
-    const previewContainer = document.getElementById('preview-container');
+    var previewContainer = document.getElementById('preview-container');
     previewContainer.innerHTML = '';
     Array.from(e.target.files).forEach(function(file) {
         if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onload = function(ev) {
-                const div = document.createElement('div');
+                var div = document.createElement('div');
                 div.className = 'relative';
                 div.innerHTML = '<img src="' + ev.target.result + '" class="w-full h-20 object-cover rounded-lg border border-slate-200"><div class="absolute bottom-1 left-1 right-1 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded truncate">' + file.name + '</div>';
                 previewContainer.appendChild(div);
@@ -488,9 +497,7 @@ document.getElementById('main-form').addEventListener('submit', function(e) {
         return false;
     }
 
-    // Check that at least one category is selected & has a price
     if (bedakanHarga) {
-        // For dual pricing: validate based on current mode
         if (opsiHarga === 'sama') {
             var localVal = document.querySelector('input[name="harga_local[umum]"]');
             var wnaVal = document.querySelector('input[name="harga_wna[umum]"]');
@@ -519,8 +526,34 @@ document.getElementById('main-form').addEventListener('submit', function(e) {
                 return false;
             }
         }
+    } else if (tipeKategori === 'kendaraan') {
+        // Kendaraan: check standard checkboxes + custom entries
+        var checkedK = document.querySelectorAll('#kendaraan-options .checkbox-trigger:checked');
+        var customInputs = document.querySelectorAll('#custom-kendaraan-container input[name="custom_nama_kendaraan[]"]');
+        var hasCustom = false;
+        customInputs.forEach(function(inp) {
+            var row = inp.closest('.group-item');
+            var priceInp = row.querySelector('input[name="custom_harga_kendaraan[]"]');
+            if (inp.value && priceInp && priceInp.value > 0) hasCustom = true;
+        });
+        if (checkedK.length === 0 && !hasCustom) {
+            e.preventDefault();
+            alert('Pilih minimal 1 kategori kendaraan atau tambah custom');
+            return false;
+        }
+        var hasErr2 = false;
+        checkedK.forEach(function(cb) {
+            var key = cb.value;
+            var h = document.querySelector('input[name="harga[' + key + ']"]');
+            if (!h || !h.value || h.value <= 0) hasErr2 = true;
+        });
+        if (hasErr2) {
+            e.preventDefault();
+            alert('Masukkan harga untuk semua kategori yang dipilih');
+            return false;
+        }
     } else {
-        // Single pricing or kendaraan
+        // Single pricing per orang
         if (opsiHarga === 'sama') {
             var umumVal = document.querySelector('#orang-sama-single input[name="harga[umum]"]');
             if (!umumVal.value || umumVal.value <= 0) {
@@ -529,19 +562,19 @@ document.getElementById('main-form').addEventListener('submit', function(e) {
                 return false;
             }
         } else {
-            var checkedSingle = document.querySelectorAll('#' + (tipeKategori === 'kendaraan' ? 'kendaraan-options' : 'orang-kategori-single') + ' .checkbox-trigger:checked');
+            var checkedSingle = document.querySelectorAll('#orang-kategori-single .checkbox-trigger:checked');
             if (checkedSingle.length === 0) {
                 e.preventDefault();
-                alert('Pilih minimal 1 kategori');
+                alert('Pilih minimal 1 kategori usia');
                 return false;
             }
-            var hasErr2 = false;
+            var hasErr3 = false;
             checkedSingle.forEach(function(cb) {
                 var key = cb.value;
                 var h = document.querySelector('input[name="harga[' + key + ']"]');
-                if (!h || !h.value || h.value <= 0) hasErr2 = true;
+                if (!h || !h.value || h.value <= 0) hasErr3 = true;
             });
-            if (hasErr2) {
+            if (hasErr3) {
                 e.preventDefault();
                 alert('Masukkan harga untuk semua kategori yang dipilih');
                 return false;

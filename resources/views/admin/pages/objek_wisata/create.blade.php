@@ -5,6 +5,7 @@
     tipeKategori: '',
     opsiHarga: '',
     bedakanHarga: false,
+    customItems: [],
     hasSelection() {
         return this.tipeKategori === 'kendaraan' || (this.tipeKategori === 'orang' && this.opsiHarga !== '');
     }
@@ -219,7 +220,7 @@
                                 Harga Sama
                             </button>
                             <button type="button" @click="bedakanHarga = true"
-                                :class="bedakanHarga ? 'bg-gradient-to-r from-emerald-500 to-violet-500 text-white ring-2 ring-emerald-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
+                                :class="bedakanHarga ? 'bg-emerald-500 text-white ring-2 ring-emerald-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
                                 class="py-2.5 rounded-xl text-[10px] font-bold transition-all text-center">
                                 <i class="bi bi-arrow-left-right block text-base mb-0.5"></i>
                                 Beda Lokal & WNA
@@ -251,7 +252,7 @@
 
                             <!-- Dual price: Lokal + WNA -->
                             <div x-show="bedakanHarga" class="space-y-3">
-                                <div class="bg-emerald-900/30 p-4 rounded-2xl border border-emerald-700/50">
+                                <div class="bg-slate-700/50 p-4 rounded-2xl border border-emerald-500/40">
                                     <div class="flex items-center gap-1.5 mb-2">
                                         <span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-lg"><i class="bi bi-geo-alt mr-1"></i>Lokal</span>
                                     </div>
@@ -262,7 +263,7 @@
                                     </div>
                                     <input type="hidden" name="kategori_aktif_local[]" value="umum">
                                 </div>
-                                <div class="bg-violet-900/30 p-4 rounded-2xl border border-violet-700/50">
+                                <div class="bg-slate-700/50 p-4 rounded-2xl border border-violet-500/40">
                                     <div class="flex items-center gap-1.5 mb-2">
                                         <span class="text-[9px] font-bold text-violet-400 bg-violet-500/20 px-2 py-0.5 rounded-lg"><i class="bi bi-globe mr-1"></i>WNA</span>
                                     </div>
@@ -343,22 +344,28 @@
                             </div>
                             @endforeach
 
-                            <!-- Lainnya (Custom) -->
-                            <div class="bg-slate-700/50 p-3 rounded-xl border border-dashed border-slate-500 group">
-                                <div class="flex items-center gap-3">
-                                    <input type="checkbox" name="kategori_aktif[]" value="custom_kendaraan" class="h-5 w-5 rounded bg-slate-800 border-none text-amber-500 checkbox-trigger">
-                                    <div class="flex-1">
-                                        <span class="text-[10px] block font-bold text-amber-400 mb-1"><i class="bi bi-plus-circle mr-1"></i>Lainnya (Custom)</span>
-                                        <input type="text" name="custom_nama_kendaraan" placeholder="Nama kendaraan, cth: Sepeda, ATV..." 
-                                            class="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 mb-2">
-                                        <div class="flex items-center gap-1">
-                                            <span class="text-[10px] text-slate-500">Rp</span>
-                                            <input type="number" name="harga[custom_kendaraan]" placeholder="Masukkan harga" min="0"
-                                                class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input">
-                                        </div>
+                            <!-- Dynamic Custom Kendaraan -->
+                            <template x-for="(item, idx) in customItems" :key="idx">
+                                <div class="bg-slate-700/50 p-3 rounded-xl border border-dashed border-slate-500">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-[10px] font-bold text-amber-400"><i class="bi bi-plus-circle mr-1"></i>Custom</span>
+                                        <button type="button" @click="customItems.splice(idx, 1)" class="ml-auto text-rose-400 hover:text-rose-300 text-xs">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </div>
+                                    <input type="text" name="custom_nama_kendaraan[]" x-model="item.nama" placeholder="Nama kendaraan, cth: Sepeda, ATV..."
+                                        class="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 mb-2">
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-[10px] text-slate-500">Rp</span>
+                                        <input type="number" name="custom_harga_kendaraan[]" x-model="item.harga" placeholder="Masukkan harga" min="0"
+                                            class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white">
                                     </div>
                                 </div>
-                            </div>
+                            </template>
+                            <button type="button" @click="customItems.push({nama:'', harga:''})"
+                                class="w-full py-2.5 border border-dashed border-amber-500/40 rounded-xl text-amber-400 text-[10px] font-bold hover:bg-slate-700/50 transition-all">
+                                <i class="bi bi-plus-lg mr-1"></i>Tambah Kendaraan Lainnya
+                            </button>
                         </div>
                     </div>
 

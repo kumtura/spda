@@ -30,6 +30,8 @@ Route::post('/punia/pembayaran/submit', [LandingController::class, 'punia_pembay
 Route::get('/punia/penggunaan/{id}', [LandingController::class, 'punia_penggunaan_detail'])->name('public.punia.penggunaan')->middleware('public.redirect');
 Route::get('/punia/alokasi/{id}', [LandingController::class, 'punia_alokasi_detail'])->name('public.punia.alokasi.detail')->middleware('public.redirect');
 Route::get('/punia/download-laporan', [LandingController::class, 'punia_download_laporan'])->name('public.punia.download');
+Route::get('/punia/bayar/{id_usaha}', [\App\Http\Controllers\PuniaBayarController::class, 'show'])->name('public.punia.bayar');
+Route::post('/punia/bayar/submit', [\App\Http\Controllers\PuniaBayarController::class, 'submit'])->name('public.punia.bayar.submit');
 Route::get('/donasi', [LandingController::class, 'donasi'])->name('public.donasi')->middleware('public.redirect');
 Route::get('/donasi/pembayaran/{id}', [LandingController::class, 'donasi_pembayaran'])->name('public.donasi.pembayaran')->middleware('public.redirect');
 Route::get('/donasi/{id}', [LandingController::class, 'donasi_detail'])->name('public.donasi.detail')->middleware('public.redirect');
@@ -152,6 +154,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/kelian/data_usaha', function() { return view('backend.kelian.data_usaha'); });
             Route::get('/kelian/detail_usaha/{id}', 'Administrator\UsahaController@kelian_detailUsaha');
             Route::post('/kelian/data_usaha/store', 'Administrator\UsahaController@kelian_storeUsaha');
+            Route::post('/kelian/detail_usaha/bayar-manual', 'Administrator\UsahaController@kelian_manualPayment');
             Route::get('/kelian/donasi', function() { return view('backend.kelian.donasi'); });
             Route::get('/kelian/verifikasi', [DashboardController::class, 'verifikasi_pembayaran']);
             Route::get('/kelian/usaha', function() { return view('backend.kelian.usaha'); });

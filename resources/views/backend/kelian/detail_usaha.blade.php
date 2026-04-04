@@ -57,7 +57,13 @@
     }
 @endphp
 
-<div class="bg-white pb-28" x-data="{ activeTab: 'info' }">
+<div class="bg-white pb-28" x-data="{ 
+    activeTab: 'info',
+    showPayModal: false,
+    payMonth: null,
+    payMonthName: '',
+    payProcessing: false
+}">
     <!-- Header -->
     <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-6 pb-8 text-white relative overflow-hidden">
         <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
@@ -232,7 +238,7 @@
                                 <th class="text-left px-3 py-2 text-[10px] font-black text-slate-500 uppercase">Bulan</th>
                                 <th class="text-center px-2 py-2 text-[10px] font-black text-slate-500 uppercase">Nominal</th>
                                 <th class="text-center px-2 py-2 text-[10px] font-black text-slate-500 uppercase">Tgl</th>
-                                <th class="text-center px-3 py-2 text-[10px] font-black text-slate-500 uppercase">Status</th>
+                                <th class="text-center px-3 py-2 text-[10px] font-black text-slate-500 uppercase">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -263,12 +269,29 @@
                                     <span class="text-[10px] text-slate-300">-</span>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2.5 text-center">
-                                    @if($isPaid)
-                                    <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100">Lunas</span>
-                                    @else
-                                    <span class="text-[8px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">Belum</span>
-                                    @endif
+                                <td class="px-3 py-2.5">
+                                    <div class="flex items-center justify-center gap-1">
+                                        @if($isPaid)
+                                        <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100">Lunas</span>
+                                        @else
+                                        {{-- Manual Payment --}}
+                                        <button @click="payMonth = {{ $num }}; payMonthName = '{{ $name }}'; showPayModal = true"
+                                                class="h-7 w-7 bg-[#00a6eb] text-white rounded-lg flex items-center justify-center hover:bg-[#0090d0] transition-all" title="Bayar Manual">
+                                            <i class="bi bi-wallet2 text-xs"></i>
+                                        </button>
+                                        {{-- WA Reminder --}}
+                                        @php
+                                            $waTarget = $rows->no_wa_pngg ?: $rows->no_wa ?: '';
+                                            $waPhone = preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $waTarget));
+                                            $payUrl = url('punia/bayar/'.$rows->id_usaha.'?bulan='.$num.'&tahun='.$currentYear);
+                                            $waMsg = urlencode("Yth. ".$rows->nama_usaha.",\n\nIni adalah pengingat pembayaran Punia Wajib bulan ".$name." ".$currentYear.".\nMinimal: Rp ".number_format($rows->minimal_bayar ?? 0, 0, ',', '.')."\n\nSilakan lakukan pembayaran melalui link berikut:\n".$payUrl."\n\nTerimakasih,\nKelian Adat Banjar ".($rows->nama_banjar ?? ''));
+                                        @endphp
+                                        <a href="https://wa.me/{{ $waPhone }}?text={{ $waMsg }}" target="_blank" rel="noopener noreferrer"
+                                           class="h-7 w-7 bg-emerald-500 text-white rounded-lg flex items-center justify-center hover:bg-emerald-600 transition-all" title="Reminder WA">
+                                            <i class="bi bi-whatsapp text-xs"></i>
+                                        </a>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach
@@ -316,6 +339,73 @@
                 </div>
                 @endif
             </div>
+        </div>
+    </div>
+
+    <!-- Manual Payment Modal -->
+    <div x-show="showPayModal" x-cloak class="fixed inset-0 z-50 flex items-end justify-center">
+        <div class="absolute inset-0 bg-black/40" @click="showPayModal = false"></div>
+        <div class="relative bg-white rounded-t-2xl w-full max-w-[480px] max-h-[85vh] overflow-y-auto p-5 pb-8 shadow-xl" @click.stop>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-black text-slate-800">Bayar Manual - <span x-text="payMonthName"></span> {{ $currentYear }}</h3>
+                <button @click="showPayModal = false" class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">
+                    <i class="bi bi-x-lg text-xs text-slate-500"></i>
+                </button>
+            </div>
+
+            <form action="{{ url('administrator/kelian/detail_usaha/bayar-manual') }}" method="POST" enctype="multipart/form-data"
+                  @submit="payProcessing = true">
+                @csrf
+                <input type="hidden" name="id_usaha" value="{{ $rows->id_usaha }}">
+                <input type="hidden" name="tahun" value="{{ $currentYear }}">
+                <input type="hidden" :name="'bulan'" :value="payMonth">
+
+                <div class="space-y-4">
+                    <!-- Nominal -->
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nominal (Rp)</label>
+                        <input type="number" name="jumlah_dana" required min="1000"
+                               value="{{ $rows->minimal_bayar ?? '' }}"
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none">
+                    </div>
+
+                    <!-- Tanggal Pembayaran -->
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Tanggal Pembayaran</label>
+                        <input type="date" name="tanggal_pembayaran" required
+                               value="{{ date('Y-m-d') }}"
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none">
+                    </div>
+
+                    <!-- Metode -->
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Metode Pembayaran</label>
+                        <select name="metode_pembayaran" required
+                                class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none">
+                            <option value="tunai">Tunai</option>
+                            <option value="transfer">Transfer Bank</option>
+                            <option value="qris">QRIS</option>
+                        </select>
+                    </div>
+
+                    <!-- Bukti Pembayaran -->
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Bukti Pembayaran (opsional)</label>
+                        <input type="file" name="bukti_pembayaran" accept="image/*"
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-600">
+                    </div>
+
+                    <button type="submit" :disabled="payProcessing"
+                            class="w-full bg-[#00a6eb] text-white font-bold text-xs py-3 rounded-xl hover:bg-[#0090d0] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        <template x-if="!payProcessing">
+                            <span><i class="bi bi-check-circle mr-1"></i> Simpan Pembayaran</span>
+                        </template>
+                        <template x-if="payProcessing">
+                            <span><i class="bi bi-arrow-repeat animate-spin mr-1"></i> Menyimpan...</span>
+                        </template>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

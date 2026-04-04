@@ -203,6 +203,45 @@ class UsahaController extends BaseController
             return redirect('administrator/kelian/data_usaha')->with('success', 'Unit usaha berhasil ditambahkan.');
         }
 
+        // Kelian: Manual payment for punia
+        public function kelian_manualPayment(Request $request)
+        {
+            $request->validate([
+                'id_usaha' => 'required|integer',
+                'bulan' => 'required|integer|min:1|max:12',
+                'tahun' => 'required|integer',
+                'jumlah_dana' => 'required|numeric|min:1000',
+                'tanggal_pembayaran' => 'required|date',
+                'metode_pembayaran' => 'required|string|in:tunai,transfer,qris',
+            ]);
+
+            $buktiFile = null;
+            if ($request->hasFile('bukti_pembayaran')) {
+                $file = $request->file('bukti_pembayaran');
+                $buktiFile = 'manual_' . time() . '_' . $request->id_usaha . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('bukti_pembayaran'), $buktiFile);
+            }
+
+            Danapunia::create([
+                'id_usaha' => $request->id_usaha,
+                'jumlah_dana' => $request->jumlah_dana,
+                'tanggal_pembayaran' => $request->tanggal_pembayaran,
+                'bulan_punia' => $request->bulan,
+                'tahun_punia' => $request->tahun,
+                'bulan' => $request->bulan,
+                'tahun' => $request->tahun,
+                'metode_pembayaran' => $request->metode_pembayaran,
+                'metode' => $request->metode_pembayaran,
+                'bukti_pembayaran' => $buktiFile,
+                'status_pembayaran' => 'completed',
+                'status_verifikasi' => 'approved',
+                'aktif' => '1',
+            ]);
+
+            return redirect('administrator/kelian/detail_usaha/' . $request->id_usaha)
+                ->with('success', 'Pembayaran bulan ' . $request->bulan . '/' . $request->tahun . ' berhasil disimpan.');
+        }
+
         public function hapusbanjar(Request $request){
 
             if($request->id != ""){

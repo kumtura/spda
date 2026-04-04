@@ -43,12 +43,18 @@ class ObjekWisataController extends Controller
 
         if ($request->has('kategori_aktif')) {
             $rules['kategori_aktif'] = 'required|array|min:1';
+        }
+
+        // Dual pricing mode uses different field names
+        if ($request->input('bedakan_harga') === '1') {
+            // At least one of the dual arrays must be present
+        } elseif ($request->has('kategori_aktif')) {
             $rules['harga'] = 'required|array';
         }
 
         $request->validate($rules);
 
-        $data = $request->except(['foto', 'kategori_aktif', 'harga', 'market_type', 'tipe_kategori_utama', 'custom_nama_kendaraan']);
+        $data = $request->except(['foto', 'kategori_aktif', 'kategori_aktif_local', 'kategori_aktif_wna', 'kategori_aktif_dual', 'harga', 'harga_local', 'harga_wna', 'market_type', 'tipe_kategori_utama', 'custom_nama_kendaraan', 'bedakan_harga']);
         
         // Set kapasitas_harian to null if empty
         if (empty($data['kapasitas_harian'])) {
@@ -101,8 +107,86 @@ class ObjekWisataController extends Controller
         ];
 
         // Create kategori tiket if present
-        if ($request->has('kategori_aktif')) {
-            $urutan = 1;
+        $bedakanHarga = $request->input('bedakan_harga') === '1';
+        $urutan = 1;
+
+        if ($bedakanHarga && ($request->has('kategori_aktif_local') || $request->has('kategori_aktif_wna') || $request->has('kategori_aktif_dual'))) {
+            // Dual pricing mode: create separate Local and WNA records
+
+            // Handle "sama semua usia" dual mode (kategori_aktif_local + kategori_aktif_wna)
+            if ($request->has('kategori_aktif_local')) {
+                foreach ($request->kategori_aktif_local as $key) {
+                    if (isset($kategoriMapping[$key]) && isset($request->harga_local[$key]) && $request->harga_local[$key] > 0) {
+                        KategoriTiket::create([
+                            'id_objek_wisata' => $objek->id_objek_wisata,
+                            'nama_kategori' => $kategoriMapping[$key]['nama'],
+                            'tipe_kategori' => $kategoriMapping[$key]['tipe'],
+                            'market_type' => 'local',
+                            'harga' => $request->harga_local[$key],
+                            'deskripsi' => null,
+                            'urutan' => $urutan,
+                            'aktif' => 1
+                        ]);
+                        $urutan++;
+                    }
+                }
+            }
+            if ($request->has('kategori_aktif_wna')) {
+                foreach ($request->kategori_aktif_wna as $key) {
+                    if (isset($kategoriMapping[$key]) && isset($request->harga_wna[$key]) && $request->harga_wna[$key] > 0) {
+                        KategoriTiket::create([
+                            'id_objek_wisata' => $objek->id_objek_wisata,
+                            'nama_kategori' => $kategoriMapping[$key]['nama'],
+                            'tipe_kategori' => $kategoriMapping[$key]['tipe'],
+                            'market_type' => 'wna',
+                            'harga' => $request->harga_wna[$key],
+                            'deskripsi' => null,
+                            'urutan' => $urutan,
+                            'aktif' => 1
+                        ]);
+                        $urutan++;
+                    }
+                }
+            }
+
+            // Handle "berbeda usia" dual mode (kategori_aktif_dual)
+            if ($request->has('kategori_aktif_dual')) {
+                foreach ($request->kategori_aktif_dual as $key) {
+                    if (!isset($kategoriMapping[$key])) continue;
+                    
+                    // Create Local record
+                    if (isset($request->harga_local[$key]) && $request->harga_local[$key] > 0) {
+                        KategoriTiket::create([
+                            'id_objek_wisata' => $objek->id_objek_wisata,
+                            'nama_kategori' => $kategoriMapping[$key]['nama'],
+                            'tipe_kategori' => $kategoriMapping[$key]['tipe'],
+                            'market_type' => 'local',
+                            'harga' => $request->harga_local[$key],
+                            'deskripsi' => null,
+                            'urutan' => $urutan,
+                            'aktif' => 1
+                        ]);
+                        $urutan++;
+                    }
+                    
+                    // Create WNA record
+                    if (isset($request->harga_wna[$key]) && $request->harga_wna[$key] > 0) {
+                        KategoriTiket::create([
+                            'id_objek_wisata' => $objek->id_objek_wisata,
+                            'nama_kategori' => $kategoriMapping[$key]['nama'],
+                            'tipe_kategori' => $kategoriMapping[$key]['tipe'],
+                            'market_type' => 'wna',
+                            'harga' => $request->harga_wna[$key],
+                            'deskripsi' => null,
+                            'urutan' => $urutan,
+                            'aktif' => 1
+                        ]);
+                        $urutan++;
+                    }
+                }
+            }
+        } elseif ($request->has('kategori_aktif')) {
+            // Single pricing mode (market_type = 'all')
             foreach ($request->kategori_aktif as $key) {
                 // Handle custom kendaraan entry
                 if ($key === 'custom_kendaraan') {

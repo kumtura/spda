@@ -4,9 +4,9 @@
 <div class="space-y-6" x-data="{ 
     tipeKategori: '',
     opsiHarga: '',
-    marketType: 'all',
+    bedakanHarga: false,
     hasSelection() {
-        return this.tipeKategori != '' && (this.tipeKategori == 'kendaraan' || this.opsiHarga != '');
+        return this.tipeKategori === 'kendaraan' || (this.tipeKategori === 'orang' && this.opsiHarga !== '');
     }
 }">
     <!-- Header -->
@@ -24,6 +24,7 @@
 
     <form action="{{ url('administrator/objek_wisata/store') }}" method="POST" enctype="multipart/form-data" id="main-form">
         @csrf
+        <input type="hidden" name="bedakan_harga" :value="bedakanHarga ? '1' : '0'">
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
             
             <!-- LEFT COLUMN: BASIC INFO -->
@@ -177,17 +178,17 @@
                         <i class="bi bi-tag-fill"></i> Kategori Tiket
                     </h3>
 
-                    <!-- STEP 1: PILIH KATEGORI UTAMA -->
+                    <!-- STEP 1: PILIH TIPE -->
                     <div class="space-y-4 mb-6">
                         <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">1. Pilih Tipe Kategori</label>
                         <div class="grid grid-cols-2 gap-2">
-                            <button type="button" @click="tipeKategori = 'orang'; opsiHarga = ''; marketType = 'all'"
+                            <button type="button" @click="tipeKategori = 'orang'; opsiHarga = ''; bedakanHarga = false"
                                 :class="tipeKategori === 'orang' ? 'bg-primary-light text-white ring-2 ring-primary-light/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
                                 class="py-3 rounded-xl text-xs font-bold transition-all text-center">
                                 <i class="bi bi-people-fill block text-lg mb-1"></i>
                                 Per Orang
                             </button>
-                            <button type="button" @click="tipeKategori = 'kendaraan'; opsiHarga = ''; marketType = 'all'"
+                            <button type="button" @click="tipeKategori = 'kendaraan'; opsiHarga = ''; bedakanHarga = false"
                                 :class="tipeKategori === 'kendaraan' ? 'bg-amber-500 text-white ring-2 ring-amber-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
                                 class="py-3 rounded-xl text-xs font-bold transition-all text-center">
                                 <i class="bi bi-car-front-fill block text-lg mb-1"></i>
@@ -196,34 +197,9 @@
                         </div>
                     </div>
 
-                    <!-- STEP 2: MARKET TYPE (only for orang) -->
+                    <!-- STEP 2: FORMAT HARGA (Per Orang only) -->
                     <div class="space-y-4 mb-6" x-show="tipeKategori === 'orang'" x-transition>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">2. Kategori Pasar</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button type="button" @click="marketType = 'local'"
-                                :class="marketType === 'local' ? 'bg-emerald-500 text-white ring-2 ring-emerald-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
-                                class="py-2.5 rounded-xl text-[10px] font-bold transition-all text-center">
-                                Lokal
-                            </button>
-                            <button type="button" @click="marketType = 'wna'"
-                                :class="marketType === 'wna' ? 'bg-violet-500 text-white ring-2 ring-violet-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
-                                class="py-2.5 rounded-xl text-[10px] font-bold transition-all text-center">
-                                WNA
-                            </button>
-                            <button type="button" @click="marketType = 'all'"
-                                :class="marketType === 'all' ? 'bg-blue-500 text-white ring-2 ring-blue-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
-                                class="py-2.5 rounded-xl text-[10px] font-bold transition-all text-center">
-                                Semua
-                            </button>
-                        </div>
-                        <p class="text-[9px] text-slate-500">Untuk siapa harga ini berlaku</p>
-                    </div>
-
-                    <!-- STEP 3: FORMAT HARGA (only for orang) -->
-                    <div class="space-y-4 mb-6" x-show="tipeKategori === 'orang'" x-transition>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">
-                            <span x-text="tipeKategori === 'orang' ? '3' : '2'"></span>. Pilih Format Harga
-                        </label>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">2. Format Harga</label>
                         <select x-model="opsiHarga"
                             class="w-full px-4 py-3 text-sm bg-slate-700 border-none rounded-xl text-white focus:ring-2 focus:ring-primary-light transition-all">
                             <option value="">-- Pilih Pengaturan --</option>
@@ -232,55 +208,127 @@
                         </select>
                     </div>
 
-                    <!-- NOMINAL INPUTS (Dynamic) -->
+                    <!-- STEP 3: BEDAKAN HARGA LOKAL & WNA TOGGLE (Per Orang only) -->
+                    <div class="mb-6" x-show="tipeKategori === 'orang' && opsiHarga !== ''" x-transition>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-3 tracking-widest">3. Bedakan Harga Lokal & WNA?</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" @click="bedakanHarga = false"
+                                :class="!bedakanHarga ? 'bg-blue-500 text-white ring-2 ring-blue-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
+                                class="py-2.5 rounded-xl text-[10px] font-bold transition-all text-center">
+                                <i class="bi bi-dash-circle block text-base mb-0.5"></i>
+                                Harga Sama
+                            </button>
+                            <button type="button" @click="bedakanHarga = true"
+                                :class="bedakanHarga ? 'bg-gradient-to-r from-emerald-500 to-violet-500 text-white ring-2 ring-emerald-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
+                                class="py-2.5 rounded-xl text-[10px] font-bold transition-all text-center">
+                                <i class="bi bi-arrow-left-right block text-base mb-0.5"></i>
+                                Beda Lokal & WNA
+                            </button>
+                        </div>
+                        <p class="text-[9px] text-slate-500 mt-2" x-show="bedakanHarga">Setiap kategori akan memiliki 2 harga: Lokal & WNA</p>
+                    </div>
+
+                    <!-- NOMINAL INPUTS -->
                     <div class="space-y-4" x-show="hasSelection()" x-transition>
                         <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-4 tracking-widest">
                             <span x-text="tipeKategori === 'orang' ? '4' : '2'"></span>. Isi Nominal Harga
                         </h4>
                         
-                        <!-- Market type badge -->
-                        <div x-show="tipeKategori === 'orang'" class="mb-3">
-                            <span x-show="marketType === 'local'" class="text-[9px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded-lg">
-                                <i class="bi bi-geo-alt mr-1"></i>Harga Lokal
-                            </span>
-                            <span x-show="marketType === 'wna'" class="text-[9px] font-bold text-violet-400 bg-violet-500/20 px-2 py-1 rounded-lg">
-                                <i class="bi bi-globe mr-1"></i>Harga WNA
-                            </span>
-                            <span x-show="marketType === 'all'" class="text-[9px] font-bold text-blue-400 bg-blue-500/20 px-2 py-1 rounded-lg">
-                                <i class="bi bi-people mr-1"></i>Semua (Lokal & WNA)
-                            </span>
-                        </div>
-                        
-                        <!-- IF ORANG - SAMA -->
-                        <div x-show="tipeKategori == 'orang' && opsiHarga == 'sama'" class="space-y-4">
-                            <div class="bg-slate-700/50 p-4 rounded-2xl border border-slate-600">
-                                <label class="text-[10px] font-bold text-slate-400 block mb-2">Tiket Umum (Rp)</label>
-                                <input type="number" name="harga[umum]" placeholder="0" class="w-full bg-slate-800 border-none rounded-lg text-white font-black">
-                                <input type="hidden" name="kategori_aktif[]" value="umum">
-                                <input type="hidden" name="market_type[umum]" :value="marketType">
+                        <!-- ======= PER ORANG - SAMA SEMUA USIA ======= -->
+                        <div x-show="tipeKategori === 'orang' && opsiHarga === 'sama'" class="space-y-4">
+
+                            <!-- Single price -->
+                            <div x-show="!bedakanHarga">
+                                <div class="bg-slate-700/50 p-4 rounded-2xl border border-slate-600">
+                                    <label class="text-[10px] font-bold text-slate-400 block mb-2">Tiket Umum</label>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] text-slate-500">Rp</span>
+                                        <input type="number" name="harga[umum]" placeholder="Masukkan harga" min="0" class="w-full bg-slate-800 border-none rounded-lg text-white font-black text-sm">
+                                    </div>
+                                    <input type="hidden" name="kategori_aktif[]" value="umum">
+                                </div>
+                            </div>
+
+                            <!-- Dual price: Lokal + WNA -->
+                            <div x-show="bedakanHarga" class="space-y-3">
+                                <div class="bg-emerald-900/30 p-4 rounded-2xl border border-emerald-700/50">
+                                    <div class="flex items-center gap-1.5 mb-2">
+                                        <span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-lg"><i class="bi bi-geo-alt mr-1"></i>Lokal</span>
+                                    </div>
+                                    <label class="text-[10px] font-bold text-slate-400 block mb-1">Tiket Umum</label>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] text-slate-500">Rp</span>
+                                        <input type="number" name="harga_local[umum]" placeholder="Harga lokal" min="0" class="w-full bg-slate-800 border-none rounded-lg text-white font-black text-sm">
+                                    </div>
+                                    <input type="hidden" name="kategori_aktif_local[]" value="umum">
+                                </div>
+                                <div class="bg-violet-900/30 p-4 rounded-2xl border border-violet-700/50">
+                                    <div class="flex items-center gap-1.5 mb-2">
+                                        <span class="text-[9px] font-bold text-violet-400 bg-violet-500/20 px-2 py-0.5 rounded-lg"><i class="bi bi-globe mr-1"></i>WNA</span>
+                                    </div>
+                                    <label class="text-[10px] font-bold text-slate-400 block mb-1">Tiket Umum</label>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] text-slate-500">Rp</span>
+                                        <input type="number" name="harga_wna[umum]" placeholder="Harga WNA" min="0" class="w-full bg-slate-800 border-none rounded-lg text-white font-black text-sm">
+                                    </div>
+                                    <input type="hidden" name="kategori_aktif_wna[]" value="umum">
+                                </div>
                             </div>
                         </div>
 
-                        <!-- IF ORANG - KATEGORI USIA -->
-                        <div x-show="tipeKategori == 'orang' && opsiHarga == 'kategori'" class="space-y-3">
-                            @foreach(['dewasa' => 'Dewasa', 'anak' => 'Anak-anak', 'balita' => 'Balita', 'lansia' => 'Lansia', 'pelajar' => 'Pelajar/Mahasiswa'] as $key => $label)
-                            <div class="flex items-center gap-3 bg-slate-700/50 p-3 rounded-xl border border-slate-600 group">
-                                <input type="checkbox" name="kategori_aktif[]" value="{{ $key }}" class="h-5 w-5 rounded bg-slate-800 border-none text-primary-light checkbox-trigger">
-                                <div class="flex-1">
-                                    <span class="text-[10px] block font-bold text-slate-400">{{ $label }}</span>
-                                    <div class="flex items-center gap-1 mt-1">
-                                        <span class="text-[10px] text-slate-500">Rp</span>
-                                        <input type="number" name="harga[{{ $key }}]" placeholder="Masukkan harga" min="0"
-                                            class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input">
+                        <!-- ======= PER ORANG - BERBEDA USIA ======= -->
+                        <div x-show="tipeKategori === 'orang' && opsiHarga === 'kategori'" class="space-y-3">
+
+                            <!-- Single price per age -->
+                            <div x-show="!bedakanHarga" class="space-y-3">
+                                @foreach(['dewasa' => 'Dewasa', 'anak' => 'Anak-anak', 'balita' => 'Balita', 'lansia' => 'Lansia', 'pelajar' => 'Pelajar/Mahasiswa'] as $key => $label)
+                                <div class="flex items-center gap-3 bg-slate-700/50 p-3 rounded-xl border border-slate-600 group">
+                                    <input type="checkbox" name="kategori_aktif[]" value="{{ $key }}" class="h-5 w-5 rounded bg-slate-800 border-none text-primary-light checkbox-trigger">
+                                    <div class="flex-1">
+                                        <span class="text-[10px] block font-bold text-slate-400">{{ $label }}</span>
+                                        <div class="flex items-center gap-1 mt-1">
+                                            <span class="text-[10px] text-slate-500">Rp</span>
+                                            <input type="number" name="harga[{{ $key }}]" placeholder="Masukkan harga" min="0"
+                                                class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input">
+                                        </div>
                                     </div>
                                 </div>
-                                <input type="hidden" name="market_type[{{ $key }}]" :value="marketType">
+                                @endforeach
                             </div>
-                            @endforeach
+
+                            <!-- Dual price per age: Lokal + WNA -->
+                            <div x-show="bedakanHarga" class="space-y-4">
+                                @foreach(['dewasa' => 'Dewasa', 'anak' => 'Anak-anak', 'balita' => 'Balita', 'lansia' => 'Lansia', 'pelajar' => 'Pelajar/Mahasiswa'] as $key => $label)
+                                <div class="bg-slate-700/30 rounded-2xl border border-slate-600 overflow-hidden group">
+                                    <div class="flex items-center gap-3 p-3 border-b border-slate-600/50">
+                                        <input type="checkbox" name="kategori_aktif_dual[]" value="{{ $key }}" class="h-5 w-5 rounded bg-slate-800 border-none text-primary-light checkbox-trigger-dual">
+                                        <span class="text-xs font-bold text-white">{{ $label }}</span>
+                                    </div>
+                                    <div class="grid grid-cols-2 divide-x divide-slate-600/50">
+                                        <div class="p-3">
+                                            <span class="text-[8px] font-bold text-emerald-400 uppercase tracking-wider block mb-1"><i class="bi bi-geo-alt mr-0.5"></i>Lokal</span>
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-[10px] text-slate-500">Rp</span>
+                                                <input type="number" name="harga_local[{{ $key }}]" placeholder="0" min="0"
+                                                    class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input-dual">
+                                            </div>
+                                        </div>
+                                        <div class="p-3">
+                                            <span class="text-[8px] font-bold text-violet-400 uppercase tracking-wider block mb-1"><i class="bi bi-globe mr-0.5"></i>WNA</span>
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-[10px] text-slate-500">Rp</span>
+                                                <input type="number" name="harga_wna[{{ $key }}]" placeholder="0" min="0"
+                                                    class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input-dual">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
                         </div>
 
-                        <!-- IF KENDARAAN -->
-                        <div x-show="tipeKategori == 'kendaraan'" class="space-y-3">
+                        <!-- ======= PER KENDARAAN ======= -->
+                        <div x-show="tipeKategori === 'kendaraan'" class="space-y-3">
                             @foreach(['motor' => 'Sepeda Motor', 'mobil' => 'Mobil', 'bus' => 'Bus Pariwisata', 'truk' => 'Kendaraan Besar'] as $key => $label)
                             <div class="flex items-center gap-3 bg-slate-700/50 p-3 rounded-xl border border-slate-600 group">
                                 <input type="checkbox" name="kategori_aktif[]" value="{{ $key }}" class="h-5 w-5 rounded bg-slate-800 border-none text-amber-500 checkbox-trigger">
@@ -315,7 +363,7 @@
                     </div>
 
                     <!-- PLACEHOLDER -->
-                    <div x-show="!hasSelection()" class="py-12 flex flex-col items-center justify-center text-center opacity-30 border-2 border-dashed border-slate-600 rounded-3xl">
+                    <div x-show="!tipeKategori" class="py-12 flex flex-col items-center justify-center text-center opacity-30 border-2 border-dashed border-slate-600 rounded-3xl">
                         <i class="bi bi-tag text-3xl mb-2"></i>
                         <p class="text-[10px] font-bold">Pilih Tipe & Format Harga<br>untuk mengisi nominal.</p>
                     </div>
@@ -329,7 +377,7 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-check checkbox when user types a price
+    // Auto-check checkbox when user types a price (single mode)
     document.addEventListener('input', function(e) {
         if(e.target.classList.contains('price-input')) {
             const container = e.target.closest('.group');
@@ -339,19 +387,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkbox.checked = e.target.value > 0;
             }
         }
+        // Auto-check for dual mode (Lokal/WNA)
+        if(e.target.classList.contains('price-input-dual')) {
+            const container = e.target.closest('.group');
+            if(!container) return;
+            const checkbox = container.querySelector('.checkbox-trigger-dual');
+            const inputs = container.querySelectorAll('.price-input-dual');
+            let anyFilled = false;
+            inputs.forEach(function(inp) { if(inp.value > 0) anyFilled = true; });
+            if(checkbox) checkbox.checked = anyFilled;
+        }
     });
 
-    // Also toggle via checkbox click — focus the price input
+    // Focus price input on checkbox click
     document.addEventListener('change', function(e) {
         if(e.target.classList.contains('checkbox-trigger')) {
             const container = e.target.closest('.group');
             const input = container.querySelector('.price-input');
-            if(input && e.target.checked) {
-                input.focus();
-            }
-            if(input && !e.target.checked) {
-                input.value = '';
-            }
+            if(input && e.target.checked) input.focus();
+            if(input && !e.target.checked) input.value = '';
+        }
+        if(e.target.classList.contains('checkbox-trigger-dual')) {
+            const container = e.target.closest('.group');
+            const inputs = container.querySelectorAll('.price-input-dual');
+            if(e.target.checked && inputs[0]) inputs[0].focus();
+            if(!e.target.checked) inputs.forEach(function(inp) { inp.value = ''; });
         }
     });
 });

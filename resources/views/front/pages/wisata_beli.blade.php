@@ -19,34 +19,77 @@
     marketFilter: '{{ $defaultMarket }}',
     availabilityInfo: null,
     checkingAvailability: false,
+    showCalendar: false,
+    calMonth: new Date().getMonth(),
+    calYear: new Date().getFullYear(),
+    _today: null,
+    _months: ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
+    _days: ['Min','Sen','Sel','Rab','Kam','Jum','Sab'],
 
-    onDateChange: function(e) {
+    init: function() {
+        this._today = new Date();
+        this._today.setHours(0,0,0,0);
+    },
+
+    openCalendar: function() {
+        this.showCalendar = true;
+    },
+
+    get calTitle() {
+        return this._months[this.calMonth] + ' ' + this.calYear;
+    },
+
+    get calCells() {
+        var first = new Date(this.calYear, this.calMonth, 1);
+        var last = new Date(this.calYear, this.calMonth + 1, 0);
+        var cells = [];
+        for (var i = 0; i < first.getDay(); i++) cells.push(null);
+        for (var d = 1; d <= last.getDate(); d++) {
+            var dt = new Date(this.calYear, this.calMonth, d);
+            var str = this.calYear + '-' + String(this.calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+            cells.push({ day: d, dateStr: str, isPast: dt < this._today });
+        }
+        return cells;
+    },
+
+    prevMonth: function() {
+        if (this.calMonth === 0) { this.calMonth = 11; this.calYear--; }
+        else { this.calMonth--; }
+    },
+
+    nextMonth: function() {
+        if (this.calMonth === 11) { this.calMonth = 0; this.calYear++; }
+        else { this.calMonth++; }
+    },
+
+    pickDate: function(dateStr) {
         var self = this;
-        self.selectedDate = e.target.value;
+        self.selectedDate = dateStr;
+        self.showCalendar = false;
         self.availabilityInfo = null;
-
-        if (!self.selectedDate) return;
 
         @if($objek->batas_tiket_harian)
         self.checkingAvailability = true;
-        var dt = new Date(self.selectedDate + 'T00:00:00');
-        var url = '{{ url("wisata/check-availability") }}?id_objek_wisata={{ (int) $objek->id_objek_wisata }}&month=' + (dt.getMonth() + 1) + '&year=' + dt.getFullYear();
+        var dt = new Date(dateStr + 'T00:00:00');
+        var url = '{{ url("wisata/check-availability") }}?id_objek_wisata={{ (int) $objek->id_objek_wisata }}&month=' + (dt.getMonth()+1) + '&year=' + dt.getFullYear();
         fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.unlimited) {
-                    self.availabilityInfo = { unlimited: true };
-                } else if (data.dates && data.dates[self.selectedDate]) {
-                    self.availabilityInfo = { unlimited: false, available: data.dates[self.selectedDate].available };
-                } else {
-                    self.availabilityInfo = { unlimited: true };
-                }
+                if (data.unlimited) { self.availabilityInfo = { unlimited: true }; }
+                else if (data.dates && data.dates[self.selectedDate]) { self.availabilityInfo = { unlimited: false, available: data.dates[self.selectedDate].available }; }
+                else { self.availabilityInfo = { unlimited: true }; }
             })
             .catch(function() { self.availabilityInfo = null; })
             .finally(function() { self.checkingAvailability = false; });
         @else
         self.availabilityInfo = { unlimited: true };
         @endif
+    },
+
+    fmtDate: function(ds) {
+        var d = new Date(ds + 'T00:00:00');
+        var dn = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        return dn[d.getDay()] + ', ' + d.getDate() + ' ' + this._months[d.getMonth()] + ' ' + d.getFullYear();
     },
 
     incrementQty: function(id, harga, nama) {
@@ -109,6 +152,8 @@
             @csrf
             <input type="hidden" name="id_objek_wisata" value="{{ $objek->id_objek_wisata }}">
             
+            <input type="hidden" name="tanggal_kunjungan" :value="selectedDate">
+
             <!-- Tanggal Kunjungan -->
             <div class="space-y-3">
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Tanggal Kunjungan</h3>
@@ -117,11 +162,11 @@
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
                         Pilih Tanggal <span class="text-rose-500">*</span>
                     </label>
-                    <input type="date" name="tanggal_kunjungan" 
-                        min="{{ $todayStr }}" 
-                        x-model="selectedDate"
-                        @change="onDateChange($event)"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:ring-4 focus:ring-[#00a6eb]/10 focus:border-[#00a6eb]/50 outline-none transition-all appearance-none">
+                    <button type="button" @click="openCalendar()"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-left flex items-center justify-between transition-all hover:border-[#00a6eb]/50 focus:ring-4 focus:ring-[#00a6eb]/10">
+                        <span class="text-sm" :class="selectedDate ? 'font-bold text-slate-800' : 'text-slate-400'" x-text="selectedDate ? fmtDate(selectedDate) : 'Pilih tanggal kunjungan...'"></span>
+                        <i class="bi bi-calendar3 text-[#00a6eb]"></i>
+                    </button>
                     
                     <template x-if="checkingAvailability">
                         <div class="flex items-center gap-1.5 px-1">
@@ -292,6 +337,84 @@
             <span>Lanjutkan Pembayaran</span>
             <i class="bi bi-arrow-right"></i>
         </button>
+    </div>
+
+    <!-- Calendar Bottom Sheet -->
+    <div x-show="showCalendar" x-cloak
+         @click.self="showCalendar = false"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm">
+        <div @click.stop
+             x-show="showCalendar"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="translate-y-full"
+             x-transition:enter-end="translate-y-0"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="translate-y-0"
+             x-transition:leave-end="translate-y-full"
+             class="bg-white rounded-t-3xl w-full max-w-lg shadow-2xl pb-8">
+            
+            <!-- Handle bar -->
+            <div class="flex justify-center pt-3 pb-2">
+                <div class="w-10 h-1 bg-slate-300 rounded-full"></div>
+            </div>
+
+            <div class="px-6">
+                <!-- Calendar title -->
+                <div class="flex items-center justify-between mb-5">
+                    <button type="button" @click="prevMonth()" class="h-9 w-9 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-all active:scale-95">
+                        <i class="bi bi-chevron-left text-sm"></i>
+                    </button>
+                    <h3 class="text-sm font-black text-slate-800" x-text="calTitle"></h3>
+                    <button type="button" @click="nextMonth()" class="h-9 w-9 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-all active:scale-95">
+                        <i class="bi bi-chevron-right text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Day headers -->
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                    <template x-for="dn in _days" :key="dn">
+                        <div class="text-center text-[10px] font-bold text-slate-400 uppercase py-1" x-text="dn"></div>
+                    </template>
+                </div>
+
+                <!-- Date grid -->
+                <div class="grid grid-cols-7 gap-1">
+                    <template x-for="(cell, idx) in calCells" :key="idx">
+                        <div>
+                            <template x-if="cell === null">
+                                <div class="aspect-square"></div>
+                            </template>
+                            <template x-if="cell !== null">
+                                <button type="button"
+                                    :disabled="cell.isPast"
+                                    @click="!cell.isPast && pickDate(cell.dateStr)"
+                                    class="aspect-square w-full rounded-xl flex items-center justify-center text-xs font-semibold transition-all"
+                                    :class="{
+                                        'bg-[#00a6eb] text-white shadow-md shadow-blue-200 font-black scale-105': cell.dateStr === selectedDate,
+                                        'text-slate-800 hover:bg-[#00a6eb]/10 active:scale-95': !cell.isPast && cell.dateStr !== selectedDate,
+                                        'text-slate-300 cursor-not-allowed': cell.isPast
+                                    }">
+                                    <span x-text="cell.day"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Today shortcut -->
+                <div class="mt-5 flex items-center justify-center">
+                    <button type="button" @click="pickDate('{{ $todayStr }}')" class="text-xs font-bold text-[#00a6eb] hover:underline flex items-center gap-1">
+                        <i class="bi bi-calendar-check"></i> Pilih Hari Ini
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

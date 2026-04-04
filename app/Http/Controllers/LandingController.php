@@ -17,6 +17,34 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class LandingController extends Controller
 {
+    private function getWisataAvailabilityForDate(int $objekWisataId, string $tanggalKunjungan): array
+    {
+        $objek = ObjekWisata::select('id_objek_wisata', 'batas_tiket_harian')->findOrFail($objekWisataId);
+
+        if (!$objek->batas_tiket_harian) {
+            return [
+                'unlimited' => true,
+                'limit' => null,
+                'sold' => 0,
+                'available' => null,
+            ];
+        }
+
+        $sold = (int) TiketDetail::query()
+            ->join('tb_tiket_wisata', 'tb_tiket_wisata.id_tiket', '=', 'tb_tiket_detail.id_tiket')
+            ->where('tb_tiket_wisata.id_objek_wisata', $objekWisataId)
+            ->whereIn('tb_tiket_wisata.status_pembayaran', ['paid', 'completed', 'pending'])
+            ->whereDate('tb_tiket_wisata.tanggal_kunjungan', $tanggalKunjungan)
+            ->sum('tb_tiket_detail.jumlah');
+
+        return [
+            'unlimited' => false,
+            'limit' => (int) $objek->batas_tiket_harian,
+            'sold' => $sold,
+            'available' => max(0, (int) $objek->batas_tiket_harian - $sold),
+        ];
+    }
+
     private function getVillageData()
     {
         $settingsPath = storage_path('app/settings.json');
@@ -935,6 +963,7 @@ class LandingController extends Controller
 
         // Calculate total
         $total = 0;
+        $totalTicketQty = 0;
         $kategoriData = [];
         
         foreach ($request->kategori as $kategoriId => $qty) {
@@ -942,6 +971,7 @@ class LandingController extends Controller
                 $kategori = KategoriTiket::findOrFail($kategoriId);
                 $subtotal = $kategori->harga * $qty;
                 $total += $subtotal;
+                $totalTicketQty += (int) $qty;
                 
                 $kategoriData[] = [
                     'id_kategori_tiket' => $kategoriId,
@@ -955,6 +985,17 @@ class LandingController extends Controller
 
         if ($total == 0) {
             return back()->with('error', 'Pilih minimal 1 tiket');
+        }
+
+        $availability = $this->getWisataAvailabilityForDate(
+            (int) $request->id_objek_wisata,
+            $request->tanggal_kunjungan
+        );
+
+        if (!$availability['unlimited'] && $availability['available'] < $totalTicketQty) {
+            return back()
+                ->withInput()
+                ->with('error', 'Kuota tiket pada tanggal tersebut tidak mencukupi. Sisa tiket: ' . $availability['available']);
         }
 
         // Store in session for payment
@@ -1340,11 +1381,13 @@ class LandingController extends Controller
         $startDate = sprintf('%04d-%02d-01', $request->year, $request->month);
         $endDate = date('Y-m-t', strtotime($startDate));
 
-        $soldPerDay = TiketWisata::where('id_objek_wisata', $request->id_objek_wisata)
-            ->whereIn('status_pembayaran', ['paid', 'completed', 'pending'])
-            ->whereBetween('tanggal_kunjungan', [$startDate, $endDate])
-            ->selectRaw('tanggal_kunjungan, SUM(1) as total_tiket')
-            ->groupBy('tanggal_kunjungan')
+        $soldPerDay = TiketDetail::query()
+            ->join('tb_tiket_wisata', 'tb_tiket_wisata.id_tiket', '=', 'tb_tiket_detail.id_tiket')
+            ->where('tb_tiket_wisata.id_objek_wisata', $request->id_objek_wisata)
+            ->whereIn('tb_tiket_wisata.status_pembayaran', ['paid', 'completed', 'pending'])
+            ->whereBetween('tb_tiket_wisata.tanggal_kunjungan', [$startDate, $endDate])
+            ->selectRaw('tb_tiket_wisata.tanggal_kunjungan, SUM(tb_tiket_detail.jumlah) as total_tiket')
+            ->groupBy('tb_tiket_wisata.tanggal_kunjungan')
             ->pluck('total_tiket', 'tanggal_kunjungan')
             ->toArray();
 

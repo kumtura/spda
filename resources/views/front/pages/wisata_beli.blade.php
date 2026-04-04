@@ -32,7 +32,7 @@
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
                         Pilih Tanggal <span class="text-rose-500">*</span>
                     </label>
-                    <button type="button" @click="showCalendar = true" 
+                    <button type="button" @click="openCalendar()" 
                         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-left flex items-center justify-between transition-all hover:border-[#00a6eb]/50 focus:ring-4 focus:ring-[#00a6eb]/10">
                         <span class="text-sm" :class="selectedDate ? 'font-bold text-slate-800' : 'text-slate-400'" x-text="selectedDate ? formatDisplayDate(selectedDate) : 'Pilih tanggal kunjungan...'"></span>
                         <i class="bi bi-calendar3 text-[#00a6eb]"></i>
@@ -408,7 +408,11 @@ function ticketApp() {
         calendarMonth: today.getMonth(),
         calendarYear: today.getFullYear(),
         availabilityData: {},
+        loadedAvailabilityMonths: {},
         loadingAvailability: false,
+        activeAvailabilityRequest: 0,
+        availabilityAbortController: null,
+        hasDailyLimit: @json((bool) $objek->batas_tiket_harian),
         isUnlimited: true,
         quantities: {},
         summaryItems: {},
@@ -421,7 +425,33 @@ function ticketApp() {
         biodataEmail: '',
 
         init() {
-            this.fetchAvailability(this.calendarMonth + 1, this.calendarYear);
+            this.isUnlimited = !this.hasDailyLimit;
+        },
+
+        openCalendar() {
+            this.showCalendar = true;
+            this.ensureAvailabilityForCurrentMonth();
+        },
+
+        getAvailabilityMonthKey(month, year) {
+            return year + '-' + String(month).padStart(2, '0');
+        },
+
+        ensureAvailabilityForCurrentMonth() {
+            if (!this.hasDailyLimit) {
+                this.isUnlimited = true;
+                return;
+            }
+
+            const month = this.calendarMonth + 1;
+            const year = this.calendarYear;
+            const monthKey = this.getAvailabilityMonthKey(month, year);
+
+            if (this.loadedAvailabilityMonths[monthKey]) {
+                return;
+            }
+
+            this.fetchAvailability(month, year);
         },
 
         get calendarTitle() {
@@ -478,7 +508,7 @@ function ticketApp() {
             } else {
                 this.calendarMonth--;
             }
-            this.fetchAvailability(this.calendarMonth + 1, this.calendarYear);
+            this.ensureAvailabilityForCurrentMonth();
         },
 
         nextMonth() {
@@ -488,20 +518,41 @@ function ticketApp() {
             } else {
                 this.calendarMonth++;
             }
-            this.fetchAvailability(this.calendarMonth + 1, this.calendarYear);
+            this.ensureAvailabilityForCurrentMonth();
         },
 
         async fetchAvailability(month, year) {
+            if (!this.hasDailyLimit) {
+                this.isUnlimited = true;
+                return;
+            }
+
+            const monthKey = this.getAvailabilityMonthKey(month, year);
+            if (this.loadedAvailabilityMonths[monthKey]) {
+                return;
+            }
+
             const self = this;
+            const requestId = ++self.activeAvailabilityRequest;
+
+            if (self.availabilityAbortController) {
+                self.availabilityAbortController.abort();
+            }
+
+            const controller = new AbortController();
+            self.availabilityAbortController = controller;
             self.loadingAvailability = true;
 
             // Failsafe: force loading off after 8 seconds no matter what
-            const failsafe = setTimeout(function() { self.loadingAvailability = false; }, 8000);
+            const failsafe = setTimeout(function() {
+                if (requestId === self.activeAvailabilityRequest) {
+                    self.loadingAvailability = false;
+                }
+            }, 8000);
 
             try {
-                const controller = new AbortController();
                 const timeoutId = setTimeout(function() { controller.abort(); }, 6000);
-                const url = '/wisata/check-availability?id_objek_wisata={{ $objek->id_objek_wisata }}&month=' + month + '&year=' + year;
+                const url = '{{ url('wisata/check-availability') }}?id_objek_wisata={{ $objek->id_objek_wisata }}&month=' + month + '&year=' + year;
                 const response = await fetch(url, {
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                     signal: controller.signal
@@ -512,15 +563,22 @@ function ticketApp() {
                 const data = JSON.parse(text);
 
                 self.isUnlimited = data.unlimited === true || data.unlimited === undefined;
-                if (!data.unlimited && data.dates) {
+                if (self.isUnlimited) {
+                    self.loadedAvailabilityMonths[monthKey] = true;
+                } else if (data.dates) {
                     self.availabilityData = Object.assign({}, self.availabilityData, data.dates);
+                    self.loadedAvailabilityMonths[monthKey] = true;
                 }
             } catch (e) {
-                console.error('Availability fetch failed:', e);
-                self.isUnlimited = true;
+                if (e.name !== 'AbortError') {
+                    console.error('Availability fetch failed:', e);
+                }
             } finally {
                 clearTimeout(failsafe);
-                self.loadingAvailability = false;
+                if (requestId === self.activeAvailabilityRequest) {
+                    self.loadingAvailability = false;
+                    self.availabilityAbortController = null;
+                }
             }
         },
 

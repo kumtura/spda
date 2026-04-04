@@ -4,6 +4,7 @@
 <div class="space-y-6" x-data="{ 
     tipeKategori: '',
     opsiHarga: '',
+    marketType: 'all',
     hasSelection() {
         return this.tipeKategori != '' && (this.tipeKategori == 'kendaraan' || this.opsiHarga != '');
     }
@@ -25,7 +26,7 @@
         @csrf
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
             
-            <!-- LEFT COLUMN: BASIC INFO (ALWAYS UNLOCKED) -->
+            <!-- LEFT COLUMN: BASIC INFO -->
             <div class="xl:col-span-2 space-y-6">
                 <!-- DATA IDENTITAS -->
                 <div class="bg-white border-2 border-slate-100 rounded-3xl p-6 md:p-8 shadow-xl">
@@ -57,7 +58,7 @@
                     <div class="space-y-6">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Deskripsi Lengkap <span class="text-rose-500">*</span></label>
-                            <textarea name="description" rows="4" required
+                            <textarea name="deskripsi" rows="4" required
                                 class="w-full px-4 py-3 text-sm bg-slate-50 border-2 border-slate-50 rounded-xl focus:outline-none focus:bg-white focus:border-primary-light transition-all"
                                 placeholder="Ceritakan sejarah atau daya tarik wisata ini..."></textarea>
                         </div>
@@ -78,16 +79,14 @@
                         Media & Jam Operasional
                     </h3>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Jam Buka</label>
-                                <input type="time" name="jam_buka" class="w-full px-3 py-2.5 text-sm bg-slate-50 border rounded-xl">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Jam Tutup</label>
-                                <input type="time" name="jam_tutup" class="w-full px-3 py-2.5 text-sm bg-slate-50 border rounded-xl">
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Jam Buka</label>
+                            <input type="time" name="jam_buka" class="w-full px-3 py-2.5 text-sm bg-slate-50 border rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Jam Tutup</label>
+                            <input type="time" name="jam_tutup" class="w-full px-3 py-2.5 text-sm bg-slate-50 border rounded-xl">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Foto Preview</label>
@@ -95,8 +94,74 @@
                         </div>
                     </div>
 
-                    <!-- FINAL SUBMIT -->
-                    <div class="flex justify-center pt-8 border-t border-slate-100">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Kapasitas Harian (Orang)</label>
+                            <input type="number" name="kapasitas_harian" min="1"
+                                class="w-full px-3 py-2.5 text-sm bg-slate-50 border rounded-xl"
+                                placeholder="Kosongkan jika tidak dibatasi">
+                            <p class="text-[10px] text-slate-400 mt-1">Opsional — total pengunjung per hari</p>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Batas Penjualan Tiket / Hari</label>
+                            <input type="number" name="batas_tiket_harian" min="1"
+                                class="w-full px-3 py-2.5 text-sm bg-slate-50 border rounded-xl"
+                                placeholder="Kosongkan = unlimited">
+                            <p class="text-[10px] text-slate-400 mt-1">Jumlah tiket maksimal dijual per hari. Kosongkan = tidak dibatasi.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DETAIL & TERMASUK TIKET -->
+                <div class="bg-white border-2 border-slate-100 rounded-3xl p-6 md:p-8 shadow-xl">
+                    <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest border-b border-slate-100 pb-4 mb-6 flex items-center gap-3">
+                        <i class="bi bi-card-text text-primary-light text-xl"></i>
+                        Detail & Termasuk Tiket
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-6 -mt-2">Informasi ini akan ditampilkan di halaman detail wisata untuk pengunjung.</p>
+
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">
+                                <i class="bi bi-info-circle text-blue-500 mr-1"></i> Deskripsi Tiket
+                            </label>
+                            <textarea name="detail_termasuk" rows="3"
+                                class="w-full px-4 py-3 text-sm bg-slate-50 border-2 border-slate-50 rounded-xl focus:outline-none focus:bg-white focus:border-primary-light transition-all"
+                                placeholder="Apa saja yang termasuk dalam tiket: akses area, fasilitas, dll..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">
+                                <i class="bi bi-signpost-2 text-emerald-500 mr-1"></i> Cara Penggunaan
+                            </label>
+                            <textarea name="cara_penggunaan" rows="3"
+                                class="w-full px-4 py-3 text-sm bg-slate-50 border-2 border-slate-50 rounded-xl focus:outline-none focus:bg-white focus:border-primary-light transition-all"
+                                placeholder="Langkah-langkah penggunaan tiket: tunjukkan QR, scan di gerbang, dll..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">
+                                <i class="bi bi-x-circle text-rose-500 mr-1"></i> Pembatalan
+                            </label>
+                            <textarea name="pembatalan" rows="3"
+                                class="w-full px-4 py-3 text-sm bg-slate-50 border-2 border-slate-50 rounded-xl focus:outline-none focus:bg-white focus:border-primary-light transition-all"
+                                placeholder="Kebijakan pembatalan dan pengembalian dana..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">
+                                <i class="bi bi-shield-check text-amber-500 mr-1"></i> Syarat & Ketentuan
+                            </label>
+                            <textarea name="syarat_ketentuan" rows="3"
+                                class="w-full px-4 py-3 text-sm bg-slate-50 border-2 border-slate-50 rounded-xl focus:outline-none focus:bg-white focus:border-primary-light transition-all"
+                                placeholder="Syarat dan ketentuan yang berlaku untuk penggunaan tiket..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FINAL SUBMIT -->
+                <div class="bg-white border-2 border-slate-100 rounded-3xl p-6 md:p-8 shadow-xl">
+                    <div class="flex justify-center">
                         <button type="submit" class="px-10 py-5 bg-linear-to-r from-primary-light to-primary-dark text-white text-sm font-black uppercase tracking-widest rounded-2xl shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
                             <i class="bi bi-cloud-arrow-up-fill text-xl"></i> Daftar Objek Wisata Sekarang
                         </button>
@@ -107,25 +172,58 @@
             <!-- RIGHT COLUMN: PRICING WIZARD -->
             <div class="xl:col-span-1 space-y-6">
                 
-                <div class="bg-slate-800 rounded-3xl p-6 shadow-2xl text-white">
+                <div class="bg-slate-800 rounded-3xl p-6 shadow-2xl text-white sticky top-6">
                     <h3 class="text-xs font-black uppercase tracking-widest mb-6 opacity-60 flex items-center gap-2">
                         <i class="bi bi-tag-fill"></i> Kategori Tiket
                     </h3>
 
                     <!-- STEP 1: PILIH KATEGORI UTAMA -->
-                    <div class="space-y-4 mb-8">
+                    <div class="space-y-4 mb-6">
                         <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">1. Pilih Tipe Kategori</label>
-                        <select name="tipe_kategori_utama" x-model="tipeKategori" @change="opsiHarga = ''" required
-                            class="w-full px-4 py-3 text-sm bg-slate-700 border-none rounded-xl text-white focus:ring-2 focus:ring-primary-light transition-all">
-                            <option value="">-- Pilih Tipe --</option>
-                            <option value="orang">Per Orang (Pengunjung)</option>
-                            <option value="kendaraan">Per Kendaraan (Parkir/Masuk)</option>
-                        </select>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" @click="tipeKategori = 'orang'; opsiHarga = ''; marketType = 'all'"
+                                :class="tipeKategori === 'orang' ? 'bg-primary-light text-white ring-2 ring-primary-light/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
+                                class="py-3 rounded-xl text-xs font-bold transition-all text-center">
+                                <i class="bi bi-people-fill block text-lg mb-1"></i>
+                                Per Orang
+                            </button>
+                            <button type="button" @click="tipeKategori = 'kendaraan'; opsiHarga = ''; marketType = 'all'"
+                                :class="tipeKategori === 'kendaraan' ? 'bg-amber-500 text-white ring-2 ring-amber-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
+                                class="py-3 rounded-xl text-xs font-bold transition-all text-center">
+                                <i class="bi bi-car-front-fill block text-lg mb-1"></i>
+                                Per Kendaraan
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- STEP 2: PILIH OPSI PENGATURAN -->
-                    <div class="space-y-4 mb-8" x-show="tipeKategori === 'orang'">
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">2. Pilih Format Harga</label>
+                    <!-- STEP 2: MARKET TYPE (only for orang) -->
+                    <div class="space-y-4 mb-6" x-show="tipeKategori === 'orang'" x-transition>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">2. Kategori Pasar</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" @click="marketType = 'local'"
+                                :class="marketType === 'local' ? 'bg-emerald-500 text-white ring-2 ring-emerald-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
+                                class="py-2.5 rounded-xl text-[10px] font-bold transition-all text-center">
+                                Lokal
+                            </button>
+                            <button type="button" @click="marketType = 'wna'"
+                                :class="marketType === 'wna' ? 'bg-violet-500 text-white ring-2 ring-violet-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
+                                class="py-2.5 rounded-xl text-[10px] font-bold transition-all text-center">
+                                WNA
+                            </button>
+                            <button type="button" @click="marketType = 'all'"
+                                :class="marketType === 'all' ? 'bg-blue-500 text-white ring-2 ring-blue-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
+                                class="py-2.5 rounded-xl text-[10px] font-bold transition-all text-center">
+                                Semua
+                            </button>
+                        </div>
+                        <p class="text-[9px] text-slate-500">Untuk siapa harga ini berlaku</p>
+                    </div>
+
+                    <!-- STEP 3: FORMAT HARGA (only for orang) -->
+                    <div class="space-y-4 mb-6" x-show="tipeKategori === 'orang'" x-transition>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">
+                            <span x-text="tipeKategori === 'orang' ? '3' : '2'"></span>. Pilih Format Harga
+                        </label>
                         <select x-model="opsiHarga"
                             class="w-full px-4 py-3 text-sm bg-slate-700 border-none rounded-xl text-white focus:ring-2 focus:ring-primary-light transition-all">
                             <option value="">-- Pilih Pengaturan --</option>
@@ -136,7 +234,22 @@
 
                     <!-- NOMINAL INPUTS (Dynamic) -->
                     <div class="space-y-4" x-show="hasSelection()" x-transition>
-                        <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-4 tracking-widest">3. Isi Nominal Harga</h4>
+                        <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-4 tracking-widest">
+                            <span x-text="tipeKategori === 'orang' ? '4' : '2'"></span>. Isi Nominal Harga
+                        </h4>
+                        
+                        <!-- Market type badge -->
+                        <div x-show="tipeKategori === 'orang'" class="mb-3">
+                            <span x-show="marketType === 'local'" class="text-[9px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded-lg">
+                                <i class="bi bi-geo-alt mr-1"></i>Harga Lokal
+                            </span>
+                            <span x-show="marketType === 'wna'" class="text-[9px] font-bold text-violet-400 bg-violet-500/20 px-2 py-1 rounded-lg">
+                                <i class="bi bi-globe mr-1"></i>Harga WNA
+                            </span>
+                            <span x-show="marketType === 'all'" class="text-[9px] font-bold text-blue-400 bg-blue-500/20 px-2 py-1 rounded-lg">
+                                <i class="bi bi-people mr-1"></i>Semua (Lokal & WNA)
+                            </span>
+                        </div>
                         
                         <!-- IF ORANG - SAMA -->
                         <div x-show="tipeKategori == 'orang' && opsiHarga == 'sama'" class="space-y-4">
@@ -144,12 +257,13 @@
                                 <label class="text-[10px] font-bold text-slate-400 block mb-2">Tiket Umum (Rp)</label>
                                 <input type="number" name="harga[umum]" placeholder="0" class="w-full bg-slate-800 border-none rounded-lg text-white font-black">
                                 <input type="hidden" name="kategori_aktif[]" value="umum">
+                                <input type="hidden" name="market_type[umum]" :value="marketType">
                             </div>
                         </div>
 
                         <!-- IF ORANG - KATEGORI USIA -->
                         <div x-show="tipeKategori == 'orang' && opsiHarga == 'kategori'" class="space-y-3">
-                            @foreach(['dewasa' => 'Dewasa', 'anak' => 'Anak-anak', 'balita' => 'Balita', 'lansia' => 'Lansia'] as $key => $label)
+                            @foreach(['dewasa' => 'Dewasa', 'anak' => 'Anak-anak', 'balita' => 'Balita', 'lansia' => 'Lansia', 'pelajar' => 'Pelajar/Mahasiswa'] as $key => $label)
                             <div class="flex items-center gap-3 bg-slate-700/50 p-3 rounded-xl border border-slate-600 group">
                                 <input type="checkbox" name="kategori_aktif[]" value="{{ $key }}" class="h-5 w-5 rounded bg-slate-800 border-none text-primary-light checkbox-trigger">
                                 <div class="flex-1">
@@ -157,6 +271,7 @@
                                     <input type="number" name="harga[{{ $key }}]" placeholder="0" disabled 
                                         class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input">
                                 </div>
+                                <input type="hidden" name="market_type[{{ $key }}]" :value="marketType">
                             </div>
                             @endforeach
                         </div>

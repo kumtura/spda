@@ -48,7 +48,7 @@ class ObjekWisataController extends Controller
 
         $request->validate($rules);
 
-        $data = $request->except(['foto', 'kategori_aktif', 'harga']);
+        $data = $request->except(['foto', 'kategori_aktif', 'harga', 'market_type', 'tipe_kategori_utama']);
         
         // Set kapasitas_harian to null if empty
         if (empty($data['kapasitas_harian'])) {

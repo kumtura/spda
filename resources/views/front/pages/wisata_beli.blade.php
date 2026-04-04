@@ -492,31 +492,35 @@ function ticketApp() {
         },
 
         async fetchAvailability(month, year) {
-            this.loadingAvailability = true;
+            const self = this;
+            self.loadingAvailability = true;
+
+            // Failsafe: force loading off after 8 seconds no matter what
+            const failsafe = setTimeout(function() { self.loadingAvailability = false; }, 8000);
+
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-                const params = new URLSearchParams({
-                    id_objek_wisata: '{{ $objek->id_objek_wisata }}',
-                    month: month,
-                    year: year
-                });
-                const response = await fetch('{{ url("wisata/check-availability") }}?' + params.toString(), {
-                    headers: { 'Accept': 'application/json' },
+                const timeoutId = setTimeout(function() { controller.abort(); }, 6000);
+                const url = '/wisata/check-availability?id_objek_wisata={{ $objek->id_objek_wisata }}&month=' + month + '&year=' + year;
+                const response = await fetch(url, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
                 if (!response.ok) throw new Error('HTTP ' + response.status);
-                const data = await response.json();
-                
-                this.isUnlimited = data.unlimited ?? true;
+                const text = await response.text();
+                const data = JSON.parse(text);
+
+                self.isUnlimited = data.unlimited === true || data.unlimited === undefined;
                 if (!data.unlimited && data.dates) {
-                    this.availabilityData = Object.assign({}, this.availabilityData, data.dates);
+                    self.availabilityData = Object.assign({}, self.availabilityData, data.dates);
                 }
             } catch (e) {
-                console.error('Failed to fetch availability:', e);
+                console.error('Availability fetch failed:', e);
+                self.isUnlimited = true;
             } finally {
-                this.loadingAvailability = false;
+                clearTimeout(failsafe);
+                self.loadingAvailability = false;
             }
         },
 

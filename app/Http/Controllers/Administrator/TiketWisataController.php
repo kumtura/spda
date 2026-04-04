@@ -16,7 +16,29 @@ class TiketWisataController extends Controller
 {
     public function index()
     {
-        return view('backend.kelian.tiket');
+        $banjar = auth()->user()->banjar;
+        $idBanjar = $banjar ? $banjar->id_data_banjar : 0;
+
+        $objekWisata = ObjekWisata::with('kategoriTiket')
+            ->where('id_data_banjar', $idBanjar)
+            ->where('aktif', '1')
+            ->where('status', 'aktif')
+            ->get();
+
+        $objekIds = $objekWisata->pluck('id_objek_wisata');
+
+        $tiketHariIni = TiketWisata::whereDate('created_at', today())
+            ->where('status_pembayaran', 'completed')
+            ->whereIn('id_objek_wisata', $objekIds)
+            ->with('details')
+            ->get();
+
+        $totalPenjualanHariIni = $tiketHariIni->sum('total_harga');
+        $totalTiketTerjual = $tiketHariIni->sum(fn($t) => $t->details->sum('jumlah'));
+
+        return view('backend.kelian.tiket', compact(
+            'objekWisata', 'tiketHariIni', 'totalPenjualanHariIni', 'totalTiketTerjual'
+        ));
     }
 
     public function scan()
@@ -31,7 +53,8 @@ class TiketWisataController extends Controller
             ->where('status', 'aktif');
             
         if (auth()->user()->id_level != config('myconfig.level.bendesa', 1)) {
-            $idBanjar = auth()->user()->id_banjar ?? 0;
+            $banjar = auth()->user()->banjar;
+            $idBanjar = $banjar ? $banjar->id_data_banjar : 0;
             $query->where('id_data_banjar', $idBanjar);
         }
             

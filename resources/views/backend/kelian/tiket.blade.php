@@ -7,23 +7,7 @@
         <p class="text-slate-400 text-[10px] mt-1">Kelola penjualan tiket objek wisata desa adat</p>
     </div>
 
-    @php
-        $idBanjar = auth()->user()->id_banjar ?? 0;
-        $objekWisata = App\Models\ObjekWisata::with('kategoriTiket')
-            ->where('id_data_banjar', $idBanjar)
-            ->where('aktif', '1')
-            ->where('status', 'aktif')
-            ->get();
-        $tiketHariIni = App\Models\TiketWisata::whereDate('created_at', today())
-            ->where('status_pembayaran', 'completed')
-            ->whereIn('id_objek_wisata', $objekWisata->pluck('id_objek_wisata'))
-            ->with('details')
-            ->get();
-        $totalPenjualanHariIni = $tiketHariIni->sum('total_harga');
-        $totalTiketTerjual = $tiketHariIni->sum(function($tiket) {
-            return $tiket->details->sum('jumlah');
-        });
-    @endphp
+    {{-- Data passed from TiketWisataController@index --}}
 
     <!-- Stats Card -->
     <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
@@ -93,16 +77,6 @@
         @if($objekWisata->count() > 0)
         <div class="space-y-3">
             @foreach($objekWisata as $objek)
-            @php
-                $tiketTerjualObjek = App\Models\TiketWisata::where('id_objek_wisata', $objek->id_objek_wisata)
-                    ->whereDate('created_at', today())
-                    ->where('status_pembayaran', 'completed')
-                    ->with('details')
-                    ->get()
-                    ->sum(function($tiket) {
-                        return $tiket->details->sum('jumlah');
-                    });
-            @endphp
             <a href="{{ url('administrator/kelian/tiket/objek/detail/'.$objek->id_objek_wisata) }}" class="block bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                 <div class="flex items-start gap-4 p-4">
                     <div class="h-16 w-16 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
@@ -117,18 +91,9 @@
                         <p class="text-[10px] text-slate-500 mb-2 line-clamp-1">{{ $objek->alamat }}</p>
                         <div class="flex items-center gap-2 mb-2">
                             @php
-                                $pemasukanObjek = App\Models\TiketWisata::where('id_objek_wisata', $objek->id_objek_wisata)
-                                    ->whereDate('created_at', today())
-                                    ->where('status_pembayaran', 'completed')
-                                    ->sum('total_harga');
-                                $tiketTerjualObjek = App\Models\TiketWisata::where('id_objek_wisata', $objek->id_objek_wisata)
-                                    ->whereDate('created_at', today())
-                                    ->where('status_pembayaran', 'completed')
-                                    ->with('details')
-                                    ->get()
-                                    ->sum(function($tiket) {
-                                        return $tiket->details->sum('jumlah');
-                                    });
+                                $tiketObjek = $tiketHariIni->where('id_objek_wisata', $objek->id_objek_wisata);
+                                $pemasukanObjek = $tiketObjek->sum('total_harga');
+                                $tiketTerjualObjek = $tiketObjek->sum(fn($t) => $t->details->sum('jumlah'));
                             @endphp
                             <span class="text-[9px] font-bold text-[#00a6eb] bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
                                 Rp {{ number_format($pemasukanObjek, 0, ',', '.') }}

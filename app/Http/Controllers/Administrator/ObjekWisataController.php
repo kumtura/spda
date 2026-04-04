@@ -12,15 +12,22 @@ class ObjekWisataController extends Controller
 {
     public function index()
     {
-        $objekWisata = ObjekWisata::with('banjar')
-        ->withSum(['tiket as total_pemasukan' => function($q) {
-            $q->where('status_pembayaran', 'paid');
-        }], 'total_harga')
-        ->withCount(['tiket as total_tiket_terjual' => function($q) {
-            $q->where('status_pembayaran', 'paid');
-        }])
-        ->orderBy('created_at', 'desc')
-        ->get();
+        $query = ObjekWisata::with('banjar')
+            ->withSum(['tiket as total_pemasukan' => function($q) {
+                $q->where('status_pembayaran', 'completed');
+            }], 'total_harga')
+            ->withCount(['tiket as total_tiket_terjual' => function($q) {
+                $q->where('status_pembayaran', 'completed');
+            }]);
+
+        // Kelian only sees objects from their banjar
+        if (auth()->user()->id_level != config('myconfig.level.bendesa', 1)) {
+            $banjar = auth()->user()->banjar;
+            $idBanjar = $banjar ? $banjar->id_data_banjar : 0;
+            $query->where('id_data_banjar', $idBanjar);
+        }
+
+        $objekWisata = $query->orderBy('created_at', 'desc')->get();
         return view('admin.pages.objek_wisata.index', compact('objekWisata'));
     }
 

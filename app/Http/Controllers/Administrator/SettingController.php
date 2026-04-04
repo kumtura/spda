@@ -156,6 +156,16 @@ class SettingController extends Controller
         return redirect()->back()->with('success', 'Rekening bank berhasil diperbarui!');
     }
 
+    public function waha()
+    {
+        $settingsPath = storage_path('app/settings.json');
+        $village = [];
+        if (File::exists($settingsPath)) {
+            $village = json_decode(File::get($settingsPath), true);
+        }
+        return view('admin.pages.settings.waha', compact('village'));
+    }
+
     public function update_waha(Request $request)
     {
         $request->validate([

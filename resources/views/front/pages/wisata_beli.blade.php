@@ -494,22 +494,30 @@ function ticketApp() {
         async fetchAvailability(month, year) {
             this.loadingAvailability = true;
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
                 const params = new URLSearchParams({
                     id_objek_wisata: '{{ $objek->id_objek_wisata }}',
                     month: month,
                     year: year
                 });
-                const response = await fetch('{{ url("wisata/check-availability") }}?' + params.toString());
+                const response = await fetch('{{ url("wisata/check-availability") }}?' + params.toString(), {
+                    headers: { 'Accept': 'application/json' },
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error('HTTP ' + response.status);
                 const data = await response.json();
                 
-                this.isUnlimited = data.unlimited;
+                this.isUnlimited = data.unlimited ?? true;
                 if (!data.unlimited && data.dates) {
-                    Object.assign(this.availabilityData, data.dates);
+                    this.availabilityData = Object.assign({}, this.availabilityData, data.dates);
                 }
             } catch (e) {
                 console.error('Failed to fetch availability:', e);
+            } finally {
+                this.loadingAvailability = false;
             }
-            this.loadingAvailability = false;
         },
 
         selectDate(dateStr) {

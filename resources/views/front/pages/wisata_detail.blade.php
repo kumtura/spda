@@ -91,7 +91,7 @@
                     <div>
                         @if($hasMultipleMarkets)
                         <div class="flex items-center gap-1.5 mb-2">
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-lg text-[9px] font-bold">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-700 rounded-lg text-[9px] font-bold">
                                 <i class="bi bi-geo-alt"></i> Lokal
                             </span>
                         </div>
@@ -105,7 +105,7 @@
                                     <p class="text-[9px] text-slate-500">{{ $kategori->deskripsi }}</p>
                                     @endif
                                 </div>
-                                <p class="text-sm font-black text-emerald-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                                <p class="text-sm font-black text-slate-800">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
                             </div>
                             @endforeach
                         </div>
@@ -116,7 +116,7 @@
                     <div>
                         @if($hasMultipleMarkets)
                         <div class="flex items-center gap-1.5 mb-2">
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 rounded-lg text-[9px] font-bold">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-700 rounded-lg text-[9px] font-bold">
                                 <i class="bi bi-globe"></i> WNA
                             </span>
                         </div>
@@ -130,7 +130,7 @@
                                     <p class="text-[9px] text-slate-500">{{ $kategori->deskripsi }}</p>
                                     @endif
                                 </div>
-                                <p class="text-sm font-black text-violet-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                                <p class="text-sm font-black text-slate-800">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
                             </div>
                             @endforeach
                         </div>
@@ -158,7 +158,7 @@
                     @if($kendaraanKategori->count() > 0)
                     <div>
                         <div class="flex items-center gap-1.5 mb-2">
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-lg text-[9px] font-bold">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-700 rounded-lg text-[9px] font-bold">
                                 <i class="bi bi-car-front"></i> Kendaraan
                             </span>
                         </div>
@@ -171,7 +171,7 @@
                                     <p class="text-[9px] text-slate-500">{{ $kategori->deskripsi }}</p>
                                     @endif
                                 </div>
-                                <p class="text-sm font-black text-amber-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                                <p class="text-sm font-black text-slate-800">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
                             </div>
                             @endforeach
                         </div>
@@ -216,8 +216,8 @@
             @if($objek->cara_penggunaan)
             <div>
                 <div class="flex items-center gap-2 mb-2">
-                    <div class="h-6 w-6 bg-emerald-50 rounded-lg flex items-center justify-center">
-                        <i class="bi bi-signpost-split text-emerald-600 text-[10px]"></i>
+                    <div class="h-6 w-6 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-signpost-split text-[#00a6eb] text-[10px]"></i>
                     </div>
                     <h3 class="text-xs font-bold text-slate-700">Cara Penggunaan</h3>
                 </div>

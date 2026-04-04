@@ -1005,11 +1005,47 @@ class LandingController extends Controller
                 'tanggal_kunjungan' => $request->tanggal_kunjungan,
                 'total_harga' => $total,
                 'kategori' => $kategoriData,
-                'nama_pengunjung' => $request->input('nama_pengunjung'),
-                'no_wa' => $request->input('no_wa'),
-                'email' => $request->input('email'),
             ]
         ]);
+
+        return redirect()->to('wisata/payment/methods');
+    }
+
+    public function wisata_payment_proceed(Request $request)
+    {
+        if (!session('tiket_data')) {
+            return redirect()->to('wisata');
+        }
+
+        $request->validate([
+            'payment_method' => 'required|string',
+        ]);
+
+        $tiketData = session('tiket_data');
+
+        if (!$request->input('skip_biodata')) {
+            $tiketData['nama_pengunjung'] = $request->input('nama_pengunjung');
+            $tiketData['no_wa'] = $request->input('no_wa');
+            $tiketData['email'] = $request->input('email');
+        } else {
+            $tiketData['nama_pengunjung'] = null;
+            $tiketData['no_wa'] = null;
+            $tiketData['email'] = null;
+        }
+
+        session(['tiket_data' => $tiketData]);
+
+        $amount = $tiketData['total_harga'];
+        $method = $request->input('payment_method');
+
+        if ($method === 'manual') {
+            return redirect()->to('wisata/payment/manual?amount=' . $amount);
+        }
+
+        if (str_starts_with($method, 'xendit:')) {
+            $channel = substr($method, 7);
+            return redirect()->to('wisata/payment/xendit?channel=' . urlencode($channel) . '&amount=' . $amount);
+        }
 
         return redirect()->to('wisata/payment/methods');
     }

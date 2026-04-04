@@ -10,7 +10,7 @@
         padding-bottom: 0 !important;
     }
 </style>
-<div class="bg-slate-50 min-h-screen pb-12">
+<div class="bg-slate-50 min-h-screen pb-12" x-data="paymentPage">
     <!-- Header -->
     <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-8 pb-12 text-white relative overflow-hidden">
         <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
@@ -26,7 +26,9 @@
         </div>
     </div>
 
-    <div class="px-4 -mt-6 relative z-10 space-y-4">
+    <form method="POST" action="{{ url('wisata/payment/proceed') }}" class="px-4 -mt-6 relative z-10 space-y-4">
+        @csrf
+        <input type="hidden" name="payment_method" x-model="selectedMethod">
         @php
             $amount = $tiketData['total_harga'];
             $order_id = 'TKT-' . time();
@@ -73,6 +75,44 @@
             </div>
         </div>
 
+        <!-- Data Pengunjung (Opsional) -->
+        <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Data Pengunjung</h3>
+                <button type="button" @click="skipBiodata = !skipBiodata" class="text-[10px] font-bold" :class="skipBiodata ? 'text-[#00a6eb]' : 'text-slate-400'">
+                    <span x-text="skipBiodata ? 'Isi Data' : 'Lewati'"></span>
+                </button>
+            </div>
+
+            <div x-show="!skipBiodata" x-transition class="space-y-3">
+                <p class="text-[10px] text-slate-500 leading-relaxed">Isi data untuk menerima e-ticket via WhatsApp & Email secara otomatis setelah pembayaran berhasil.</p>
+                
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-1.5 block">Nama Lengkap</label>
+                    <input type="text" name="nama_pengunjung" placeholder="Masukkan nama lengkap"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:ring-4 focus:ring-[#00a6eb]/10 focus:border-[#00a6eb]/50 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-1.5 block">No. WhatsApp</label>
+                    <input type="tel" name="no_wa" placeholder="08xxxxxxxxxx"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:ring-4 focus:ring-[#00a6eb]/10 focus:border-[#00a6eb]/50 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-1.5 block">Email</label>
+                    <input type="email" name="email" placeholder="email@contoh.com"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:ring-4 focus:ring-[#00a6eb]/10 focus:border-[#00a6eb]/50 outline-none transition-all">
+                </div>
+            </div>
+
+            <div x-show="skipBiodata" x-transition class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <i class="bi bi-info-circle text-slate-400 text-lg shrink-0"></i>
+                    <p class="text-[10px] text-slate-500 leading-relaxed">Data pengunjung dilewati. E-ticket hanya bisa diunduh langsung setelah pembayaran berhasil dan tidak akan dikirim via WhatsApp/Email.</p>
+                </div>
+                <input type="hidden" name="skip_biodata" value="1">
+            </div>
+        </div>
+
         <!-- Payment Groups -->
         <div class="space-y-4">
             <!-- Transfer Manual -->
@@ -82,7 +122,7 @@
                     <span class="text-[8px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">Verifikasi Manual</span>
                 </div>
                 <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-                    <a href="{{ url('wisata/payment/manual?amount='.$amount) }}" class="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left group block">
+                    <button type="submit" @click="selectedMethod = 'manual'" class="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left group">
                         <div class="h-10 w-12 flex items-center justify-center">
                             <i class="bi bi-bank text-2xl text-[#00a6eb]"></i>
                         </div>
@@ -91,7 +131,7 @@
                             <span class="text-[9px] text-slate-400">Upload bukti transfer untuk verifikasi</span>
                         </div>
                         <i class="bi bi-chevron-right ms-auto text-slate-300 text-xs"></i>
-                    </a>
+                    </button>
                 </div>
             </div>
 
@@ -104,13 +144,13 @@
                 </div>
                 <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden divide-y divide-slate-50">
                     @foreach($instantPayments as $channel)
-                    <a href="{{ url('wisata/payment/xendit?channel='.$channel->code.'&amount='.$amount) }}" class="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left group block">
+                    <button type="submit" @click="selectedMethod = 'xendit:{{ $channel->code }}'" class="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left group">
                         <div class="h-10 w-12 flex items-center justify-center group-hover:grayscale-0 transition-all">
                             <img src="{{ $channel->icon_url }}" class="h-8 object-contain" alt="{{ $channel->name }}">
                         </div>
                         <span class="text-xs font-bold text-slate-700">{{ $channel->name }}</span>
                         <i class="bi bi-chevron-right ms-auto text-slate-300 text-xs"></i>
-                    </a>
+                    </button>
                     @endforeach
                 </div>
             </div>
@@ -125,13 +165,13 @@
                 </div>
                 <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden divide-y divide-slate-50">
                     @foreach($vaPayments as $channel)
-                    <a href="{{ url('wisata/payment/xendit?channel='.$channel->code.'&amount='.$amount) }}" class="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left group block">
+                    <button type="submit" @click="selectedMethod = 'xendit:{{ $channel->code }}'" class="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left group">
                         <div class="h-10 w-12 flex items-center justify-center group-hover:grayscale-0 transition-all">
                             <img src="{{ $channel->icon_url }}" class="h-8 object-contain" alt="{{ $channel->name }}">
                         </div>
                         <span class="text-xs font-bold text-slate-700">{{ $channel->name }}</span>
                         <i class="bi bi-chevron-right ms-auto text-slate-300 text-xs"></i>
-                    </a>
+                    </button>
                     @endforeach
                 </div>
             </div>
@@ -146,6 +186,17 @@
             </div>
             <p class="text-[9px] font-medium text-slate-400">Pembayaran dijamin aman dengan enkripsi standar industri.</p>
         </div>
-    </div>
+    </form>
 </div>
+
+<script>
+document.addEventListener('alpine:init', function() {
+    Alpine.data('paymentPage', function() {
+        return {
+            selectedMethod: '',
+            skipBiodata: false
+        };
+    });
+});
+</script>
 @endsection

@@ -1,19 +1,25 @@
 @extends('mobile_layout_public')
 
 @section('content')
-<div class="bg-white pb-24" x-data="ticketApp()">
-    <!-- Header -->
-    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-8 pb-12 text-white relative overflow-hidden">
+<div class="bg-white pb-24" x-data="ticketApp">
+    <!-- Header with wisata background image -->
+    <div class="px-4 pt-8 pb-12 text-white relative overflow-hidden" style="min-height: 160px;">
+        @if($objek->foto)
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ asset('storage/wisata/'.$objek->foto) }}');"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"></div>
+        @else
+        <div class="absolute inset-0 bg-gradient-to-br from-[#00a6eb] to-[#0090d0]"></div>
         <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
         <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
+        @endif
         
         <a href="{{ url('wisata/detail/'.$objek->id_objek_wisata) }}" class="inline-flex items-center gap-1 text-white/80 hover:text-white text-xs font-bold transition-colors mb-6 relative z-10">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
         
         <div class="relative z-10">
-            <h1 class="text-2xl font-black mb-2">Beli Tiket</h1>
-            <p class="text-white/80 text-xs font-medium">{{ $objek->nama_objek }}</p>
+            <h1 class="text-2xl font-black mb-2 drop-shadow-md">Beli Tiket</h1>
+            <p class="text-white/90 text-xs font-medium drop-shadow">{{ $objek->nama_objek }}</p>
         </div>
     </div>
 
@@ -218,44 +224,6 @@
             </div>
             @endif
 
-            <!-- Biodata Pengunjung (Opsional) -->
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Data Pengunjung</h3>
-                    <button type="button" @click="skipBiodata = !skipBiodata" class="text-[10px] font-bold" :class="skipBiodata ? 'text-[#00a6eb]' : 'text-slate-400'">
-                        <span x-text="skipBiodata ? 'Isi Data' : 'Lewati'"></span>
-                    </button>
-                </div>
-
-                <div x-show="!skipBiodata" x-transition class="space-y-3">
-                    <p class="text-[10px] text-slate-500 leading-relaxed">Isi data untuk menerima e-ticket via WhatsApp & Email secara otomatis setelah pembayaran berhasil.</p>
-                    
-                    <div>
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-1.5 block">Nama Lengkap</label>
-                        <input type="text" name="nama_pengunjung" x-model="biodataNama" placeholder="Masukkan nama lengkap"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:ring-4 focus:ring-[#00a6eb]/10 focus:border-[#00a6eb]/50 outline-none transition-all">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-1.5 block">No. WhatsApp</label>
-                        <input type="tel" name="no_wa" x-model="biodataWa" placeholder="08xxxxxxxxxx"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:ring-4 focus:ring-[#00a6eb]/10 focus:border-[#00a6eb]/50 outline-none transition-all">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-1.5 block">Email</label>
-                        <input type="email" name="email" x-model="biodataEmail" placeholder="email@contoh.com"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:ring-4 focus:ring-[#00a6eb]/10 focus:border-[#00a6eb]/50 outline-none transition-all">
-                    </div>
-                </div>
-
-                <div x-show="skipBiodata" x-transition class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                    <div class="flex items-start gap-3">
-                        <i class="bi bi-info-circle text-slate-400 text-lg shrink-0"></i>
-                        <p class="text-[10px] text-slate-500 leading-relaxed">Data pengunjung dilewati. E-ticket hanya bisa diunduh langsung setelah pembayaran berhasil dan tidak akan dikirim via WhatsApp/Email.</p>
-                    </div>
-                    <input type="hidden" name="skip_biodata" value="1">
-                </div>
-            </div>
-
             <!-- Summary -->
             <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-3">Ringkasan</h3>
@@ -280,16 +248,6 @@
                 </div>
             </div>
 
-            <!-- Info Box -->
-            <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                <div class="flex items-start gap-3">
-                    <i class="bi bi-info-circle text-[#00a6eb] text-lg shrink-0"></i>
-                    <div class="text-[10px] text-slate-600 leading-relaxed space-y-1">
-                        <p>Setelah pembayaran berhasil, Anda akan menerima <strong>e-ticket</strong> berisi <strong>barcode</strong> dan <strong>kode tiket</strong> yang dapat digunakan untuk masuk ke objek wisata.</p>
-                        <p>Jika data pengunjung diisi, e-ticket akan dikirim otomatis via <strong>WhatsApp</strong> dan <strong>Email</strong>.</p>
-                    </div>
-                </div>
-            </div>
             </div>
 
             <!-- Submit Button -->
@@ -398,266 +356,206 @@
 </div>
 
 <script>
-function ticketApp() {
-    const today = new Date();
+document.addEventListener('alpine:init', function() {
+    var hasDailyLimit = @json((bool) $objek->batas_tiket_harian);
+    var marketFilterInit = '{{ ($orangLocal ?? collect())->count() > 0 ? "local" : (($orangWna ?? collect())->count() > 0 ? "wna" : "all") }}';
+    var checkAvailabilityUrl = '{{ url("wisata/check-availability") }}';
+    var objekWisataId = {{ (int) $objek->id_objek_wisata }};
+
+    var today = new Date();
     today.setHours(0, 0, 0, 0);
-    
-    return {
-        showCalendar: false,
-        selectedDate: '',
-        calendarMonth: today.getMonth(),
-        calendarYear: today.getFullYear(),
-        availabilityData: {},
-        loadedAvailabilityMonths: {},
-        loadingAvailability: false,
-        activeAvailabilityRequest: 0,
-        availabilityAbortController: null,
-        hasDailyLimit: @json((bool) $objek->batas_tiket_harian),
-        isUnlimited: true,
-        quantities: {},
-        summaryItems: {},
-        totalPrice: 0,
-        marketFilter: '{{ ($orangLocal ?? collect())->count() > 0 ? "local" : (($orangWna ?? collect())->count() > 0 ? "wna" : "all") }}',
-        availabilityInfo: null,
-        skipBiodata: false,
-        biodataNama: '',
-        biodataWa: '',
-        biodataEmail: '',
 
-        init() {
-            this.isUnlimited = !this.hasDailyLimit;
-        },
+    Alpine.data('ticketApp', function() {
+        return {
+            showCalendar: false,
+            selectedDate: '',
+            calendarMonth: today.getMonth(),
+            calendarYear: today.getFullYear(),
+            availabilityData: {},
+            loadedAvailabilityMonths: {},
+            loadingAvailability: false,
+            activeAvailabilityRequest: 0,
+            availabilityAbortController: null,
+            hasDailyLimit: hasDailyLimit,
+            isUnlimited: !hasDailyLimit,
+            quantities: {},
+            summaryItems: {},
+            totalPrice: 0,
+            marketFilter: marketFilterInit,
+            availabilityInfo: null,
 
-        openCalendar() {
-            this.showCalendar = true;
-            this.ensureAvailabilityForCurrentMonth();
-        },
+            openCalendar: function() {
+                this.showCalendar = true;
+                this.ensureAvailabilityForCurrentMonth();
+            },
 
-        getAvailabilityMonthKey(month, year) {
-            return year + '-' + String(month).padStart(2, '0');
-        },
+            getAvailabilityMonthKey: function(month, year) {
+                return year + '-' + String(month).padStart(2, '0');
+            },
 
-        ensureAvailabilityForCurrentMonth() {
-            if (!this.hasDailyLimit) {
-                this.isUnlimited = true;
-                return;
-            }
-
-            const month = this.calendarMonth + 1;
-            const year = this.calendarYear;
-            const monthKey = this.getAvailabilityMonthKey(month, year);
-
-            if (this.loadedAvailabilityMonths[monthKey]) {
-                return;
-            }
-
-            this.fetchAvailability(month, year);
-        },
-
-        get calendarTitle() {
-            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-            return months[this.calendarMonth] + ' ' + this.calendarYear;
-        },
-
-        get calendarDays() {
-            const firstDay = new Date(this.calendarYear, this.calendarMonth, 1);
-            const lastDay = new Date(this.calendarYear, this.calendarMonth + 1, 0);
-            const startDay = firstDay.getDay(); // 0=Sun
-            const daysInMonth = lastDay.getDate();
-            
-            const cells = [];
-            
-            // Empty cells before first day
-            for (let i = 0; i < startDay; i++) {
-                cells.push({ date: null, day: '', dateStr: '', isPast: true, soldOut: false, hasLimit: false, available: 0 });
-            }
-            
-            for (let d = 1; d <= daysInMonth; d++) {
-                const date = new Date(this.calendarYear, this.calendarMonth, d);
-                const dateStr = this.calendarYear + '-' + String(this.calendarMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-                const isPast = date < today;
-                
-                let hasLimit = false;
-                let available = 0;
-                let soldOut = false;
-                
-                if (!this.isUnlimited && this.availabilityData[dateStr]) {
-                    hasLimit = true;
-                    available = this.availabilityData[dateStr].available;
-                    soldOut = available <= 0;
+            ensureAvailabilityForCurrentMonth: function() {
+                if (!this.hasDailyLimit) {
+                    this.isUnlimited = true;
+                    return;
                 }
-                
-                cells.push({
-                    date: date,
-                    day: d,
-                    dateStr: dateStr,
-                    isPast: isPast,
-                    soldOut: soldOut,
-                    hasLimit: hasLimit,
-                    available: available
-                });
-            }
-            
-            return cells;
-        },
+                var month = this.calendarMonth + 1;
+                var year = this.calendarYear;
+                var monthKey = this.getAvailabilityMonthKey(month, year);
+                if (this.loadedAvailabilityMonths[monthKey]) return;
+                this.fetchAvailability(month, year);
+            },
 
-        prevMonth() {
-            if (this.calendarMonth === 0) {
-                this.calendarMonth = 11;
-                this.calendarYear--;
-            } else {
-                this.calendarMonth--;
-            }
-            this.ensureAvailabilityForCurrentMonth();
-        },
+            get calendarTitle() {
+                var months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                return months[this.calendarMonth] + ' ' + this.calendarYear;
+            },
 
-        nextMonth() {
-            if (this.calendarMonth === 11) {
-                this.calendarMonth = 0;
-                this.calendarYear++;
-            } else {
-                this.calendarMonth++;
-            }
-            this.ensureAvailabilityForCurrentMonth();
-        },
+            get calendarDays() {
+                var firstDay = new Date(this.calendarYear, this.calendarMonth, 1);
+                var lastDay = new Date(this.calendarYear, this.calendarMonth + 1, 0);
+                var startDay = firstDay.getDay();
+                var daysInMonth = lastDay.getDate();
+                var cells = [];
 
-        async fetchAvailability(month, year) {
-            if (!this.hasDailyLimit) {
-                this.isUnlimited = true;
-                return;
-            }
-
-            const monthKey = this.getAvailabilityMonthKey(month, year);
-            if (this.loadedAvailabilityMonths[monthKey]) {
-                return;
-            }
-
-            const self = this;
-            const requestId = ++self.activeAvailabilityRequest;
-
-            if (self.availabilityAbortController) {
-                self.availabilityAbortController.abort();
-            }
-
-            const controller = new AbortController();
-            self.availabilityAbortController = controller;
-            self.loadingAvailability = true;
-
-            // Failsafe: force loading off after 8 seconds no matter what
-            const failsafe = setTimeout(function() {
-                if (requestId === self.activeAvailabilityRequest) {
-                    self.loadingAvailability = false;
+                for (var i = 0; i < startDay; i++) {
+                    cells.push({ date: null, day: '', dateStr: '', isPast: true, soldOut: false, hasLimit: false, available: 0 });
                 }
-            }, 8000);
 
-            try {
-                const timeoutId = setTimeout(function() { controller.abort(); }, 6000);
-                const url = '{{ url('wisata/check-availability') }}?id_objek_wisata={{ $objek->id_objek_wisata }}&month=' + month + '&year=' + year;
-                const response = await fetch(url, {
-                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                const text = await response.text();
-                const data = JSON.parse(text);
+                for (var d = 1; d <= daysInMonth; d++) {
+                    var date = new Date(this.calendarYear, this.calendarMonth, d);
+                    var dateStr = this.calendarYear + '-' + String(this.calendarMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+                    var isPast = date < today;
+                    var hasLimit = false;
+                    var available = 0;
+                    var soldOut = false;
 
-                self.isUnlimited = data.unlimited === true || data.unlimited === undefined;
-                if (self.isUnlimited) {
-                    self.loadedAvailabilityMonths[monthKey] = true;
-                } else if (data.dates) {
-                    self.availabilityData = Object.assign({}, self.availabilityData, data.dates);
-                    self.loadedAvailabilityMonths[monthKey] = true;
+                    if (!this.isUnlimited && this.availabilityData[dateStr]) {
+                        hasLimit = true;
+                        available = this.availabilityData[dateStr].available;
+                        soldOut = available <= 0;
+                    }
+
+                    cells.push({ date: date, day: d, dateStr: dateStr, isPast: isPast, soldOut: soldOut, hasLimit: hasLimit, available: available });
                 }
-            } catch (e) {
-                if (e.name !== 'AbortError') {
-                    console.error('Availability fetch failed:', e);
+
+                return cells;
+            },
+
+            prevMonth: function() {
+                if (this.calendarMonth === 0) { this.calendarMonth = 11; this.calendarYear--; }
+                else { this.calendarMonth--; }
+                this.ensureAvailabilityForCurrentMonth();
+            },
+
+            nextMonth: function() {
+                if (this.calendarMonth === 11) { this.calendarMonth = 0; this.calendarYear++; }
+                else { this.calendarMonth++; }
+                this.ensureAvailabilityForCurrentMonth();
+            },
+
+            fetchAvailability: function(month, year) {
+                if (!this.hasDailyLimit) { this.isUnlimited = true; return; }
+
+                var monthKey = this.getAvailabilityMonthKey(month, year);
+                if (this.loadedAvailabilityMonths[monthKey]) return;
+
+                var self = this;
+                var requestId = ++self.activeAvailabilityRequest;
+
+                if (self.availabilityAbortController) self.availabilityAbortController.abort();
+
+                var controller = new AbortController();
+                self.availabilityAbortController = controller;
+                self.loadingAvailability = true;
+
+                var failsafe = setTimeout(function() {
+                    if (requestId === self.activeAvailabilityRequest) self.loadingAvailability = false;
+                }, 8000);
+
+                var timeoutId = setTimeout(function() { controller.abort(); }, 6000);
+                var url = checkAvailabilityUrl + '?id_objek_wisata=' + objekWisataId + '&month=' + month + '&year=' + year;
+
+                fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, signal: controller.signal })
+                    .then(function(response) {
+                        clearTimeout(timeoutId);
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.text();
+                    })
+                    .then(function(text) {
+                        var data = JSON.parse(text);
+                        self.isUnlimited = data.unlimited === true || data.unlimited === undefined;
+                        if (self.isUnlimited) {
+                            self.loadedAvailabilityMonths[monthKey] = true;
+                        } else if (data.dates) {
+                            self.availabilityData = Object.assign({}, self.availabilityData, data.dates);
+                            self.loadedAvailabilityMonths[monthKey] = true;
+                        }
+                    })
+                    .catch(function(e) {
+                        if (e.name !== 'AbortError') console.error('Availability fetch failed:', e);
+                    })
+                    .finally(function() {
+                        clearTimeout(failsafe);
+                        if (requestId === self.activeAvailabilityRequest) {
+                            self.loadingAvailability = false;
+                            self.availabilityAbortController = null;
+                        }
+                    });
+            },
+
+            selectDate: function(dateStr) {
+                this.selectedDate = dateStr;
+                this.showCalendar = false;
+                if (this.isUnlimited) {
+                    this.availabilityInfo = { unlimited: true };
+                } else if (this.availabilityData[dateStr]) {
+                    this.availabilityInfo = { unlimited: false, available: this.availabilityData[dateStr].available };
+                } else {
+                    this.availabilityInfo = null;
                 }
-            } finally {
-                clearTimeout(failsafe);
-                if (requestId === self.activeAvailabilityRequest) {
-                    self.loadingAvailability = false;
-                    self.availabilityAbortController = null;
+            },
+
+            formatDisplayDate: function(dateStr) {
+                var date = new Date(dateStr + 'T00:00:00');
+                var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                var months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                return days[date.getDay()] + ', ' + date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+            },
+
+            incrementQty: function(id, harga, nama) {
+                if (!this.quantities[id]) this.quantities[id] = 0;
+                this.quantities[id]++;
+                this.updateSummary(id, harga, nama);
+            },
+
+            decrementQty: function(id) {
+                if (!this.quantities[id] || this.quantities[id] <= 0) return;
+                this.quantities[id]--;
+                if (this.summaryItems[id]) {
+                    var item = this.summaryItems[id];
+                    this.updateSummary(id, item.subtotal / (this.quantities[id] + 1), item.name);
                 }
-            }
-        },
+            },
 
-        selectDate(dateStr) {
-            this.selectedDate = dateStr;
-            this.showCalendar = false;
-            
-            // Update availability info for selected date
-            if (this.isUnlimited) {
-                this.availabilityInfo = { unlimited: true };
-            } else if (this.availabilityData[dateStr]) {
-                this.availabilityInfo = { unlimited: false, available: this.availabilityData[dateStr].available };
-            } else {
-                this.availabilityInfo = null;
-            }
-        },
-
-        formatDisplayDate(dateStr) {
-            const date = new Date(dateStr + 'T00:00:00');
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-            return days[date.getDay()] + ', ' + date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
-        },
-
-        incrementQty(id, harga, nama) {
-            if (!this.quantities[id]) this.quantities[id] = 0;
-            this.quantities[id]++;
-            this.updateSummary(id, harga, nama);
-        },
-
-        decrementQty(id) {
-            if (!this.quantities[id] || this.quantities[id] <= 0) return;
-            this.quantities[id]--;
-            // Get harga and nama from the existing summary
-            if (this.summaryItems[id]) {
-                const item = this.summaryItems[id];
-                this.updateSummary(id, item.subtotal / (this.quantities[id] + 1), item.name);
-            }
-        },
-
-        updateSummary(id, harga, nama) {
-            const qty = this.quantities[id] || 0;
-            if (qty > 0) {
-                this.summaryItems[id] = {
-                    name: nama,
-                    qty: qty,
-                    subtotal: qty * harga
-                };
-            } else {
-                delete this.summaryItems[id];
-            }
-            
-            // Recalculate total
-            this.totalPrice = Object.values(this.summaryItems).reduce((sum, item) => sum + item.subtotal, 0);
-        },
-
-        submitForm() {
-            if (!this.selectedDate) {
-                alert('Pilih tanggal kunjungan terlebih dahulu');
-                return;
-            }
-            
-            let hasTicket = false;
-            for (const id in this.quantities) {
-                if (this.quantities[id] > 0) {
-                    hasTicket = true;
-                    break;
+            updateSummary: function(id, harga, nama) {
+                var qty = this.quantities[id] || 0;
+                if (qty > 0) {
+                    this.summaryItems[id] = { name: nama, qty: qty, subtotal: qty * harga };
+                } else {
+                    delete this.summaryItems[id];
                 }
-            }
-            
-            if (!hasTicket) {
-                alert('Pilih minimal 1 tiket');
-                return;
-            }
+                this.totalPrice = Object.values(this.summaryItems).reduce(function(sum, item) { return sum + item.subtotal; }, 0);
+            },
 
-            // Submit the form natively
-            document.getElementById('formBeli').submit();
-        }
-    };
-}
+            submitForm: function() {
+                if (!this.selectedDate) { alert('Pilih tanggal kunjungan terlebih dahulu'); return; }
+                var hasTicket = false;
+                for (var id in this.quantities) { if (this.quantities[id] > 0) { hasTicket = true; break; } }
+                if (!hasTicket) { alert('Pilih minimal 1 tiket'); return; }
+                document.getElementById('formBeli').submit();
+            }
+        };
+    });
+});
 </script>
 @endsection

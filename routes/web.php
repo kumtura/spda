@@ -150,6 +150,8 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
         Route::group(['middleware' => 'role:1,2'], function() {
             Route::get('/kelian/punia', function() { return view('backend.kelian.punia'); });
             Route::get('/kelian/data_usaha', function() { return view('backend.kelian.data_usaha'); });
+            Route::get('/kelian/detail_usaha/{id}', 'Administrator\UsahaController@kelian_detailUsaha');
+            Route::post('/kelian/data_usaha/store', 'Administrator\UsahaController@kelian_storeUsaha');
             Route::get('/kelian/donasi', function() { return view('backend.kelian.donasi'); });
             Route::get('/kelian/verifikasi', [DashboardController::class, 'verifikasi_pembayaran']);
             Route::get('/kelian/usaha', function() { return view('backend.kelian.usaha'); });

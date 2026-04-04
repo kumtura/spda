@@ -180,6 +180,29 @@ class UsahaController extends BaseController
             return redirect("administrator/databanjar");
         }
 
+        // Kelian: Detail Usaha (mobile view)
+        public function kelian_detailUsaha(Request $request, $index)
+        {
+            $rows = Usaha::get_detailUsaha($index);
+            return view('backend.kelian.detail_usaha', compact('rows'));
+        }
+
+        // Kelian: Store new Usaha
+        public function kelian_storeUsaha(Request $request)
+        {
+            $request->validate([
+                'text_title_new' => 'required|string|max:255',
+                'cmb_kategori_usaha' => 'required',
+                'text_namapngg_new' => 'required|string|max:255',
+                'text_username_new' => 'required|string|max:255',
+                'text_password_new' => 'required|string|min:6',
+            ]);
+
+            Usaha::post_data_usaha($request);
+
+            return redirect('administrator/kelian/data_usaha')->with('success', 'Unit usaha berhasil ditambahkan.');
+        }
+
         public function hapusbanjar(Request $request){
 
             if($request->id != ""){

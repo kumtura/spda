@@ -58,7 +58,10 @@
     selectedMonth: {{ $selectedMonth }},
     selectedYear: {{ $selectedYear }},
     searchQuery: '',
-    showFilter: false
+    showFilter: false,
+    showTambahModal: false,
+    waNumber: '',
+    sendingLink: false
 }">
     <!-- Back + Header -->
     <div>
@@ -67,15 +70,30 @@
             <span class="text-[10px] font-bold">Kembali ke Punia</span>
         </a>
 
+        @if(session('success'))
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
+            <div class="flex items-center gap-2">
+                <i class="bi bi-check-circle text-blue-600 text-sm"></i>
+                <p class="text-xs text-blue-700">{{ session('success') }}</p>
+            </div>
+        </div>
+        @endif
+
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-xl font-black text-slate-800 tracking-tight">Data Usaha</h1>
                 <p class="text-slate-400 text-[10px] mt-1">Banjar {{ $kelianBanjar ? $kelianBanjar->nama_banjar : '-' }}</p>
             </div>
-            <button @click="showFilter = !showFilter" class="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
-                <i class="bi bi-funnel text-sm"></i>
-                <span class="text-[10px] font-bold">Filter</span>
-            </button>
+            <div class="flex items-center gap-2">
+                <button @click="showTambahModal = true" class="h-8 px-3 bg-[#00a6eb] hover:bg-[#0090d0] text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                    <i class="bi bi-plus-lg text-sm"></i>
+                    <span class="text-[10px] font-bold">Tambah</span>
+                </button>
+                <button @click="showFilter = !showFilter" class="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                    <i class="bi bi-funnel text-sm"></i>
+                    <span class="text-[10px] font-bold">Filter</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -155,7 +173,7 @@
         <div class="space-y-2.5">
             @foreach($usahaWithPayment as $item)
             @php $usaha = $item['usaha']; $payment = $item['payment']; @endphp
-            <a href="{{ url('administrator/detail_usaha/'.$usaha->id_usaha) }}" 
+            <a href="{{ url('administrator/kelian/detail_usaha/'.$usaha->id_usaha) }}" 
                x-show="searchQuery === '' || '{{ strtolower($usaha->nama_usaha) }}'.includes(searchQuery.toLowerCase())"
                class="block bg-white border border-slate-100 rounded-xl p-3.5 hover:border-[#00a6eb]/30 hover:shadow-sm transition-all">
                 <div class="flex items-center gap-3">
@@ -254,6 +272,205 @@
             <p class="text-xs text-slate-400">Belum ada riwayat pembayaran</p>
         </div>
         @endif
+    </div>
+
+    <!-- Tambah Usaha Modal -->
+    <div x-show="showTambahModal" 
+         x-cloak
+         class="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/60 backdrop-blur-sm"
+         style="display: none;">
+        
+        <div @click.away="showTambahModal = false"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="opacity-0 translate-y-full"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 translate-y-full"
+             class="bg-white rounded-t-3xl shadow-2xl max-w-md w-full overflow-hidden max-h-[90vh] overflow-y-auto" x-data="{ mode: 'choose' }">
+            
+            <!-- Header -->
+            <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] p-6 text-white relative overflow-hidden sticky top-0 z-10">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <button @click="showTambahModal = false; mode = 'choose'" type="button" class="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
+                    <i class="bi bi-x text-xl"></i>
+                </button>
+                <div class="relative">
+                    <h3 class="text-xl font-black">Tambah Unit Usaha</h3>
+                    <p class="text-white/80 text-xs font-medium mt-1">Pilih metode pendaftaran</p>
+                </div>
+            </div>
+
+            <!-- Mode: Choose -->
+            <div x-show="mode === 'choose'" class="p-6 space-y-3">
+                <!-- Manual -->
+                <button @click="mode = 'manual'" type="button"
+                   class="w-full text-left bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:bg-slate-50/50 transition-all group">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
+                            <i class="bi bi-pencil-square text-slate-400 text-xl group-hover:text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Tambah Manual</h4>
+                            <p class="text-[10px] text-slate-400">Isi data usaha secara langsung</p>
+                        </div>
+                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-transform group-hover:translate-x-1"></i>
+                    </div>
+                </button>
+
+                <!-- Kirim Link -->
+                <button @click="mode = 'link'" type="button"
+                   class="w-full text-left bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:bg-slate-50/50 transition-all group">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-emerald-500 group-hover:border-emerald-500">
+                            <i class="bi bi-whatsapp text-slate-400 text-xl group-hover:text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Kirim Link Pendaftaran</h4>
+                            <p class="text-[10px] text-slate-400">Kirim form pendaftaran via WhatsApp</p>
+                        </div>
+                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-emerald-500 transition-transform group-hover:translate-x-1"></i>
+                    </div>
+                </button>
+
+                <div class="pt-2 text-center">
+                    <button @click="showTambahModal = false" class="text-[10px] font-bold text-slate-300 uppercase tracking-widest hover:text-slate-500 transition-colors">Batal</button>
+                </div>
+            </div>
+
+            <!-- Mode: Manual Form -->
+            <div x-show="mode === 'manual'" class="p-6">
+                <button @click="mode = 'choose'" class="inline-flex items-center gap-1.5 text-slate-400 hover:text-[#00a6eb] text-[10px] font-bold mb-4">
+                    <i class="bi bi-arrow-left text-xs"></i> Kembali
+                </button>
+
+                <form action="{{ url('administrator/kelian/data_usaha/store') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <input type="hidden" name="text_desc_new" value="{{ $kelianBanjar ? $kelianBanjar->id_data_banjar : '' }}">
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nama Usaha <span class="text-rose-500">*</span></label>
+                        <input type="text" name="text_title_new" required class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="Nama unit usaha">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Kategori <span class="text-rose-500">*</span></label>
+                        <select name="cmb_kategori_usaha" required class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20">
+                            <option value="">Pilih Kategori</option>
+                            @php $kategoriList = App\Models\Kategori_Usaha::get_kategoriusaha(); @endphp
+                            @foreach($kategoriList as $kat)
+                            <option value="{{ $kat->id_kategori_usaha }}">{{ $kat->nama_kategori_usaha }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">No. Telp</label>
+                            <input type="text" name="text_telpkantor_new" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="No telp kantor">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">No. WA</label>
+                            <input type="text" name="text_notelp_was" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="08xxx">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Email Usaha</label>
+                        <input type="email" name="text_email_usaha_new" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="email@usaha.com">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Minimal Punia/bln (Rp)</label>
+                        <input type="number" name="text_minimal_pembayaran" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="0" value="0">
+                    </div>
+
+                    <div class="pt-1 border-t border-slate-100">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-3">Data Penanggung Jawab</p>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nama PJ <span class="text-rose-500">*</span></label>
+                        <input type="text" name="text_namapngg_new" required class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="Nama penanggung jawab">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Jabatan PJ</label>
+                        <input type="text" name="text_statuspngg_new" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="Manager, Owner, dll">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">WA PJ</label>
+                            <input type="text" name="text_notelp_pngg_new" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="08xxx">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Email PJ</label>
+                            <input type="email" name="text_email_pngg_new" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="email@pj.com">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Alamat PJ</label>
+                        <input type="text" name="text_alamat_pngg_new" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="Alamat penanggung jawab">
+                    </div>
+
+                    <div class="pt-1 border-t border-slate-100">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-3">Akun Login Usaha</p>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Username/Email <span class="text-rose-500">*</span></label>
+                        <input type="text" name="text_username_new" required class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="username login">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Password <span class="text-rose-500">*</span></label>
+                        <input type="password" name="text_password_new" required minlength="6" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#00a6eb]/50 focus:ring-1 focus:ring-[#00a6eb]/20" placeholder="Min 6 karakter">
+                    </div>
+
+                    <button type="submit" class="w-full bg-[#00a6eb] text-white text-xs font-bold py-3 rounded-xl hover:bg-[#0090d0] transition-colors shadow-lg">
+                        <i class="bi bi-check-circle mr-1.5"></i> Simpan Data Usaha
+                    </button>
+                </form>
+            </div>
+
+            <!-- Mode: Kirim Link -->
+            <div x-show="mode === 'link'" class="p-6">
+                <button @click="mode = 'choose'" class="inline-flex items-center gap-1.5 text-slate-400 hover:text-[#00a6eb] text-[10px] font-bold mb-4">
+                    <i class="bi bi-arrow-left text-xs"></i> Kembali
+                </button>
+
+                <div class="space-y-4">
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+                        <p class="text-[10px] text-emerald-700 leading-relaxed">
+                            <i class="bi bi-info-circle mr-1"></i>
+                            Masukkan nomor WhatsApp PIC usaha. Link pendaftaran akan dikirim melalui WhatsApp.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block">Nomor WhatsApp <span class="text-rose-500">*</span></label>
+                        <input type="text" x-model="waNumber" placeholder="08xxxxxxxxxx" 
+                               class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-emerald-300 focus:ring-1 focus:ring-emerald-200">
+                    </div>
+
+                    @php
+                        $registerUrl = url('register-usaha') . '?banjar=' . ($kelianBanjar ? $kelianBanjar->id_data_banjar : '');
+                    @endphp
+
+                    <button @click="
+                        if(!waNumber || waNumber.length < 10) { alert('Masukkan nomor WA yang valid'); return; }
+                        let phone = waNumber.replace(/^0/, '62').replace(/[^0-9]/g, '');
+                        let msg = encodeURIComponent('Halo, silakan daftarkan unit usaha Anda melalui link berikut:\n\n{{ $registerUrl }}\n\nTerimakasih,\nKelian Adat Banjar {{ $kelianBanjar ? $kelianBanjar->nama_banjar : '' }}');
+                        window.open('https://wa.me/' + phone + '?text=' + msg, '_blank');
+                        showTambahModal = false; mode = 'choose';
+                    " class="w-full bg-emerald-500 text-white text-xs font-bold py-3 rounded-xl hover:bg-emerald-600 transition-colors shadow-lg flex items-center justify-center gap-2">
+                        <i class="bi bi-whatsapp text-sm"></i> Kirim Link via WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

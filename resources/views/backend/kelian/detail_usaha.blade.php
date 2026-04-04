@@ -40,9 +40,17 @@
     $karyawanList = App\Models\Jadwal_Interview::join('tb_tenaga_kerja', 'tb_tenaga_kerja.id_tenaga_kerja', 'tb_jadwal_interview.id_karyawan')
         ->where('tb_jadwal_interview.id_usaha', $rows->id_usaha)
         ->where('tb_tenaga_kerja.aktif', '1')
-        ->select('tb_tenaga_kerja.*', 'tb_jadwal_interview.status_diterima', 'tb_jadwal_interview.tanggal_interview')
+        ->select('tb_tenaga_kerja.*', 'tb_jadwal_interview.status_diterima', 'tb_jadwal_interview.tanggal_interview', 'tb_jadwal_interview.jabatan', 'tb_jadwal_interview.tanggal_diterima')
         ->orderBy('tb_tenaga_kerja.nama', 'asc')
         ->get();
+
+    // Load skills for each karyawan
+    foreach($karyawanList as $karyawan) {
+        $karyawan->skills = App\Models\List_Skill_Tk::join('tb_skill_tenaga_kerja','tb_skill_tenaga_kerja.id_skill_tenaga_kerja','tb_list_skill_tenaga_kerja.id_skill')
+            ->where('tb_list_skill_tenaga_kerja.id_karyawan', $karyawan->id_tenaga_kerja)
+            ->where('tb_list_skill_tenaga_kerja.aktif','1')
+            ->pluck('tb_skill_tenaga_kerja.nama_skill');
+    }
 
     $totalKaryawan = $karyawanList->count();
     // Estimate: check alamat for "bali" keyword as rough approximation
@@ -315,14 +323,27 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-bold text-slate-800 truncate">{{ $karyawan->nama }}</p>
-                            <div class="flex items-center gap-2 text-[9px] text-slate-400 mt-0.5">
-                                @if($karyawan->alamat)
-                                <span class="truncate">{{ $karyawan->alamat }}</span>
+                            <div class="flex items-center gap-1 flex-wrap mt-0.5">
+                                @if($karyawan->jabatan)
+                                <span class="text-[8px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">{{ $karyawan->jabatan }}</span>
                                 @endif
                                 @if($karyawan->no_wa)
-                                <span>&middot; {{ $karyawan->no_wa }}</span>
+                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $karyawan->no_wa) }}" target="_blank"
+                                   class="text-[8px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                                    <i class="bi bi-whatsapp"></i> {{ $karyawan->no_wa }}
+                                </a>
                                 @endif
                             </div>
+                            @if($karyawan->skills && $karyawan->skills->count() > 0)
+                            <div class="flex items-center gap-1 flex-wrap mt-1">
+                                @foreach($karyawan->skills->take(3) as $skill)
+                                <span class="text-[7px] font-medium text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">{{ $skill }}</span>
+                                @endforeach
+                                @if($karyawan->skills->count() > 3)
+                                <span class="text-[7px] text-slate-400">+{{ $karyawan->skills->count() - 3 }}</span>
+                                @endif
+                            </div>
+                            @endif
                         </div>
                         @if($karyawan->status_diterima == 1)
                         <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 shrink-0">Aktif</span>

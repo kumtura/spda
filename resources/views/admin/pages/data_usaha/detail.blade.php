@@ -327,13 +327,17 @@
 
                     <!-- Tab: Tenaga Kerja -->
                     <div x-show="activeTab === 'tenaga'" class="space-y-6" x-transition>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        @if(count($usaha_karyawan) > 0)
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-slate-500">{{ count($usaha_karyawan) }} Tenaga Kerja</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                             @foreach($usaha_karyawan as $k)
                             <div class="p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition-all group">
-                                <div class="flex items-center gap-3">
+                                <div class="flex items-start gap-3">
                                     <div class="h-12 w-12 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
                                         @if($k->foto_profile)
-                                            <img src="{{ asset('storage/karyawan/'.$k->foto_profile) }}" class="w-full h-full object-cover">
+                                            <img src="{{ asset('karyawan/'.$k->foto_profile) }}" class="w-full h-full object-cover">
                                         @else
                                             <div class="w-full h-full flex items-center justify-center text-slate-300 font-bold uppercase">{{ substr($k->nama, 0, 1) }}</div>
                                         @endif
@@ -341,6 +345,19 @@
                                     <div class="flex-1 overflow-hidden">
                                         <h4 class="text-xs font-black text-slate-800 truncate">{{ $k->nama }}</h4>
                                         <p class="text-[9px] font-bold text-slate-400 uppercase">NIK. {{ str_pad($k->id_tenaga_kerja, 6, '0', STR_PAD_LEFT) }}</p>
+                                        <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                                            @if($k->jabatan)
+                                            <span class="text-[8px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">{{ $k->jabatan }}</span>
+                                            @endif
+                                            @if($k->status_diterima == 1)
+                                            <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Aktif</span>
+                                            @else
+                                            <span class="text-[8px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">Proses</span>
+                                            @endif
+                                        </div>
+                                        @if($k->no_wa)
+                                        <p class="text-[9px] text-slate-400 mt-1"><i class="bi bi-whatsapp text-emerald-500"></i> {{ $k->no_wa }}</p>
+                                        @endif
                                     </div>
                                     <a href="{{ url('administrator/detail_tenaga_kerja/'.$k->id_tenaga_kerja) }}" class="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:text-primary-light transition-all shadow-sm">
                                         <i class="bi bi-chevron-right"></i>
@@ -349,6 +366,12 @@
                             </div>
                             @endforeach
                         </div>
+                        @else
+                        <div class="text-center py-8">
+                            <i class="bi bi-people text-4xl text-slate-200 mb-2"></i>
+                            <p class="text-xs text-slate-400">Belum ada data tenaga kerja</p>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

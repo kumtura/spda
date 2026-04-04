@@ -740,6 +740,49 @@ class LandingController extends Controller
         return $pdf->download('Kartu_Punia_' . $usaha->nama_usaha . '_' . $year . '.pdf');
     }
 
+    public function usaha_punia_receipt(Request $request)
+    {
+        $id = (int) $request->get('id');
+        if (!$id) {
+            return redirect()->back()->with('error', 'ID pembayaran tidak valid');
+        }
+
+        $payment = \App\Models\Danapunia::where('id_dana_punia', $id)
+            ->where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->first();
+
+        if (!$payment) {
+            return redirect()->back()->with('error', 'Data pembayaran tidak ditemukan');
+        }
+
+        // Verify ownership
+        $usaha = \App\Models\Usaha::join('tb_detail_usaha', 'tb_detail_usaha.id_detail_usaha', 'tb_usaha.id_detail_usaha')
+            ->join('tb_data_banjar', 'tb_data_banjar.id_data_banjar', '=', 'tb_detail_usaha.id_banjar')
+            ->where('tb_usaha.id_usaha', $payment->id_usaha)
+            ->where('tb_usaha.username', Auth::user()->email)
+            ->select('tb_usaha.*', 'tb_detail_usaha.*', 'tb_data_banjar.nama_banjar')
+            ->first();
+
+        if (!$usaha) {
+            return redirect()->back()->with('error', 'Akses ditolak');
+        }
+
+        $months = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        $village = $this->getVillageData();
+        $bulanName = $months[(int)$payment->bulan_punia] ?? '-';
+
+        $data = compact('payment', 'usaha', 'village', 'bulanName');
+
+        $pdf = Pdf::loadView('pdf.receipt_punia', $data);
+        return $pdf->download('Receipt_Punia_' . $usaha->nama_usaha . '_' . $bulanName . '_' . $payment->tahun_punia . '.pdf');
+    }
+
     public function usaha_loker_create(Request $request)
     {
         $request->validate([

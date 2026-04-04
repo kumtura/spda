@@ -136,6 +136,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/usaha/punia', function() { return view('backend.usaha.punia'); });
             Route::post('/usaha/punia/bayar', [LandingController::class, 'usaha_punia_bayar'])->name('usaha.punia.bayar');
             Route::get('/usaha/punia/print', [LandingController::class, 'usaha_punia_print'])->name('usaha.punia.print');
+            Route::get('/usaha/punia/receipt', [LandingController::class, 'usaha_punia_receipt'])->name('usaha.punia.receipt');
             Route::get('/usaha/loker', function() { return view('backend.usaha.loker'); });
             Route::get('/usaha/loker/detail/{id}', [LandingController::class, 'usaha_loker_detail'])->name('usaha.loker.detail');
             Route::post('/usaha/loker/create', [LandingController::class, 'usaha_loker_create'])->name('usaha.loker.create');

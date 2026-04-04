@@ -1,7 +1,7 @@
 @extends('mobile_layout')
 
 @section('isi_menu')
-<div class="bg-white px-4 pt-8 pb-24 space-y-6" x-data="{ showPaymentModal: false, selectedMonth: null, selectedYear: {{ request()->get('year', date('Y')) }} }">
+<div class="bg-white px-4 pt-8 pb-24 space-y-6" x-data="{ showPaymentModal: false, showReceiptModal: false, selectedMonth: null, selectedYear: {{ request()->get('year', date('Y')) }}, receipt: null }">
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-xl font-black text-slate-800 tracking-tight">Kartu Punia</h1>
@@ -145,9 +145,14 @@
                     <td class="px-4 py-3.5">
                         <div class="flex items-center justify-center gap-1.5">
                             @if($isPaid)
-                            <button class="h-7 px-2.5 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center gap-1 border border-slate-200 hover:bg-[#00a6eb] hover:text-white hover:border-[#00a6eb] transition-all text-[10px] font-bold">
+                            <button @click="receipt = { id: {{ $payment->id_dana_punia }}, bulan: '{{ $monthName }}', tahun: {{ $selectedYear }}, nominal: '{{ number_format($payment->jumlah_dana, 0, ',', '.') }}', tgl: '{{ \Carbon\Carbon::parse($payment->tanggal_pembayaran)->translatedFormat('d F Y') }}', metode: '{{ ucfirst($payment->metode_pembayaran ?? $payment->metode ?? 'Online') }}', status: '{{ $payment->status_verifikasi ?? '-' }}', bukti: '{{ $payment->bukti_pembayaran }}' }; showReceiptModal = true"
+                                    class="h-7 px-2.5 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center gap-1 border border-slate-200 hover:bg-[#00a6eb] hover:text-white hover:border-[#00a6eb] transition-all text-[10px] font-bold">
                                 <i class="bi bi-eye text-xs"></i>
                             </button>
+                            <a :href="'{{ url('administrator/usaha/punia/receipt') }}?id={{ $payment->id_dana_punia }}'"
+                               class="h-7 px-2.5 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center gap-1 border border-slate-200 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all text-[10px] font-bold">
+                                <i class="bi bi-download text-xs"></i>
+                            </a>
                             @else
                             <button @click="selectedMonth = {{ $monthNum }}; showPaymentModal = true" class="h-7 px-2.5 bg-[#00a6eb] text-white rounded-lg flex items-center justify-center gap-1 hover:bg-[#0090d0] transition-all shadow-sm text-[10px] font-bold">
                                 <i class="bi bi-wallet2 text-xs"></i> Bayar
@@ -228,6 +233,79 @@
                 </button>
             </form>
             @endif
+        </div>
+    </div>
+    <!-- Receipt Modal -->
+    <div x-show="showReceiptModal" x-cloak
+         @click.self="showReceiptModal = false"
+         @keydown.escape.window="showReceiptModal = false"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+         style="display: none;">
+
+        <div @click.stop
+             class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-8"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <button @click="showReceiptModal = false" type="button" class="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
+                    <i class="bi bi-x text-xl"></i>
+                </button>
+                <div class="relative flex items-center gap-3">
+                    <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i class="bi bi-receipt-cutoff text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black">Bukti Pembayaran</h3>
+                        <p class="text-white/80 text-xs font-medium mt-0.5" x-text="receipt ? receipt.bulan + ' ' + receipt.tahun : ''"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-5 space-y-3">
+                <div class="bg-slate-50 rounded-xl p-4 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Nominal</span>
+                        <span class="text-sm font-black text-slate-800" x-text="receipt ? 'Rp ' + receipt.nominal : ''"></span>
+                    </div>
+                    <div class="border-t border-slate-200"></div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Tanggal Bayar</span>
+                        <span class="text-xs font-bold text-slate-700" x-text="receipt ? receipt.tgl : ''"></span>
+                    </div>
+                    <div class="border-t border-slate-200"></div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Metode</span>
+                        <span class="text-xs font-bold text-slate-700" x-text="receipt ? receipt.metode : ''"></span>
+                    </div>
+                    <div class="border-t border-slate-200"></div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Status</span>
+                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100">Lunas</span>
+                    </div>
+                </div>
+
+                {{-- Bukti Transfer Image --}}
+                <template x-if="receipt && receipt.bukti">
+                    <div class="rounded-xl overflow-hidden border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase px-3 pt-2">Bukti Transfer</p>
+                        <img :src="'{{ asset('bukti_pembayaran') }}/' + receipt.bukti" class="w-full max-h-48 object-contain p-2" alt="Bukti">
+                    </div>
+                </template>
+
+                <!-- Download Button -->
+                <a :href="receipt ? '{{ url('administrator/usaha/punia/receipt') }}?id=' + receipt.id : '#'"
+                   class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2">
+                    <i class="bi bi-download"></i> Download Receipt
+                </a>
+            </div>
         </div>
     </div>
 </div>

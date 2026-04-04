@@ -268,8 +268,11 @@
                                 <input type="checkbox" name="kategori_aktif[]" value="{{ $key }}" class="h-5 w-5 rounded bg-slate-800 border-none text-primary-light checkbox-trigger">
                                 <div class="flex-1">
                                     <span class="text-[10px] block font-bold text-slate-400">{{ $label }}</span>
-                                    <input type="number" name="harga[{{ $key }}]" placeholder="0" disabled 
-                                        class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input">
+                                    <div class="flex items-center gap-1 mt-1">
+                                        <span class="text-[10px] text-slate-500">Rp</span>
+                                        <input type="number" name="harga[{{ $key }}]" placeholder="Masukkan harga" min="0"
+                                            class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input">
+                                    </div>
                                 </div>
                                 <input type="hidden" name="market_type[{{ $key }}]" :value="marketType">
                             </div>
@@ -283,11 +286,31 @@
                                 <input type="checkbox" name="kategori_aktif[]" value="{{ $key }}" class="h-5 w-5 rounded bg-slate-800 border-none text-amber-500 checkbox-trigger">
                                 <div class="flex-1">
                                     <span class="text-[10px] block font-bold text-slate-400">{{ $label }}</span>
-                                    <input type="number" name="harga[{{ $key }}]" placeholder="0" disabled 
-                                        class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input">
+                                    <div class="flex items-center gap-1 mt-1">
+                                        <span class="text-[10px] text-slate-500">Rp</span>
+                                        <input type="number" name="harga[{{ $key }}]" placeholder="Masukkan harga" min="0"
+                                            class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input">
+                                    </div>
                                 </div>
                             </div>
                             @endforeach
+
+                            <!-- Lainnya (Custom) -->
+                            <div class="bg-slate-700/50 p-3 rounded-xl border border-dashed border-slate-500 group">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" name="kategori_aktif[]" value="custom_kendaraan" class="h-5 w-5 rounded bg-slate-800 border-none text-amber-500 checkbox-trigger">
+                                    <div class="flex-1">
+                                        <span class="text-[10px] block font-bold text-amber-400 mb-1"><i class="bi bi-plus-circle mr-1"></i>Lainnya (Custom)</span>
+                                        <input type="text" name="custom_nama_kendaraan" placeholder="Nama kendaraan, cth: Sepeda, ATV..." 
+                                            class="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 mb-2">
+                                        <div class="flex items-center gap-1">
+                                            <span class="text-[10px] text-slate-500">Rp</span>
+                                            <input type="number" name="harga[custom_kendaraan]" placeholder="Masukkan harga" min="0"
+                                                class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-black text-white price-input">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -306,14 +329,28 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handling Checkbox - Input relationship
+    // Auto-check checkbox when user types a price
+    document.addEventListener('input', function(e) {
+        if(e.target.classList.contains('price-input')) {
+            const container = e.target.closest('.group');
+            if(!container) return;
+            const checkbox = container.querySelector('.checkbox-trigger');
+            if(checkbox) {
+                checkbox.checked = e.target.value > 0;
+            }
+        }
+    });
+
+    // Also toggle via checkbox click — focus the price input
     document.addEventListener('change', function(e) {
         if(e.target.classList.contains('checkbox-trigger')) {
             const container = e.target.closest('.group');
             const input = container.querySelector('.price-input');
-            if(input) {
-                input.disabled = !e.target.checked;
-                if(e.target.checked) input.focus();
+            if(input && e.target.checked) {
+                input.focus();
+            }
+            if(input && !e.target.checked) {
+                input.value = '';
             }
         }
     });

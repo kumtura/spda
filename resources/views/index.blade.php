@@ -16,7 +16,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Alpine.js (if not handled by Vite) -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 
     <!-- Standard CDNs for charts and extras used in pages -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>

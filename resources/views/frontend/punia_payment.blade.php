@@ -6,7 +6,6 @@
     <title>Pembayaran Punia - SPDA</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body { background-color: #f3f4f6; padding: 0; margin: 0; font-family: 'Inter', sans-serif;}
         .mobile-container {

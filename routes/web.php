@@ -68,6 +68,7 @@ Route::get('/wisata/payment/status', [LandingController::class, 'wisata_payment_
 Route::post('/wisata/payment/simulate', [LandingController::class, 'wisata_payment_simulate'])->name('public.wisata.payment.simulate');
 Route::get('/wisata/tiket/success', [LandingController::class, 'wisata_tiket_success'])->name('public.wisata.tiket.success');
 Route::get('/wisata/tiket/download/{kode}', [LandingController::class, 'wisata_tiket_download'])->name('public.wisata.tiket.download');
+Route::get('/wisata/check-availability', [LandingController::class, 'wisata_check_availability'])->name('public.wisata.check_availability');
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/register_usaha', function () {

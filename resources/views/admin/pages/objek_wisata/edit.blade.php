@@ -7,22 +7,26 @@
     wizardStep: 1,
     tipeKategori: '',
     subOrang: '',
+    marketType: 'all',
     
     // Form fields for single-add/edit
     formNama: '',
     formHarga: '',
     formDeskripsi: '',
     formId: '',
+    formMarketType: 'all',
     
     openAdd(type) {
         this.editMode = false;
         this.wizardStep = 1;
         this.tipeKategori = '';
         this.subOrang = '';
+        this.marketType = 'all';
         this.formNama = '';
         this.formHarga = '';
         this.formDeskripsi = '';
         this.formId = '';
+        this.formMarketType = 'all';
         this.showKategoriModal = true;
         
         // Pre-select type if provided
@@ -41,7 +45,8 @@
         this.formHarga = kat.harga;
         this.formDeskripsi = kat.deskripsi || '';
         this.formId = kat.id_kategori_tiket;
-        this.wizardStep = 4; // Go directly to edit form
+        this.formMarketType = kat.market_type || 'all';
+        this.wizardStep = 5;
         this.showKategoriModal = true;
     },
     
@@ -49,28 +54,33 @@
         this.tipeKategori = type;
         this.subOrang = '';
         if (type === 'kendaraan') {
-            this.wizardStep = 3; // Skip sub-option, go to checkboxes
+            this.wizardStep = 3;
         } else {
-            this.wizardStep = 2; // Show sub-option for orang
+            this.wizardStep = 2;
         }
+    },
+    
+    selectMarket(market) {
+        this.marketType = market;
+        this.formMarketType = market;
+        this.wizardStep = 3;
     },
     
     selectSubOrang(sub) {
         this.subOrang = sub;
-        this.wizardStep = 3;
+        this.wizardStep = 4;
     },
     
-    // For single item add
     selectItem(nama) {
         this.formNama = nama;
-        this.wizardStep = 4;
+        this.wizardStep = 5;
     },
     
     getFormAction() {
         if (this.editMode) {
-            return '{{ url("administrator/kelian/tiket/kategori/update") }}/' + this.formId;
+            return '{{ url('administrator/kelian/tiket/kategori/update') }}/' + this.formId;
         }
-        return '{{ url("administrator/kelian/tiket/kategori/store") }}';
+        return '{{ url('administrator/kelian/tiket/kategori/store') }}';
     }
 }">
     <!-- Header -->
@@ -163,6 +173,16 @@
                             </div>
 
                             <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-2">
+                                    <i class="bi bi-ticket-perforated mr-1"></i>Batas Penjualan Tiket Per Hari
+                                </label>
+                                <input type="number" name="batas_tiket_harian" value="{{ $objek->batas_tiket_harian }}" min="1"
+                                    class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-light/10 focus:border-primary-light transition-all"
+                                    placeholder="Kosongkan jika tidak ada batas (unlimited)">
+                                <p class="text-[10px] text-slate-500 mt-1 font-medium"><i class="bi bi-info-circle mr-1"></i>Jika dikosongkan, penjualan tiket tidak dibatasi per hari</p>
+                            </div>
+
+                            <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-2">Deskripsi Lengkap <span class="text-rose-500">*</span></label>
                                 <textarea name="deskripsi" rows="3" required
                                     class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-light/10 focus:border-primary-light transition-all">{{ $objek->deskripsi }}</textarea>
@@ -183,6 +203,50 @@
                                 <p class="text-[10px] text-slate-500 mt-2 font-medium"><i class="bi bi-exclamation-triangle mr-1"></i>Kosongkan jika tidak ingin mengubah foto</p>
                             </div>
                         </div>
+
+                        <!-- Ticket Description Section -->
+                        <div class="space-y-5">
+                            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest border-b border-slate-100 pb-3">
+                                <i class="bi bi-card-text mr-1"></i>Detail & Termasuk Tiket
+                            </h3>
+                            <p class="text-[10px] text-slate-500 -mt-3">Informasi yang akan ditampilkan di halaman detail tiket untuk pengunjung.</p>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-2">
+                                    <i class="bi bi-file-text mr-1"></i>Deskripsi Tiket
+                                </label>
+                                <textarea name="detail_termasuk" rows="3"
+                                    class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-light/10 focus:border-primary-light transition-all"
+                                    placeholder="Contoh: Tiket masuk sudah termasuk akses ke seluruh area wisata, parkir gratis, dan asuransi pengunjung.">{{ $objek->detail_termasuk }}</textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-2">
+                                    <i class="bi bi-signpost-split mr-1"></i>Cara Penggunaan
+                                </label>
+                                <textarea name="cara_penggunaan" rows="3"
+                                    class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-light/10 focus:border-primary-light transition-all"
+                                    placeholder="Contoh: 1. Tunjukkan QR code di loket masuk. 2. Scan QR code pada mesin scanner. 3. Tiket berlaku 1 hari.">{{ $objek->cara_penggunaan }}</textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-2">
+                                    <i class="bi bi-x-circle mr-1"></i>Kebijakan Pembatalan
+                                </label>
+                                <textarea name="pembatalan" rows="3"
+                                    class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-light/10 focus:border-primary-light transition-all"
+                                    placeholder="Contoh: Pembatalan dapat dilakukan maksimal H-1 sebelum tanggal kunjungan. Refund 100% jika dibatalkan H-3.">{{ $objek->pembatalan }}</textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-2">
+                                    <i class="bi bi-shield-check mr-1"></i>Syarat & Ketentuan
+                                </label>
+                                <textarea name="syarat_ketentuan" rows="3"
+                                    class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-light/10 focus:border-primary-light transition-all"
+                                    placeholder="Contoh: Pengunjung wajib mengenakan pakaian sopan. Dilarang membawa hewan peliharaan. Anak di bawah 5 tahun gratis.">{{ $objek->syarat_ketentuan }}</textarea>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end">
@@ -199,24 +263,57 @@
             
             <div class="bg-slate-800 rounded-3xl p-6 shadow-2xl text-white">
                 <h3 class="text-xs font-black uppercase tracking-widest mb-6 opacity-60 flex items-center gap-2">
-                    <i class="bi bi-tag-fill"></i> Kategori Tiket Baru
+                    <i class="bi bi-tag-fill"></i> Tambah Kategori Tiket
                 </h3>
 
-                <!-- STEP 1: PILIH KATEGORI UTAMA -->
-                <div class="space-y-4 mb-8">
+                <!-- STEP 1: PILIH TIPE KATEGORI -->
+                <div class="space-y-4 mb-6">
                     <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">1. Pilih Tipe Kategori</label>
-                    <select name="tipe_kategori_utama" x-model="tipeKategori" @change="subOrang = ''; wizardStep = 2" required
-                        class="w-full px-4 py-3 text-sm bg-slate-700 border-none rounded-xl text-white focus:ring-2 focus:ring-primary-light transition-all">
-                        <option value="">-- Pilih Tipe --</option>
-                        <option value="orang">Per Orang (Pengunjung)</option>
-                        <option value="kendaraan">Per Kendaraan (Parkir/Masuk)</option>
-                    </select>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" @click="tipeKategori = 'orang'; marketType = 'all'; formMarketType = 'all'; subOrang = ''"
+                            :class="tipeKategori === 'orang' ? 'bg-primary-light border-primary-light text-white' : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'"
+                            class="p-3 rounded-xl border text-center transition-all">
+                            <i class="bi bi-person-fill text-lg block mb-1"></i>
+                            <span class="text-[10px] font-bold block">Per Orang</span>
+                        </button>
+                        <button type="button" @click="tipeKategori = 'kendaraan'; marketType = 'all'; formMarketType = 'all'; subOrang = ''"
+                            :class="tipeKategori === 'kendaraan' ? 'bg-amber-500 border-amber-500 text-white' : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'"
+                            class="p-3 rounded-xl border text-center transition-all">
+                            <i class="bi bi-car-front-fill text-lg block mb-1"></i>
+                            <span class="text-[10px] font-bold block">Per Kendaraan</span>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- STEP 2: PILIH OPSI PENGATURAN (Only for Orang) -->
-                <div class="space-y-4 mb-8" x-show="tipeKategori === 'orang'">
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">2. Pilih Format Harga</label>
-                    <select x-model="subOrang" @change="wizardStep = 3"
+                <!-- STEP 2: MARKET TYPE (WNA / Local) - Only for Orang -->
+                <div class="space-y-4 mb-6" x-show="tipeKategori === 'orang'" x-transition>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">2. Kategori Pasar</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" @click="marketType = 'local'; formMarketType = 'local'"
+                            :class="marketType === 'local' ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'"
+                            class="p-2.5 rounded-xl border text-center transition-all">
+                            <i class="bi bi-geo-alt text-sm block mb-0.5"></i>
+                            <span class="text-[9px] font-bold block">Lokal</span>
+                        </button>
+                        <button type="button" @click="marketType = 'wna'; formMarketType = 'wna'"
+                            :class="marketType === 'wna' ? 'bg-violet-500 border-violet-500 text-white' : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'"
+                            class="p-2.5 rounded-xl border text-center transition-all">
+                            <i class="bi bi-globe text-sm block mb-0.5"></i>
+                            <span class="text-[9px] font-bold block">WNA</span>
+                        </button>
+                        <button type="button" @click="marketType = 'all'; formMarketType = 'all'"
+                            :class="marketType === 'all' ? 'bg-blue-500 border-blue-500 text-white' : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'"
+                            class="p-2.5 rounded-xl border text-center transition-all">
+                            <i class="bi bi-people text-sm block mb-0.5"></i>
+                            <span class="text-[9px] font-bold block">Semua</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: FORMAT HARGA (Only for Orang) -->
+                <div class="space-y-4 mb-6" x-show="tipeKategori === 'orang'" x-transition>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">3. Format Harga</label>
+                    <select x-model="subOrang"
                         class="w-full px-4 py-3 text-sm bg-slate-700 border-none rounded-xl text-white focus:ring-2 focus:ring-primary-light transition-all">
                         <option value="">-- Pilih Pengaturan --</option>
                         <option value="sama">Harga Sama untuk Semua Usia</option>
@@ -224,13 +321,24 @@
                     </select>
                 </div>
 
-                <!-- STEP 3 & 4: Sub-Categories & Nominal (Dynamic) -->
-                <form action="{{ url('administrator/kelian/tiket/kategori/store') }}" method="POST" x-show="tipeKategori != '' && (tipeKategori == 'kendaraan' || subOrang != '')" x-transition>
+                <!-- INLINE FORM: Sub-Categories & Nominal -->
+                <form action="{{ url('administrator/kelian/tiket/kategori/store') }}" method="POST" 
+                      x-show="tipeKategori != '' && (tipeKategori == 'kendaraan' || subOrang != '')" x-transition>
                     @csrf
                     <input type="hidden" name="id_objek_wisata" value="{{ $objek->id_objek_wisata }}">
                     <input type="hidden" name="tipe_kategori" :value="tipeKategori">
+                    <input type="hidden" name="market_type" :value="formMarketType">
                     
-                    <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-4 tracking-widest">3. Isi Nominal Harga</h4>
+                    <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-4 tracking-widest" x-text="tipeKategori === 'kendaraan' ? '2. Isi Nominal Harga' : '4. Isi Nominal Harga'"></h4>
+                    
+                    <!-- Market type badge -->
+                    <div class="mb-3" x-show="tipeKategori === 'orang'">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-bold"
+                              :class="marketType === 'wna' ? 'bg-violet-500/20 text-violet-300' : (marketType === 'local' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-300')">
+                            <i class="bi" :class="marketType === 'wna' ? 'bi-globe' : (marketType === 'local' ? 'bi-geo-alt' : 'bi-people')"></i>
+                            <span x-text="marketType === 'wna' ? 'WNA (Wisatawan Asing)' : (marketType === 'local' ? 'Lokal (Domestik)' : 'Semua Pengunjung')"></span>
+                        </span>
+                    </div>
                     
                     <!-- IF ORANG - SAMA -->
                     <div x-show="tipeKategori == 'orang' && subOrang == 'sama'" class="space-y-4">
@@ -275,9 +383,10 @@
                 </form>
 
                 <!-- PLACEHOLDER -->
-                <div x-show="tipeKategori == '' || (tipeKategori == 'orang' && subOrang == '')" class="py-12 flex flex-col items-center justify-center text-center opacity-30 border-2 border-dashed border-slate-600 rounded-3xl">
+                <div x-show="tipeKategori == '' || (tipeKategori == 'orang' && subOrang == '')" x-transition
+                     class="py-12 flex flex-col items-center justify-center text-center opacity-30 border-2 border-dashed border-slate-600 rounded-3xl">
                     <i class="bi bi-tag text-3xl mb-2"></i>
-                    <p class="text-[10px] font-bold">Pilih Tipe & Format Harga<br>untuk menambah kategori.</p>
+                    <p class="text-[10px] font-bold">Pilih Tipe, Pasar &amp; Format Harga<br>untuk menambah kategori.</p>
                 </div>
             </div>
 
@@ -286,21 +395,118 @@
                 <h3 class="text-xs font-black uppercase tracking-widest mb-6 text-slate-400 flex items-center gap-2">
                     <i class="bi bi-list-stars"></i> Kategori Terdaftar
                 </h3>
-                <div class="space-y-3">
-                    @forelse($objek->kategoriTiket as $kategori)
-                    <div class="flex items-center justify-between p-3 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-all">
-                        <div>
-                            <p class="text-xs font-black text-slate-700">{{ $kategori->nama_kategori }}</p>
-                            <p class="text-xs font-bold text-primary-light">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+
+                @php
+                    $orangWna = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'wna');
+                    $orangLocal = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'local');
+                    $orangAll = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'all');
+                    $kendaraanKategori = $objek->kategoriTiket->where('tipe_kategori', 'kendaraan');
+                @endphp
+
+                <div class="space-y-4">
+                    {{-- WNA Section --}}
+                    @if($orangWna->count() > 0)
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 rounded-lg text-[9px] font-bold">
+                                <i class="bi bi-globe"></i> WNA
+                            </span>
                         </div>
-                        <div class="flex gap-1">
-                            <button @click="openEdit({{ $kategori->id_kategori_tiket }})" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-primary-light hover:text-white transition-all"><i class="bi bi-pencil-square"></i></button>
-                            <button onclick="deleteKategori({{ $kategori->id_kategori_tiket }})" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-rose-500 hover:text-white transition-all"><i class="bi bi-trash"></i></button>
+                        <div class="space-y-2">
+                            @foreach($orangWna as $kategori)
+                            <div class="flex items-center justify-between p-3 rounded-2xl border border-violet-100 bg-violet-50/30 hover:bg-violet-50 transition-all">
+                                <div>
+                                    <p class="text-xs font-black text-slate-700">{{ $kategori->nama_kategori }}</p>
+                                    <p class="text-xs font-bold text-violet-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button @click="openEdit({{ $kategori->id_kategori_tiket }})" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-primary-light hover:text-white transition-all"><i class="bi bi-pencil-square"></i></button>
+                                    <button onclick="deleteKategori({{ $kategori->id_kategori_tiket }})" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-rose-500 hover:text-white transition-all"><i class="bi bi-trash"></i></button>
+                                </div>
+                            </div>
+                            @endforeach
                         </div>
                     </div>
-                    @empty
+                    @endif
+
+                    {{-- Local Section --}}
+                    @if($orangLocal->count() > 0)
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-lg text-[9px] font-bold">
+                                <i class="bi bi-geo-alt"></i> Lokal
+                            </span>
+                        </div>
+                        <div class="space-y-2">
+                            @foreach($orangLocal as $kategori)
+                            <div class="flex items-center justify-between p-3 rounded-2xl border border-emerald-100 bg-emerald-50/30 hover:bg-emerald-50 transition-all">
+                                <div>
+                                    <p class="text-xs font-black text-slate-700">{{ $kategori->nama_kategori }}</p>
+                                    <p class="text-xs font-bold text-emerald-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button @click="openEdit({{ $kategori->id_kategori_tiket }})" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-primary-light hover:text-white transition-all"><i class="bi bi-pencil-square"></i></button>
+                                    <button onclick="deleteKategori({{ $kategori->id_kategori_tiket }})" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-rose-500 hover:text-white transition-all"><i class="bi bi-trash"></i></button>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- All (Semua) Section --}}
+                    @if($orangAll->count() > 0)
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-lg text-[9px] font-bold">
+                                <i class="bi bi-people"></i> Semua
+                            </span>
+                        </div>
+                        <div class="space-y-2">
+                            @foreach($orangAll as $kategori)
+                            <div class="flex items-center justify-between p-3 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-all">
+                                <div>
+                                    <p class="text-xs font-black text-slate-700">{{ $kategori->nama_kategori }}</p>
+                                    <p class="text-xs font-bold text-primary-light">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button @click="openEdit({{ $kategori->id_kategori_tiket }})" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-primary-light hover:text-white transition-all"><i class="bi bi-pencil-square"></i></button>
+                                    <button onclick="deleteKategori({{ $kategori->id_kategori_tiket }})" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-rose-500 hover:text-white transition-all"><i class="bi bi-trash"></i></button>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Kendaraan Section --}}
+                    @if($kendaraanKategori->count() > 0)
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-lg text-[9px] font-bold">
+                                <i class="bi bi-car-front"></i> Kendaraan
+                            </span>
+                        </div>
+                        <div class="space-y-2">
+                            @foreach($kendaraanKategori as $kategori)
+                            <div class="flex items-center justify-between p-3 rounded-2xl border border-amber-100 bg-amber-50/30 hover:bg-amber-50 transition-all">
+                                <div>
+                                    <p class="text-xs font-black text-slate-700">{{ $kategori->nama_kategori }}</p>
+                                    <p class="text-xs font-bold text-amber-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button @click="openEdit({{ $kategori->id_kategori_tiket }})" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-primary-light hover:text-white transition-all"><i class="bi bi-pencil-square"></i></button>
+                                    <button onclick="deleteKategori({{ $kategori->id_kategori_tiket }})" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-rose-500 hover:text-white transition-all"><i class="bi bi-trash"></i></button>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($objek->kategoriTiket->count() == 0)
                     <p class="text-[10px] text-center py-4 text-slate-400 italic">Belum ada kategori harga.</p>
-                    @endforelse
+                    @endif
                 </div>
             </div>
         </div>
@@ -318,7 +524,7 @@
          class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
         
         <div @click.stop 
-             class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+             class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden max-h-[90vh] overflow-y-auto"
              x-transition:enter="transition ease-out duration-300 transform"
              x-transition:enter-start="opacity-0 scale-95 translate-y-8"
              x-transition:enter-end="opacity-100 scale-100 translate-y-0">
@@ -333,14 +539,15 @@
                     <h3 class="text-xl font-black mb-1" x-text="editMode ? 'Edit Harga Tiket' : 'Tambah Harga Tiket'"></h3>
                     <p class="text-white/80 text-xs">
                         <span x-show="wizardStep === 1">Langkah 1: Pilih tipe kategori</span>
-                        <span x-show="wizardStep === 2">Langkah 2: Pilih pengaturan harga</span>
-                        <span x-show="wizardStep === 3">Langkah 3: Pilih kategori spesifik</span>
-                        <span x-show="wizardStep === 4">Langkah <span x-text="editMode ? '' : '4: '"></span>Isi detail harga</span>
+                        <span x-show="wizardStep === 2">Langkah 2: Pilih kategori pasar</span>
+                        <span x-show="wizardStep === 3">Langkah 3: Pengaturan harga</span>
+                        <span x-show="wizardStep === 4">Langkah 4: Pilih kategori spesifik</span>
+                        <span x-show="wizardStep === 5">Langkah <span x-text="editMode ? '' : '5: '"></span>Isi detail harga</span>
                     </p>
                 </div>
                 <!-- Step indicator -->
                 <div class="flex gap-1.5 mt-4 relative z-10" x-show="!editMode">
-                    <template x-for="s in 4" :key="s">
+                    <template x-for="s in 5" :key="s">
                         <div class="h-1 flex-1 rounded-full transition-all" 
                              :class="s <= wizardStep ? 'bg-white' : 'bg-white/20'"></div>
                     </template>
@@ -378,74 +585,96 @@
                     </button>
                 </div>
 
-                <!-- STEP 2: Sub-pilihan untuk Per Orang -->
+                <!-- STEP 2: Market Type (WNA/Local) -->
                 <div x-show="wizardStep === 2" x-transition class="space-y-3">
                     <div class="flex items-center gap-2 mb-4">
                         <button type="button" @click="wizardStep = 1; tipeKategori = ''" class="h-7 w-7 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary-light transition-colors">
                             <i class="bi bi-arrow-left text-sm"></i>
                         </button>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pengaturan Harga Per Orang</p>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kategori Pasar</p>
                     </div>
                     
-                    <button type="button" @click="selectSubOrang('sama')" 
-                            class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-left hover:border-primary-light hover:bg-blue-50/50 transition-all group flex items-center gap-4">
+                    <button type="button" @click="selectMarket('local')" 
+                            class="w-full p-4 bg-emerald-50 border-2 border-emerald-100 rounded-xl text-left hover:border-emerald-400 hover:bg-emerald-100/50 transition-all group flex items-center gap-4">
                         <div class="h-10 w-10 bg-emerald-500 text-white rounded-lg flex items-center justify-center">
-                            <i class="bi bi-check-circle text-lg"></i>
+                            <i class="bi bi-geo-alt text-lg"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-bold text-slate-800">Harga Sama Semua Usia</p>
-                            <p class="text-[10px] text-slate-500">Satu harga untuk semua pengunjung</p>
+                            <p class="text-sm font-bold text-slate-800">Lokal (Domestik)</p>
+                            <p class="text-[10px] text-slate-500">Harga untuk pengunjung Indonesia</p>
                         </div>
                         <i class="bi bi-chevron-right text-slate-300 ml-auto"></i>
                     </button>
                     
-                    <button type="button" @click="selectSubOrang('kategori')" 
-                            class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-left hover:border-primary-light hover:bg-blue-50/50 transition-all group flex items-center gap-4">
+                    <button type="button" @click="selectMarket('wna')" 
+                            class="w-full p-4 bg-violet-50 border-2 border-violet-100 rounded-xl text-left hover:border-violet-400 hover:bg-violet-100/50 transition-all group flex items-center gap-4">
                         <div class="h-10 w-10 bg-violet-500 text-white rounded-lg flex items-center justify-center">
+                            <i class="bi bi-globe text-lg"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">WNA (Wisatawan Asing)</p>
+                            <p class="text-[10px] text-slate-500">Harga untuk pengunjung mancanegara</p>
+                        </div>
+                        <i class="bi bi-chevron-right text-slate-300 ml-auto"></i>
+                    </button>
+                    
+                    <button type="button" @click="selectMarket('all')" 
+                            class="w-full p-4 bg-blue-50 border-2 border-blue-100 rounded-xl text-left hover:border-blue-400 hover:bg-blue-100/50 transition-all group flex items-center gap-4">
+                        <div class="h-10 w-10 bg-blue-500 text-white rounded-lg flex items-center justify-center">
                             <i class="bi bi-people text-lg"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-bold text-slate-800">Harga Berbeda Berdasarkan Usia</p>
-                            <p class="text-[10px] text-slate-500">Dewasa, Anak, Lansia, dll</p>
+                            <p class="text-sm font-bold text-slate-800">Semua Pengunjung</p>
+                            <p class="text-[10px] text-slate-500">Harga sama tanpa pembedaan</p>
                         </div>
                         <i class="bi bi-chevron-right text-slate-300 ml-auto"></i>
                     </button>
                 </div>
 
-                <!-- STEP 3: Pilih Kategori Spesifik -->
+                <!-- STEP 3: Format Harga / Pilih Item -->
                 <div x-show="wizardStep === 3" x-transition class="space-y-3">
                     <div class="flex items-center gap-2 mb-4">
                         <button type="button" @click="wizardStep = tipeKategori === 'kendaraan' ? 1 : 2" class="h-7 w-7 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary-light transition-colors">
                             <i class="bi bi-arrow-left text-sm"></i>
                         </button>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest" x-text="tipeKategori === 'kendaraan' ? 'Pilih Jenis Kendaraan' : (subOrang === 'sama' ? 'Tiket Umum' : 'Pilih Kategori Usia')"></p>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pengaturan Harga</p>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-bold ml-auto"
+                              :class="marketType === 'wna' ? 'bg-violet-100 text-violet-700' : (marketType === 'local' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700')"
+                              x-show="tipeKategori === 'orang'">
+                            <span x-text="marketType === 'wna' ? 'WNA' : (marketType === 'local' ? 'Lokal' : 'Semua')"></span>
+                        </span>
                     </div>
                     
-                    <!-- Orang - Sama -->
-                    <template x-if="tipeKategori === 'orang' && subOrang === 'sama'">
-                        <button type="button" @click="selectItem('Umum')" 
-                                class="w-full p-4 bg-emerald-50 border-2 border-emerald-100 rounded-xl text-left hover:border-emerald-400 transition-all flex items-center gap-3">
-                            <i class="bi bi-ticket-perforated text-emerald-600 text-lg"></i>
-                            <span class="text-sm font-bold text-slate-800">Tiket Umum (Semua Usia)</span>
-                            <i class="bi bi-chevron-right text-slate-300 ml-auto"></i>
-                        </button>
-                    </template>
-                    
-                    <!-- Orang - Kategori Usia -->
-                    <template x-if="tipeKategori === 'orang' && subOrang === 'kategori'">
-                        <div class="space-y-2">
-                            @foreach(['Dewasa', 'Anak-anak', 'Balita', 'Lansia', 'Pelajar'] as $usia)
-                            <button type="button" @click="selectItem('{{ $usia }}')" 
-                                    class="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl text-left hover:border-primary-light hover:bg-blue-50/50 transition-all flex items-center gap-3">
-                                <i class="bi bi-person text-primary-light"></i>
-                                <span class="text-sm font-bold text-slate-800">{{ $usia }}</span>
+                    <!-- Orang sub-options -->
+                    <template x-if="tipeKategori === 'orang'">
+                        <div class="space-y-3">
+                            <button type="button" @click="selectSubOrang('sama')" 
+                                    class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-left hover:border-primary-light hover:bg-blue-50/50 transition-all group flex items-center gap-4">
+                                <div class="h-10 w-10 bg-emerald-500 text-white rounded-lg flex items-center justify-center">
+                                    <i class="bi bi-check-circle text-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">Harga Sama Semua Usia</p>
+                                    <p class="text-[10px] text-slate-500">Satu harga untuk semua pengunjung</p>
+                                </div>
                                 <i class="bi bi-chevron-right text-slate-300 ml-auto"></i>
                             </button>
-                            @endforeach
+                            
+                            <button type="button" @click="selectSubOrang('kategori')" 
+                                    class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-left hover:border-primary-light hover:bg-blue-50/50 transition-all group flex items-center gap-4">
+                                <div class="h-10 w-10 bg-violet-500 text-white rounded-lg flex items-center justify-center">
+                                    <i class="bi bi-people text-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">Harga Berbeda Berdasarkan Usia</p>
+                                    <p class="text-[10px] text-slate-500">Dewasa, Anak, Lansia, dll</p>
+                                </div>
+                                <i class="bi bi-chevron-right text-slate-300 ml-auto"></i>
+                            </button>
                         </div>
                     </template>
-                    
-                    <!-- Kendaraan -->
+
+                    <!-- Kendaraan items -->
                     <template x-if="tipeKategori === 'kendaraan'">
                         <div class="space-y-2">
                             @foreach(['Motor' => 'bi-scooter', 'Mobil' => 'bi-car-front', 'Bus' => 'bi-bus-front', 'Truk' => 'bi-truck'] as $kend => $icon)
@@ -460,16 +689,61 @@
                     </template>
                 </div>
 
-                <!-- STEP 4: Input Harga -->
-                <div x-show="wizardStep === 4" x-transition>
-                    <div class="flex items-center gap-2 mb-4" x-show="!editMode">
+                <!-- STEP 4: Pilih Kategori Spesifik -->
+                <div x-show="wizardStep === 4" x-transition class="space-y-3">
+                    <div class="flex items-center gap-2 mb-4">
                         <button type="button" @click="wizardStep = 3" class="h-7 w-7 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary-light transition-colors">
+                            <i class="bi bi-arrow-left text-sm"></i>
+                        </button>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest" x-text="subOrang === 'sama' ? 'Tiket Umum' : 'Pilih Kategori Usia'"></p>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-bold ml-auto"
+                              :class="marketType === 'wna' ? 'bg-violet-100 text-violet-700' : (marketType === 'local' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700')">
+                            <span x-text="marketType === 'wna' ? 'WNA' : (marketType === 'local' ? 'Lokal' : 'Semua')"></span>
+                        </span>
+                    </div>
+                    
+                    <template x-if="subOrang === 'sama'">
+                        <button type="button" @click="selectItem('Umum')" 
+                                class="w-full p-4 bg-emerald-50 border-2 border-emerald-100 rounded-xl text-left hover:border-emerald-400 transition-all flex items-center gap-3">
+                            <i class="bi bi-ticket-perforated text-emerald-600 text-lg"></i>
+                            <span class="text-sm font-bold text-slate-800">Tiket Umum (Semua Usia)</span>
+                            <i class="bi bi-chevron-right text-slate-300 ml-auto"></i>
+                        </button>
+                    </template>
+                    
+                    <template x-if="subOrang === 'kategori'">
+                        <div class="space-y-2">
+                            @foreach(['Dewasa', 'Anak-anak', 'Balita', 'Lansia', 'Pelajar'] as $usia)
+                            <button type="button" @click="selectItem('{{ $usia }}')" 
+                                    class="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl text-left hover:border-primary-light hover:bg-blue-50/50 transition-all flex items-center gap-3">
+                                <i class="bi bi-person text-primary-light"></i>
+                                <span class="text-sm font-bold text-slate-800">{{ $usia }}</span>
+                                <i class="bi bi-chevron-right text-slate-300 ml-auto"></i>
+                            </button>
+                            @endforeach
+                        </div>
+                    </template>
+                </div>
+
+                <!-- STEP 5: Input Harga -->
+                <div x-show="wizardStep === 5" x-transition>
+                    <div class="flex items-center gap-2 mb-4" x-show="!editMode">
+                        <button type="button" @click="wizardStep = tipeKategori === 'kendaraan' ? 3 : 4" class="h-7 w-7 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary-light transition-colors">
                             <i class="bi bi-arrow-left text-sm"></i>
                         </button>
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Isi Harga untuk <span class="text-primary-light" x-text="formNama"></span></p>
                     </div>
                     <div x-show="editMode" class="mb-4">
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Edit harga <span class="text-primary-light" x-text="formNama"></span></p>
+                    </div>
+
+                    <!-- Market type badge -->
+                    <div class="mb-3" x-show="tipeKategori === 'orang'">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-bold"
+                              :class="formMarketType === 'wna' ? 'bg-violet-100 text-violet-700' : (formMarketType === 'local' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700')">
+                            <i class="bi" :class="formMarketType === 'wna' ? 'bi-globe' : (formMarketType === 'local' ? 'bi-geo-alt' : 'bi-people')"></i>
+                            <span x-text="formMarketType === 'wna' ? 'WNA' : (formMarketType === 'local' ? 'Lokal' : 'Semua')"></span>
+                        </span>
                     </div>
                     
                     <form :action="getFormAction()" method="POST" class="space-y-4">
@@ -479,12 +753,23 @@
                         </template>
                         <input type="hidden" name="id_objek_wisata" value="{{ $objek->id_objek_wisata }}">
                         <input type="hidden" name="tipe_kategori" :value="tipeKategori">
+                        <input type="hidden" name="market_type" :value="formMarketType">
                         <input type="hidden" name="nama_kategori" :value="formNama">
                         
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Nama Kategori</label>
                             <input type="text" x-model="formNama" 
                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:ring-4 focus:ring-primary-light/10 transition-all">
+                        </div>
+
+                        <div x-show="editMode">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Kategori Pasar</label>
+                            <select x-model="formMarketType"
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:ring-4 focus:ring-primary-light/10 transition-all">
+                                <option value="all">Semua Pengunjung</option>
+                                <option value="local">Lokal (Domestik)</option>
+                                <option value="wna">WNA (Wisatawan Asing)</option>
+                            </select>
                         </div>
                         
                         <div>

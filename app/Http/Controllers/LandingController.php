@@ -1313,6 +1313,51 @@ class LandingController extends Controller
         }
     }
 
+    public function wisata_check_availability(Request $request)
+    {
+        $request->validate([
+            'id_objek_wisata' => 'required|exists:tb_objek_wisata,id_objek_wisata',
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2024|max:2030'
+        ]);
+
+        $objek = ObjekWisata::findOrFail($request->id_objek_wisata);
+        $batas = $objek->batas_tiket_harian;
+
+        // If no limit, all dates available
+        if (!$batas) {
+            return response()->json(['unlimited' => true]);
+        }
+
+        // Get sold tickets per day for the month
+        $startDate = sprintf('%04d-%02d-01', $request->year, $request->month);
+        $endDate = date('Y-m-t', strtotime($startDate));
+
+        $soldPerDay = TiketWisata::where('id_objek_wisata', $request->id_objek_wisata)
+            ->whereIn('status_pembayaran', ['paid', 'completed', 'pending'])
+            ->whereBetween('tanggal_kunjungan', [$startDate, $endDate])
+            ->selectRaw('tanggal_kunjungan, SUM(1) as total_tiket')
+            ->groupBy('tanggal_kunjungan')
+            ->pluck('total_tiket', 'tanggal_kunjungan')
+            ->toArray();
+
+        $availability = [];
+        $current = strtotime($startDate);
+        $end = strtotime($endDate);
+        while ($current <= $end) {
+            $dateStr = date('Y-m-d', $current);
+            $sold = $soldPerDay[$dateStr] ?? 0;
+            $availability[$dateStr] = [
+                'sold' => (int)$sold,
+                'limit' => $batas,
+                'available' => $batas - (int)$sold
+            ];
+            $current = strtotime('+1 day', $current);
+        }
+
+        return response()->json(['unlimited' => false, 'dates' => $availability, 'limit' => $batas]);
+    }
+
     public function agenda(Request $request)
     {
         $selected_category = $request->get('kategori', 'all');

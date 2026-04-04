@@ -80,6 +80,17 @@
                             </select>
                         </div>
 
+                        <!-- Step 2b: Kategori Pasar (WNA/Lokal) for Per Orang -->
+                        <div id="market-type-select" class="mb-4" style="display: none;">
+                            <label class="block text-[10px] font-bold text-slate-600 mb-2">Kategori Pasar</label>
+                            <select id="market-type-value" class="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb]">
+                                <option value="all">Semua (Lokal & WNA)</option>
+                                <option value="local">Lokal</option>
+                                <option value="wna">WNA</option>
+                            </select>
+                            <p class="text-[9px] text-slate-400 mt-1">Pilih untuk siapa harga ini berlaku</p>
+                        </div>
+
                         <!-- Kategori Options -->
                         <div id="kategori-options" style="display: none;">
                             <!-- Per Orang - Harga Sama -->
@@ -269,6 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const orangSama = document.getElementById('orang-sama');
     const orangKategori = document.getElementById('orang-kategori');
     const kendaraanOptions = document.getElementById('kendaraan-options');
+    const marketTypeSelect = document.getElementById('market-type-select');
 
     console.log('Elements found:', {
         tipeUtama: !!tipeUtama,
@@ -287,6 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
         orangSama.style.display = 'none';
         orangKategori.style.display = 'none';
         kendaraanOptions.style.display = 'none';
+        marketTypeSelect.style.display = 'none';
         
         // Clear all checkboxes
         document.querySelectorAll('input[name="kategori_aktif[]"]').forEach(cb => {
@@ -302,10 +315,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (this.value === 'orang') {
             console.log('Showing sub-orang');
             subOrang.style.display = 'block';
+            marketTypeSelect.style.display = 'block';
         } else if (this.value === 'kendaraan') {
             console.log('Showing kendaraan options');
             kategoriOptions.style.display = 'block';
             kendaraanOptions.style.display = 'block';
+            marketTypeSelect.style.display = 'none';
         }
     });
 
@@ -404,6 +419,19 @@ document.querySelector('form').addEventListener('submit', function(e) {
         alert('Masukkan harga untuk semua kategori yang dipilih');
         return false;
     }
+    
+    // Inject market_type hidden inputs for each checked category
+    const marketTypeValue = document.getElementById('market-type-value').value;
+    document.querySelectorAll('input[name^="market_type["]').forEach(el => el.remove());
+    checkboxes.forEach(checkbox => {
+        const value = checkbox.value;
+        const mt = (tipeUtama === 'orang') ? marketTypeValue : 'all';
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'market_type[' + value + ']';
+        input.value = mt;
+        this.appendChild(input);
+    });
 });
 </script>
 @endpush

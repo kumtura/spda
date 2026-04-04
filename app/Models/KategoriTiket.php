@@ -13,6 +13,7 @@ class KategoriTiket extends Model
         'id_objek_wisata',
         'nama_kategori',
         'tipe_kategori',
+        'market_type',
         'harga',
         'deskripsi',
         'urutan',

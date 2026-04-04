@@ -136,9 +136,14 @@
                 @forelse($objek->kategoriTiket as $kategori)
                     <div class="bg-white rounded-xl border border-slate-100 p-3 flex items-center gap-3">
                         <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
                                 <p class="text-xs font-bold text-slate-800">{{ $kategori->nama_kategori }}</p>
                                 <span class="text-[8px] font-bold text-[#00a6eb] bg-blue-50 px-1.5 py-0.5 rounded">{{ ucfirst($kategori->tipe_kategori) }}</span>
+                                @if($kategori->market_type === 'wna')
+                                <span class="text-[8px] font-bold text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">WNA</span>
+                                @elseif($kategori->market_type === 'local')
+                                <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Lokal</span>
+                                @endif
                             </div>
                             <p class="text-sm font-black text-slate-700">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
                             @if($kategori->deskripsi)
@@ -274,6 +279,17 @@
                 </div>
                 
                 <div>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Kategori Pasar</label>
+                    <select id="market-type" name="market_type"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-800 focus:ring-2 focus:ring-[#00a6eb]/20 focus:border-[#00a6eb] outline-none">
+                        <option value="all">Semua (Lokal & WNA)</option>
+                        <option value="local">Lokal</option>
+                        <option value="wna">WNA</option>
+                    </select>
+                    <p class="text-[9px] text-slate-400 mt-1">Pilih untuk siapa kategori harga ini berlaku</p>
+                </div>
+                
+                <div>
                     <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Harga (Rp)</label>
                     <input type="number" id="harga-kategori" name="harga" required min="0"
                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-800 focus:ring-2 focus:ring-[#00a6eb]/20 focus:border-[#00a6eb] outline-none"
@@ -320,6 +336,7 @@ function editKategori(id) {
     document.getElementById('tipe-kategori').value = kategori.tipe_kategori;
     document.getElementById('harga-kategori').value = kategori.harga;
     document.getElementById('deskripsi-kategori').value = kategori.deskripsi || '';
+    document.getElementById('market-type').value = kategori.market_type || 'all';
     
     // Trigger Alpine.js to show modal
     document.querySelector('[x-data]').__x.$data.showKategoriModal = true;
@@ -354,6 +371,7 @@ document.addEventListener('alpine:init', () => {
                     document.getElementById('tipe-kategori').value = 'orang';
                     document.getElementById('harga-kategori').value = '';
                     document.getElementById('deskripsi-kategori').value = '';
+                    document.getElementById('market-type').value = 'all';
                     
                     // Remove method spoofing if exists
                     const methodInput = document.getElementById('kategori-form').querySelector('input[name="_method"]');

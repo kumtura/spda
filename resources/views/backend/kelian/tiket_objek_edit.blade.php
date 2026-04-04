@@ -72,6 +72,14 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">Batas Tiket Harian</label>
+                        <input type="number" name="batas_tiket_harian" value="{{ $objek->batas_tiket_harian }}" min="1"
+                            class="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb]"
+                            placeholder="Kosongkan jika unlimited">
+                        <p class="text-[10px] text-slate-500 mt-1">Jumlah tiket maksimal yang bisa dijual per hari. Kosongkan = unlimited.</p>
+                    </div>
+
+                    <div>
                         <label class="block text-xs font-bold text-slate-700 mb-2">Kapasitas Harian</label>
                         <input type="number" name="kapasitas_harian" value="{{ $objek->kapasitas_harian }}"
                             class="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb]">
@@ -95,6 +103,37 @@
                         <input type="file" name="foto" accept="image/*"
                             class="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb]">
                         <p class="text-[10px] text-slate-500 mt-1">Kosongkan jika tidak ingin mengubah foto</p>
+                    </div>
+
+                    <!-- Detail & Termasuk Tiket -->
+                    <div class="border-t border-slate-200 pt-4">
+                        <h3 class="text-xs font-bold text-slate-700 mb-3"><i class="bi bi-card-text text-[#00a6eb] mr-1.5"></i>Detail & Termasuk Tiket</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Deskripsi Tiket</label>
+                                <textarea name="detail_termasuk" rows="3"
+                                    class="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb]"
+                                    placeholder="Apa saja yang termasuk dalam tiket...">{{ $objek->detail_termasuk }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Cara Penggunaan</label>
+                                <textarea name="cara_penggunaan" rows="3"
+                                    class="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb]"
+                                    placeholder="Langkah-langkah penggunaan tiket...">{{ $objek->cara_penggunaan }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Pembatalan</label>
+                                <textarea name="pembatalan" rows="3"
+                                    class="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb]"
+                                    placeholder="Kebijakan pembatalan tiket...">{{ $objek->pembatalan }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Syarat & Ketentuan</label>
+                                <textarea name="syarat_ketentuan" rows="3"
+                                    class="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb]"
+                                    placeholder="Syarat dan ketentuan yang berlaku...">{{ $objek->syarat_ketentuan }}</textarea>
+                            </div>
+                        </div>
                     </div>
 
                     <button type="submit" class="w-full py-3 bg-[#00a6eb] text-white text-sm font-black rounded-xl shadow-lg hover:shadow-xl transition-all">

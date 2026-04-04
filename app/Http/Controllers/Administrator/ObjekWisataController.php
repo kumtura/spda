@@ -55,6 +55,11 @@ class ObjekWisataController extends Controller
             $data['kapasitas_harian'] = null;
         }
         
+        // Set batas_tiket_harian to null if empty (unlimited)
+        if (empty($data['batas_tiket_harian'])) {
+            $data['batas_tiket_harian'] = null;
+        }
+        
         if ($request->hasFile('foto')) {
             // Create directory if not exists
             if (!file_exists(public_path('storage/wisata'))) {
@@ -104,6 +109,7 @@ class ObjekWisataController extends Controller
                         'id_objek_wisata' => $objek->id_objek_wisata,
                         'nama_kategori' => $kategoriMapping[$key]['nama'],
                         'tipe_kategori' => $kategoriMapping[$key]['tipe'],
+                        'market_type' => $request->market_type[$key] ?? 'all',
                         'harga' => $request->harga[$key],
                         'deskripsi' => null,
                         'urutan' => $urutan,
@@ -142,6 +148,11 @@ class ObjekWisataController extends Controller
 
         $objek = ObjekWisata::findOrFail($id);
         $data = $request->except('foto');
+        
+        // Convert empty batas_tiket_harian to null
+        if (empty($data['batas_tiket_harian'])) {
+            $data['batas_tiket_harian'] = null;
+        }
         
         if ($request->hasFile('foto')) {
             // Delete old photo
@@ -235,6 +246,7 @@ class ObjekWisataController extends Controller
             'id_objek_wisata' => 'required|exists:tb_objek_wisata,id_objek_wisata',
             'nama_kategori' => 'required|string|max:100',
             'tipe_kategori' => 'required|in:orang,kendaraan,paket',
+            'market_type' => 'nullable|in:all,wna,local',
             'harga' => 'required|numeric|min:0',
             'deskripsi' => 'nullable|string'
         ]);
@@ -246,6 +258,7 @@ class ObjekWisataController extends Controller
             'id_objek_wisata' => $request->id_objek_wisata,
             'nama_kategori' => $request->nama_kategori,
             'tipe_kategori' => $request->tipe_kategori,
+            'market_type' => $request->market_type ?? 'all',
             'harga' => $request->harga,
             'deskripsi' => $request->deskripsi,
             'urutan' => $maxUrutan + 1,
@@ -260,6 +273,7 @@ class ObjekWisataController extends Controller
         $request->validate([
             'nama_kategori' => 'required|string|max:100',
             'tipe_kategori' => 'required|in:orang,kendaraan,paket',
+            'market_type' => 'nullable|in:all,wna,local',
             'harga' => 'required|numeric|min:0',
             'deskripsi' => 'nullable|string'
         ]);
@@ -268,6 +282,7 @@ class ObjekWisataController extends Controller
         $kategori->update([
             'nama_kategori' => $request->nama_kategori,
             'tipe_kategori' => $request->tipe_kategori,
+            'market_type' => $request->market_type ?? 'all',
             'harga' => $request->harga,
             'deskripsi' => $request->deskripsi
         ]);

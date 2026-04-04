@@ -78,21 +78,105 @@
             
             <div class="p-4">
                 @if($objek->kategoriTiket->count() > 0)
-                <div class="mb-4">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Kategori Tiket</p>
-                    <div class="space-y-2">
-                        @foreach($objek->kategoriTiket as $kategori)
-                        <div class="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg">
-                            <div>
-                                <p class="text-xs font-bold text-slate-800">{{ $kategori->nama_kategori }}</p>
-                                @if($kategori->deskripsi)
-                                <p class="text-[9px] text-slate-500">{{ $kategori->deskripsi }}</p>
-                                @endif
-                            </div>
-                            <p class="text-sm font-black text-[#00a6eb]">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                @php
+                    $orangWna = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'wna');
+                    $orangLocal = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'local');
+                    $orangAll = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'all');
+                    $kendaraanKategori = $objek->kategoriTiket->where('tipe_kategori', 'kendaraan');
+                    $hasMultipleMarkets = ($orangWna->count() > 0 && $orangLocal->count() > 0);
+                @endphp
+
+                <div class="space-y-4 mb-4">
+                    @if($orangLocal->count() > 0)
+                    <div>
+                        @if($hasMultipleMarkets)
+                        <div class="flex items-center gap-1.5 mb-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-lg text-[9px] font-bold">
+                                <i class="bi bi-geo-alt"></i> Lokal
+                            </span>
                         </div>
-                        @endforeach
+                        @endif
+                        <div class="space-y-2">
+                            @foreach($orangLocal as $kategori)
+                            <div class="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">{{ $kategori->nama_kategori }}</p>
+                                    @if($kategori->deskripsi)
+                                    <p class="text-[9px] text-slate-500">{{ $kategori->deskripsi }}</p>
+                                    @endif
+                                </div>
+                                <p class="text-sm font-black text-emerald-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                            </div>
+                            @endforeach
+                        </div>
                     </div>
+                    @endif
+
+                    @if($orangWna->count() > 0)
+                    <div>
+                        @if($hasMultipleMarkets)
+                        <div class="flex items-center gap-1.5 mb-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 rounded-lg text-[9px] font-bold">
+                                <i class="bi bi-globe"></i> WNA
+                            </span>
+                        </div>
+                        @endif
+                        <div class="space-y-2">
+                            @foreach($orangWna as $kategori)
+                            <div class="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">{{ $kategori->nama_kategori }}</p>
+                                    @if($kategori->deskripsi)
+                                    <p class="text-[9px] text-slate-500">{{ $kategori->deskripsi }}</p>
+                                    @endif
+                                </div>
+                                <p class="text-sm font-black text-violet-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($orangAll->count() > 0)
+                    <div>
+                        <div class="space-y-2">
+                            @foreach($orangAll as $kategori)
+                            <div class="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">{{ $kategori->nama_kategori }}</p>
+                                    @if($kategori->deskripsi)
+                                    <p class="text-[9px] text-slate-500">{{ $kategori->deskripsi }}</p>
+                                    @endif
+                                </div>
+                                <p class="text-sm font-black text-[#00a6eb]">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($kendaraanKategori->count() > 0)
+                    <div>
+                        <div class="flex items-center gap-1.5 mb-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-lg text-[9px] font-bold">
+                                <i class="bi bi-car-front"></i> Kendaraan
+                            </span>
+                        </div>
+                        <div class="space-y-2">
+                            @foreach($kendaraanKategori as $kategori)
+                            <div class="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">{{ $kategori->nama_kategori }}</p>
+                                    @if($kategori->deskripsi)
+                                    <p class="text-[9px] text-slate-500">{{ $kategori->deskripsi }}</p>
+                                    @endif
+                                </div>
+                                <p class="text-sm font-black text-amber-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
                 </div>
                 @endif
 
@@ -111,6 +195,61 @@
                 </div>
             </div>
         </div>
+
+        <!-- Detail & Termasuk Section -->
+        @if($objek->detail_termasuk || $objek->cara_penggunaan || $objek->pembatalan || $objek->syarat_ketentuan)
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 space-y-4">
+            <h2 class="text-sm font-black text-slate-800">Detail & Termasuk</h2>
+
+            @if($objek->detail_termasuk)
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="h-6 w-6 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-file-text text-[#00a6eb] text-[10px]"></i>
+                    </div>
+                    <h3 class="text-xs font-bold text-slate-700">Deskripsi</h3>
+                </div>
+                <p class="text-[11px] text-slate-600 leading-relaxed whitespace-pre-line pl-8">{{ $objek->detail_termasuk }}</p>
+            </div>
+            @endif
+
+            @if($objek->cara_penggunaan)
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="h-6 w-6 bg-emerald-50 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-signpost-split text-emerald-600 text-[10px]"></i>
+                    </div>
+                    <h3 class="text-xs font-bold text-slate-700">Cara Penggunaan</h3>
+                </div>
+                <p class="text-[11px] text-slate-600 leading-relaxed whitespace-pre-line pl-8">{{ $objek->cara_penggunaan }}</p>
+            </div>
+            @endif
+
+            @if($objek->pembatalan)
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="h-6 w-6 bg-rose-50 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-x-circle text-rose-500 text-[10px]"></i>
+                    </div>
+                    <h3 class="text-xs font-bold text-slate-700">Pembatalan</h3>
+                </div>
+                <p class="text-[11px] text-slate-600 leading-relaxed whitespace-pre-line pl-8">{{ $objek->pembatalan }}</p>
+            </div>
+            @endif
+
+            @if($objek->syarat_ketentuan)
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="h-6 w-6 bg-amber-50 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-shield-check text-amber-600 text-[10px]"></i>
+                    </div>
+                    <h3 class="text-xs font-bold text-slate-700">Syarat & Ketentuan</h3>
+                </div>
+                <p class="text-[11px] text-slate-600 leading-relaxed whitespace-pre-line pl-8">{{ $objek->syarat_ketentuan }}</p>
+            </div>
+            @endif
+        </div>
+        @endif
     </div>
 </div>
 @endsection

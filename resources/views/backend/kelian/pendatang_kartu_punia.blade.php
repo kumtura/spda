@@ -15,9 +15,13 @@
 
 <div class="bg-white px-4 pt-8 pb-24 space-y-6" x-data="{ 
     showPaymentModal: false, 
+    showDeleteModal: false,
     selectedMonth: null, 
     selectedMonthName: '',
     selectedYear: {{ $selectedYear }},
+    deleteId: null,
+    deleteMonthName: '',
+    deleteCatatan: '',
     processing: false
 }">
     <!-- Back + Header -->
@@ -134,6 +138,10 @@
                             <button class="h-7 px-2.5 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center gap-1 border border-slate-200 hover:bg-[#00a6eb] hover:text-white hover:border-[#00a6eb] transition-all text-[10px] font-bold">
                                 <i class="bi bi-eye text-xs"></i>
                             </button>
+                            <button @click="deleteId = {{ $payment->id_punia_pendatang }}; deleteMonthName = '{{ $name }}'; deleteCatatan = ''; showDeleteModal = true"
+                                    class="h-7 px-2.5 bg-rose-50 text-rose-400 rounded-lg flex items-center justify-center gap-1 border border-rose-200 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all text-[10px] font-bold">
+                                <i class="bi bi-trash text-xs"></i>
+                            </button>
                             @else
                             <button @click="selectedMonth = {{ $num }}; selectedMonthName = '{{ $name }}'; showPaymentModal = true" 
                                     class="h-7 px-2.5 bg-[#00a6eb] text-white rounded-lg flex items-center justify-center gap-1 hover:bg-[#0090d0] transition-all shadow-sm text-[10px] font-bold">
@@ -231,6 +239,71 @@
             <div class="px-6 pb-6 pt-2 text-center">
                 <button @click="showPaymentModal = false" class="text-[10px] font-bold text-slate-300 uppercase tracking-widest hover:text-slate-500 transition-colors">Batal</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div x-show="showDeleteModal" 
+         x-cloak
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm shadow-2xl"
+         style="display: none;">
+        
+        <div @click.away="showDeleteModal = false"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-8"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden">
+            
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-br from-rose-500 to-rose-600 p-6 text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <button @click="showDeleteModal = false" type="button" class="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
+                    <i class="bi bi-x text-xl"></i>
+                </button>
+                <div class="relative">
+                    <div class="h-10 w-10 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+                        <i class="bi bi-exclamation-triangle text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-black">Hapus Pembayaran</h3>
+                    <p class="text-white/80 text-xs font-medium mt-1" x-text="'Bulan ' + deleteMonthName + ' ' + selectedYear"></p>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <form x-ref="deleteForm" action="{{ url('administrator/kelian/pendatang/kartu-punia/hapus') }}" method="POST">
+                @csrf
+                <input type="hidden" name="id_punia_pendatang" x-model="deleteId">
+                
+                <div class="p-6 space-y-4">
+                    <div class="bg-rose-50 border border-rose-100 rounded-xl p-3">
+                        <p class="text-[10px] text-rose-600 leading-relaxed">
+                            <i class="bi bi-info-circle mr-1"></i>
+                            Data pembayaran akan dihapus secara permanen. Anda <strong>wajib</strong> mengisi alasan penghapusan.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block">Alasan Penghapusan <span class="text-rose-500">*</span></label>
+                        <textarea name="catatan_hapus" x-model="deleteCatatan" rows="3" required minlength="5"
+                                  placeholder="Contoh: Salah input bulan, duplikat pembayaran, dll..."
+                                  class="w-full text-xs border border-slate-200 rounded-xl px-3 py-2.5 bg-white placeholder-slate-300 focus:outline-none focus:border-rose-300 focus:ring-1 focus:ring-rose-200 resize-none"></textarea>
+                        <p class="text-[9px] text-slate-400 mt-1">Minimal 5 karakter</p>
+                    </div>
+                </div>
+
+                <div class="px-6 pb-6 flex gap-3">
+                    <button type="button" @click="showDeleteModal = false" 
+                            class="flex-1 bg-slate-100 text-slate-600 text-xs font-bold py-2.5 rounded-xl hover:bg-slate-200 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" 
+                            :disabled="deleteCatatan.length < 5"
+                            :class="deleteCatatan.length < 5 ? 'flex-1 bg-slate-200 text-slate-400 text-xs font-bold py-2.5 rounded-xl cursor-not-allowed' : 'flex-1 bg-rose-500 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-rose-600 transition-colors'"
+                            class="flex items-center justify-center gap-1.5">
+                        <i class="bi bi-trash text-sm"></i> Hapus
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

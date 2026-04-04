@@ -149,6 +149,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
         // Kelian Adat (Level 2) & Bendesa (Level 1)
         Route::group(['middleware' => 'role:1,2'], function() {
             Route::get('/kelian/punia', function() { return view('backend.kelian.punia'); });
+            Route::get('/kelian/data_usaha', function() { return view('backend.kelian.data_usaha'); });
             Route::get('/kelian/donasi', function() { return view('backend.kelian.donasi'); });
             Route::get('/kelian/verifikasi', [DashboardController::class, 'verifikasi_pembayaran']);
             Route::get('/kelian/usaha', function() { return view('backend.kelian.usaha'); });
@@ -197,6 +198,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/kelian/pendatang/kartu-punia/print/{id}', 'Administrator\PendatangController@printKartuPunia');
             Route::get('/kelian/pendatang/kartu-punia/{id}', 'Administrator\PendatangController@kartuPunia');
             Route::post('/kelian/pendatang/kartu-punia/bayar', 'Administrator\PendatangController@bayarKartuPunia');
+            Route::post('/kelian/pendatang/kartu-punia/hapus', 'Administrator\PendatangController@hapusKartuPunia');
             
             // Punia Pendatang Management
             Route::post('/kelian/pendatang/punia/store', 'Administrator\PendatangController@storePunia');

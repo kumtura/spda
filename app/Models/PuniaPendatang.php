@@ -22,6 +22,9 @@ class PuniaPendatang extends Model
         'tanggal_bayar',
         'petugas_id',
         'keterangan',
+        'catatan_hapus',
+        'dihapus_oleh',
+        'tanggal_hapus',
         'aktif'
     ];
     

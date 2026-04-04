@@ -109,13 +109,13 @@
             <p class="text-xs font-bold text-slate-700">Data Krama Tamiu</p>
             <p class="text-[9px] text-slate-400 mt-0.5">{{ $totalTamiu }} orang aktif</p>
         </a>
-        <div class="bg-white border border-slate-100 rounded-xl p-4 text-center">
+        <a href="{{ url('administrator/kelian/data_usaha') }}" class="bg-white border border-slate-100 rounded-xl p-4 text-center hover:bg-slate-50 transition-colors">
             <div class="h-10 w-10 bg-amber-50 rounded-lg flex items-center justify-center mx-auto mb-2">
                 <i class="bi bi-building text-amber-600 text-lg"></i>
             </div>
             <p class="text-xs font-bold text-slate-700">Unit Usaha</p>
             <p class="text-[9px] text-slate-400 mt-0.5">{{ $totalUsaha }} usaha aktif</p>
-        </div>
+        </a>
     </div>
 
     <!-- Unit Usaha Summary -->

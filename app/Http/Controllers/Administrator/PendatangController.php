@@ -386,6 +386,28 @@ class PendatangController extends Controller
         return redirect()->back()->with('success', 'Pembayaran punia berhasil dicatat');
     }
     
+    public function hapusKartuPunia(Request $request)
+    {
+        $request->validate([
+            'id_punia_pendatang' => 'required|exists:tb_punia_pendatang,id_punia_pendatang',
+            'catatan_hapus' => 'required|string|min:5|max:500'
+        ], [
+            'catatan_hapus.required' => 'Alasan penghapusan wajib diisi.',
+            'catatan_hapus.min' => 'Alasan minimal 5 karakter.'
+        ]);
+
+        $punia = PuniaPendatang::findOrFail($request->id_punia_pendatang);
+        
+        $punia->update([
+            'aktif' => '0',
+            'catatan_hapus' => $request->catatan_hapus,
+            'dihapus_oleh' => auth()->id(),
+            'tanggal_hapus' => now()
+        ]);
+
+        return redirect()->back()->with('success', 'Record pembayaran berhasil dihapus.');
+    }
+
     // Punia Management
     public function storePunia(Request $request)
     {

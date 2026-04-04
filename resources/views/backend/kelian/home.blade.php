@@ -58,7 +58,7 @@
                 <p class="text-slate-400 text-[10px] leading-tight">Transfer Manual</p>
             </a>
 
-            <a href="{{ url('administrator/data_usaha') }}" class="bg-white border border-slate-100 p-5 rounded-3xl shadow-sm hover:shadow-md transition-all group">
+            <a href="{{ url('administrator/kelian/data_usaha') }}" class="bg-white border border-slate-100 p-5 rounded-3xl shadow-sm hover:shadow-md transition-all group">
                 <div class="w-12 h-12 bg-blue-50 text-[#00a6eb] rounded-2xl flex items-center justify-center mb-4 transition-colors group-hover:bg-[#00a6eb] group-hover:text-white">
                     <i class="bi bi-building-add text-2xl"></i>
                 </div>

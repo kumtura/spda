@@ -1008,18 +1008,22 @@ class LandingController extends Controller
             ]
         ]);
 
-        return redirect()->to('wisata/payment/methods');
+        return redirect()->to('wisata/data-pengunjung');
     }
 
-    public function wisata_payment_proceed(Request $request)
+    public function wisata_data_pengunjung()
     {
         if (!session('tiket_data')) {
             return redirect()->to('wisata');
         }
+        return view('front.pages.wisata_data_pengunjung');
+    }
 
-        $request->validate([
-            'payment_method' => 'required|string',
-        ]);
+    public function wisata_data_pengunjung_submit(Request $request)
+    {
+        if (!session('tiket_data')) {
+            return redirect()->to('wisata');
+        }
 
         $tiketData = session('tiket_data');
 
@@ -1035,6 +1039,20 @@ class LandingController extends Controller
 
         session(['tiket_data' => $tiketData]);
 
+        return redirect()->to('wisata/payment/methods');
+    }
+
+    public function wisata_payment_proceed(Request $request)
+    {
+        if (!session('tiket_data')) {
+            return redirect()->to('wisata');
+        }
+
+        $request->validate([
+            'payment_method' => 'required|string',
+        ]);
+
+        $tiketData = session('tiket_data');
         $amount = $tiketData['total_harga'];
         $method = $request->input('payment_method');
 

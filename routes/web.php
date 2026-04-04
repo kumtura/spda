@@ -57,6 +57,8 @@ Route::get('/krama-tamiu/daftar', [LandingController::class, 'krama_tamiu_regist
 Route::post('/krama-tamiu/daftar/submit', [LandingController::class, 'krama_tamiu_register_submit'])->name('public.krama_tamiu.register.submit');
 Route::get('/wisata/beli/{id}', [LandingController::class, 'wisata_beli'])->name('public.wisata.beli');
 Route::post('/wisata/beli/submit', [LandingController::class, 'wisata_beli_submit'])->name('public.wisata.beli.submit');
+Route::get('/wisata/data-pengunjung', [LandingController::class, 'wisata_data_pengunjung'])->name('public.wisata.data_pengunjung');
+Route::post('/wisata/data-pengunjung/submit', [LandingController::class, 'wisata_data_pengunjung_submit'])->name('public.wisata.data_pengunjung.submit');
 Route::get('/wisata/payment/methods', [LandingController::class, 'wisata_payment_methods'])->name('public.wisata.payment.methods');
 Route::post('/wisata/payment/proceed', [LandingController::class, 'wisata_payment_proceed'])->name('public.wisata.payment.proceed');
 Route::get('/wisata/payment/xendit', [LandingController::class, 'wisata_payment_xendit'])->name('public.wisata.payment.xendit');

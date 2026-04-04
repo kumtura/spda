@@ -246,31 +246,30 @@
          style="display: none;">
 
         <div @click.stop
-             class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
+             class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden border border-slate-200"
              x-transition:enter="transition ease-out duration-300 transform"
              x-transition:enter-start="opacity-0 scale-95 translate-y-8"
              x-transition:enter-end="opacity-100 scale-100 translate-y-0">
 
             <!-- Header -->
-            <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 text-white relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                <button @click="showReceiptModal = false" type="button" class="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
-                    <i class="bi bi-x text-xl"></i>
+            <div class="bg-[#00a6eb] p-5 text-white relative">
+                <button @click="showReceiptModal = false" type="button" class="absolute top-3.5 right-3.5 h-7 w-7 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
+                    <i class="bi bi-x text-lg"></i>
                 </button>
-                <div class="relative flex items-center gap-3">
-                    <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
-                        <i class="bi bi-receipt-cutoff text-2xl"></i>
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-receipt-cutoff text-xl"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-black">Bukti Pembayaran</h3>
-                        <p class="text-white/80 text-xs font-medium mt-0.5" x-text="receipt ? receipt.bulan + ' ' + receipt.tahun : ''"></p>
+                        <h3 class="text-base font-black">Bukti Pembayaran</h3>
+                        <p class="text-white/80 text-[11px] font-medium mt-0.5" x-text="receipt ? receipt.bulan + ' ' + receipt.tahun : ''"></p>
                     </div>
                 </div>
             </div>
 
             <!-- Content -->
-            <div class="p-5 space-y-3">
-                <div class="bg-slate-50 rounded-xl p-4 space-y-2.5">
+            <div class="p-4 space-y-3">
+                <div class="bg-slate-50 rounded-lg p-4 space-y-2.5 border border-slate-100">
                     <div class="flex items-center justify-between">
                         <span class="text-[10px] font-bold text-slate-400 uppercase">Nominal</span>
                         <span class="text-sm font-black text-slate-800" x-text="receipt ? 'Rp ' + receipt.nominal : ''"></span>
@@ -288,13 +287,13 @@
                     <div class="border-t border-slate-200"></div>
                     <div class="flex items-center justify-between">
                         <span class="text-[10px] font-bold text-slate-400 uppercase">Status</span>
-                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100">Lunas</span>
+                        <span class="text-[10px] font-bold text-[#00a6eb] bg-blue-50 px-2 py-1 rounded border border-blue-100">Lunas</span>
                     </div>
                 </div>
 
                 {{-- Bukti Transfer Image --}}
                 <template x-if="receipt && receipt.bukti">
-                    <div class="rounded-xl overflow-hidden border border-slate-200">
+                    <div class="rounded-lg overflow-hidden border border-slate-200">
                         <p class="text-[10px] font-bold text-slate-400 uppercase px-3 pt-2">Bukti Transfer</p>
                         <img :src="'{{ asset('bukti_pembayaran') }}/' + receipt.bukti" class="w-full max-h-48 object-contain p-2" alt="Bukti">
                     </div>
@@ -302,7 +301,7 @@
 
                 <!-- Download Button -->
                 <a :href="receipt ? '{{ url('administrator/usaha/punia/receipt') }}?id=' + receipt.id : '#'"
-                   class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2">
+                   class="w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white font-bold py-3 rounded-lg shadow-sm transition-all text-sm flex items-center justify-center gap-2">
                     <i class="bi bi-download"></i> Download Receipt
                 </a>
             </div>

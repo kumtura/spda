@@ -875,6 +875,30 @@ class LandingController extends Controller
         return redirect()->back()->with('error', 'Data tidak ditemukan');
     }
 
+    public function usaha_update_tk_counts(Request $request)
+    {
+        $request->validate([
+            'jumlah_tk_total' => 'nullable|integer|min:0',
+            'jumlah_tk_bali' => 'nullable|integer|min:0',
+            'jumlah_tk_lokal' => 'nullable|integer|min:0',
+        ]);
+
+        $usaha = \App\Models\Usaha::join('tb_detail_usaha','tb_detail_usaha.id_detail_usaha','tb_usaha.id_detail_usaha')
+            ->where('tb_usaha.username', \Auth::user()->email)->first();
+
+        if(!$usaha) {
+            return redirect()->back()->with('error', 'Data usaha tidak ditemukan');
+        }
+
+        \App\Models\Detail_Usaha::where('id_detail_usaha', $usaha->id_detail_usaha)->update([
+            'jumlah_tk_total' => $request->jumlah_tk_total,
+            'jumlah_tk_bali' => $request->jumlah_tk_bali,
+            'jumlah_tk_lokal' => $request->jumlah_tk_lokal,
+        ]);
+
+        return redirect()->back()->with('success', 'Data tenaga kerja berhasil diperbarui');
+    }
+
     // Tiket Wisata Public Pages
     public function wisata()
     {

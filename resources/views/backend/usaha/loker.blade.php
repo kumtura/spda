@@ -1,10 +1,10 @@
 @extends('mobile_layout')
 
 @section('isi_menu')
-<div class="bg-white px-4 pt-8 pb-24 space-y-6" x-data="{ showLokerForm: false, showApplicantModal: false, showTkDetail: false, selectedLoker: null, selectedApplicant: null, tkDetail: null }">
+<div class="bg-white px-4 pt-8 pb-24 space-y-6" x-data="{ showLokerForm: false, showApplicantModal: false, showTkDetail: false, selectedLoker: null, selectedApplicant: null, tkDetail: null, activeTab: 'rekrutmen', tkSaving: false }">
     <div>
         <h1 class="text-xl font-black text-slate-800 tracking-tight">Tenaga Kerja</h1>
-        <p class="text-slate-400 text-[10px] mt-1">Kelola rekrutmen karyawan</p>
+        <p class="text-slate-400 text-[10px] mt-1">Kelola rekrutmen & data karyawan</p>
     </div>
 
     @php
@@ -45,6 +45,14 @@
     @endphp
 
     @if($myUsaha)
+    <!-- Tab Navigation -->
+    <div class="flex bg-slate-50 rounded-xl p-1 border border-slate-100">
+        <button @click="activeTab = 'rekrutmen'" :class="activeTab === 'rekrutmen' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'" class="flex-1 py-2.5 text-[10px] font-bold rounded-lg transition-all">Rekrutmen</button>
+        <button @click="activeTab = 'data_tk'" :class="activeTab === 'data_tk' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'" class="flex-1 py-2.5 text-[10px] font-bold rounded-lg transition-all">Data Karyawan</button>
+    </div>
+
+    <!-- Tab: Rekrutmen -->
+    <div x-show="activeTab === 'rekrutmen'" class="space-y-6">
     <!-- Stats Card -->
     <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
         <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
@@ -72,7 +80,6 @@
             </div>
         </div>
     </div>
-    @endif
 
     <!-- Lowongan Pekerjaan Section -->
     <div>
@@ -203,6 +210,93 @@
         </div>
         @endif
     </div>
+    </div><!-- end Tab: Rekrutmen -->
+
+    <!-- Tab: Data Karyawan -->
+    <div x-show="activeTab === 'data_tk'" class="space-y-5">
+        <div class="bg-slate-50 rounded-xl border border-slate-100 p-4">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="h-9 w-9 bg-[#00a6eb] rounded-lg flex items-center justify-center">
+                    <i class="bi bi-people text-white"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800">Informasi Tenaga Kerja</h3>
+                    <p class="text-[10px] text-slate-400">Input data jumlah karyawan unit usaha</p>
+                </div>
+            </div>
+
+            <form action="{{ url('administrator/usaha/loker/update-tk-counts') }}" method="POST" @submit="tkSaving = true">
+                @csrf
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 mb-1 block">Jumlah Tenaga Kerja Seluruhnya</label>
+                        <input type="number" name="jumlah_tk_total" min="0" value="{{ $myUsaha->jumlah_tk_total ?? '' }}" placeholder="0"
+                               class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-800 focus:border-[#00a6eb] outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 mb-1 block">Jumlah Tenaga Kerja Bali</label>
+                        <input type="number" name="jumlah_tk_bali" min="0" value="{{ $myUsaha->jumlah_tk_bali ?? '' }}" placeholder="0"
+                               class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-800 focus:border-[#00a6eb] outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 mb-1 block">Jumlah Tenaga Kerja Lokal</label>
+                        <input type="number" name="jumlah_tk_lokal" min="0" value="{{ $myUsaha->jumlah_tk_lokal ?? '' }}" placeholder="0"
+                               class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-800 focus:border-[#00a6eb] outline-none transition-all">
+                    </div>
+                </div>
+                <button type="submit" :disabled="tkSaving" class="w-full mt-4 bg-[#00a6eb] hover:bg-[#0090d0] text-white font-bold py-3 rounded-lg transition-all text-sm disabled:opacity-50">
+                    <template x-if="!tkSaving"><span><i class="bi bi-check-circle mr-1.5"></i>Simpan Data</span></template>
+                    <template x-if="tkSaving"><span><i class="bi bi-arrow-repeat animate-spin mr-1.5"></i>Menyimpan...</span></template>
+                </button>
+            </form>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-3 gap-2.5">
+            <div class="bg-slate-50 rounded-lg border border-slate-100 p-3 text-center">
+                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Total</p>
+                <p class="text-lg font-black text-slate-800">{{ $myUsaha->jumlah_tk_total ?? '-' }}</p>
+            </div>
+            <div class="bg-slate-50 rounded-lg border border-slate-100 p-3 text-center">
+                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Bali</p>
+                <p class="text-lg font-black text-[#00a6eb]">{{ $myUsaha->jumlah_tk_bali ?? '-' }}</p>
+            </div>
+            <div class="bg-slate-50 rounded-lg border border-slate-100 p-3 text-center">
+                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Lokal</p>
+                <p class="text-lg font-black text-slate-600">{{ $myUsaha->jumlah_tk_lokal ?? '-' }}</p>
+            </div>
+        </div>
+
+        <!-- Active Staff from System -->
+        <div>
+            <h3 class="text-sm font-bold text-slate-800 mb-3">Tenaga Kerja Terdaftar ({{ $tenagaKerjaAktif->count() }})</h3>
+            @if($tenagaKerjaAktif->count() > 0)
+            <div class="space-y-2">
+                @foreach($tenagaKerjaAktif as $tk)
+                <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 flex items-center gap-3">
+                    <div class="h-9 w-9 rounded-lg bg-white border border-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
+                        @if($tk->foto_profile)
+                        <img src="{{ asset('karyawan/'.$tk->foto_profile) }}" class="h-full w-full object-cover" alt="">
+                        @else
+                        <span class="text-slate-400 font-bold text-xs">{{ substr($tk->nama, 0, 1) }}</span>
+                        @endif
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold text-slate-800 truncate">{{ $tk->nama }}</p>
+                        <p class="text-[10px] text-slate-400">{{ $tk->jabatan ?? 'Staff' }}</p>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <div class="bg-slate-50 rounded-lg border border-slate-100 border-dashed p-4 text-center">
+                <p class="text-xs text-slate-400">Belum ada tenaga kerja terdaftar di sistem</p>
+            </div>
+            @endif
+        </div>
+    </div>
+
+    @endif
 
     <!-- Create Loker Modal -->
     <div x-show="showLokerForm" 
@@ -216,7 +310,7 @@
          style="display: none;">
         
         <div @click.stop 
-             class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
+             class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full overflow-hidden"
              x-transition:enter="transition ease-out duration-300 transform"
              x-transition:enter-start="opacity-0 scale-95 translate-y-8"
              x-transition:enter-end="opacity-100 scale-100 translate-y-0">
@@ -282,29 +376,28 @@
          style="display: none;">
         
         <div @click.stop 
-             class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
+             class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full overflow-hidden"
              x-transition:enter="transition ease-out duration-300 transform"
              x-transition:enter-start="opacity-0 scale-95 translate-y-8"
              x-transition:enter-end="opacity-100 scale-100 translate-y-0">
             
-            <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 text-white relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                <button @click="showApplicantModal = false" type="button" class="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
-                    <i class="bi bi-x text-xl"></i>
+            <div class="bg-[#00a6eb] p-5 text-white relative">
+                <button @click="showApplicantModal = false" type="button" class="absolute top-3.5 right-3.5 h-7 w-7 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
+                    <i class="bi bi-x text-lg"></i>
                 </button>
-                <div class="relative">
-                    <h3 class="text-xl font-black">Terima Pelamar</h3>
+                <div>
+                    <h3 class="text-lg font-black">Terima Pelamar</h3>
                     <p class="text-white/80 text-xs font-medium mt-1">Konfirmasi penerimaan tenaga kerja</p>
                 </div>
             </div>
 
-            <form action="{{ url('administrator/usaha/loker/accept') }}" method="POST" class="p-6 space-y-4">
+            <form action="{{ url('administrator/usaha/loker/accept') }}" method="POST" class="p-5 space-y-4">
                 @csrf
                 <input type="hidden" name="id_jadwal_interview" x-model="selectedApplicant">
 
-                <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
                     <div class="flex items-start gap-3">
-                        <i class="bi bi-info-circle text-emerald-600 text-lg shrink-0"></i>
+                        <i class="bi bi-info-circle text-[#00a6eb] text-lg shrink-0"></i>
                         <div>
                             <p class="text-xs font-bold text-slate-700 mb-1">Konfirmasi Penerimaan</p>
                             <p class="text-[10px] text-slate-600 leading-relaxed">Pelamar akan menjadi tenaga kerja aktif setelah dikonfirmasi.</p>
@@ -312,7 +405,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all text-sm">
+                <button type="submit" class="w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white font-bold py-3 rounded-lg shadow-sm transition-all text-sm">
                     <i class="bi bi-check-circle mr-2"></i> Terima Pelamar
                 </button>
             </form>
@@ -330,7 +423,7 @@
          style="display: none;">
 
         <div @click.stop
-             class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden max-h-[85vh] overflow-y-auto"
+             class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full overflow-hidden max-h-[85vh] overflow-y-auto"
              x-transition:enter="transition ease-out duration-300 transform"
              x-transition:enter-start="opacity-0 scale-95 translate-y-8"
              x-transition:enter-end="opacity-100 scale-100 translate-y-0">
@@ -407,7 +500,7 @@
                 <!-- WA Contact Button -->
                 <template x-if="tkDetail && tkDetail.no_wa && tkDetail.no_wa !== '-'">
                     <a :href="'https://wa.me/' + tkDetail.no_wa.replace(/^0/, '62').replace(/[^0-9]/g, '')" target="_blank" rel="noopener noreferrer"
-                       class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2">
+                       class="w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white font-bold py-3 rounded-lg shadow-sm transition-all text-sm flex items-center justify-center gap-2">
                         <i class="bi bi-whatsapp"></i> Hubungi via WhatsApp
                     </a>
                 </template>

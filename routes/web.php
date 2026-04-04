@@ -143,6 +143,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/usaha/loker/interview', [LandingController::class, 'usaha_loker_interview'])->name('usaha.loker.interview');
             Route::post('/usaha/loker/accept', [LandingController::class, 'usaha_loker_accept'])->name('usaha.loker.accept');
             Route::post('/usaha/loker/reject', [LandingController::class, 'usaha_loker_reject'])->name('usaha.loker.reject');
+            Route::post('/usaha/loker/update-tk-counts', [LandingController::class, 'usaha_update_tk_counts'])->name('usaha.loker.update_tk_counts');
             Route::get('/usaha/donasi', [LandingController::class, 'usaha_donasi']);
             Route::get('/usaha/donasi/detail/{id}', [LandingController::class, 'usaha_donasi_detail']);
             Route::get('/usaha/berita', [LandingController::class, 'usaha_berita']);

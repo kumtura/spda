@@ -203,11 +203,28 @@
                                     <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Keuangan</h4>
                                     <div class="space-y-3">
                                         <div class="flex items-start gap-2.5">
-                                            <i class="bi bi-cash-stack text-emerald-600"></i>
+                                            <i class="bi bi-cash-stack text-primary-light"></i>
                                             <div>
                                                 <p class="text-[9px] font-black text-slate-400 uppercase">Minimal Punia</p>
                                                 <p class="text-xs font-black text-slate-800">Rp. {{ number_format($rows->minimal_bayar, 0, ',', '.') }}</p>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-5 bg-slate-50 border border-slate-100 rounded-xl">
+                                    <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Tenaga Kerja</h4>
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <div class="text-center">
+                                            <p class="text-lg font-black text-slate-800">{{ $rows->jumlah_tk_total ?? '-' }}</p>
+                                            <p class="text-[8px] font-bold text-slate-400 uppercase">Total</p>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="text-lg font-black text-primary-light">{{ $rows->jumlah_tk_bali ?? '-' }}</p>
+                                            <p class="text-[8px] font-bold text-slate-400 uppercase">Bali</p>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="text-lg font-black text-slate-600">{{ $rows->jumlah_tk_lokal ?? '-' }}</p>
+                                            <p class="text-[8px] font-bold text-slate-400 uppercase">Lokal</p>
                                         </div>
                                     </div>
                                 </div>
@@ -299,30 +316,66 @@
 
                     <!-- Tab: Sumbangan -->
                     <div x-show="activeTab === 'sumbangan'" class="space-y-6" x-transition>
-                        <div class="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Summary -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-black text-slate-800 tracking-tight">Riwayat Sumbangan</h3>
+                                <p class="text-[10px] text-slate-400">{{ $sumbangan->count() }} transaksi tercatat</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[9px] font-black text-slate-400 uppercase">Total Akumulasi</p>
+                                <p class="text-lg font-black text-primary-light">Rp. {{ number_format($total_usaha, 0, ',', '.') }}</p>
+                            </div>
+                        </div>
+
+                        @if($sumbangan->count() > 0)
+                        <div class="space-y-3 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
                             @foreach($sumbangan as $s)
-                            <div class="p-5 bg-white border border-slate-100 rounded-2xl flex items-center justify-between hover:border-blue-100 transition-all shadow-sm">
-                                <div class="flex items-center gap-4">
-                                    <div class="h-11 w-11 bg-blue-50 text-primary-light rounded-xl flex items-center justify-center text-xl">
-                                        <i class="bi bi-heart-pulse"></i>
+                            <div class="p-4 bg-white border border-slate-100 rounded-xl hover:border-blue-100 transition-all shadow-sm">
+                                <div class="flex items-start gap-4">
+                                    <div class="h-10 w-10 bg-blue-50 text-primary-light rounded-lg flex items-center justify-center shrink-0">
+                                        <i class="bi bi-heart-pulse text-lg"></i>
                                     </div>
-                                    <div>
-                                        <p class="text-[9px] font-black text-slate-400 uppercase mb-0.5">{{ tgl_indo($s->tanggal) }}</p>
-                                        <p class="text-xs font-black text-slate-800">Rp. {{ number_format($s->nominal, 0, ',', '.') }}</p>
-                                        <p class="text-[10px] text-slate-500 italic">"{{ $s->deskripsi }}"</p>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-start justify-between gap-3 mb-2">
+                                            <div>
+                                                <p class="text-xs font-black text-slate-800">Rp. {{ number_format($s->nominal, 0, ',', '.') }}</p>
+                                                <p class="text-[9px] font-bold text-slate-400 mt-0.5">{{ tgl_indo($s->tanggal) }}</p>
+                                            </div>
+                                            <span class="text-[8px] font-black text-slate-300 uppercase shrink-0">#SUMB-{{ str_pad($s->id_sumbangan_sukarela, 4, '0', STR_PAD_LEFT) }}</span>
+                                        </div>
+                                        @if($s->deskripsi)
+                                        <p class="text-[10px] text-slate-600 mb-2 leading-relaxed">{{ $s->deskripsi }}</p>
+                                        @endif
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            @if($s->nama_bank ?? false)
+                                            <span class="text-[8px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">{{ $s->nama_bank }}</span>
+                                            @endif
+                                            @if($s->metode_pembayaran)
+                                            <span class="text-[8px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">{{ $s->metode_pembayaran }}</span>
+                                            @elseif($s->metode)
+                                            <span class="text-[8px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">{{ $s->metode }}</span>
+                                            @endif
+                                            @if($s->status_pembayaran == 'PAID' || $s->status_verifikasi == 'verified')
+                                            <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Terverifikasi</span>
+                                            @elseif($s->status_verifikasi == 'pending')
+                                            <span class="text-[8px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Menunggu</span>
+                                            @endif
+                                            @if($s->nama)
+                                            <span class="text-[8px] text-slate-400">oleh {{ $s->nama }}</span>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                                <span class="text-[9px] font-black text-slate-300 uppercase">#SUMB-{{ $s->id_sumbangan }}</span>
                             </div>
                             @endforeach
                         </div>
-                        <div class="p-6 bg-primary-light text-white rounded-2xl shadow-xl flex items-center justify-between relative overflow-hidden">
-                            <div class="absolute right-0 bottom-0 opacity-10"><i class="bi bi-piggy-bank text-9xl"></i></div>
-                            <div class="relative">
-                                <p class="text-[9px] font-black text-blue-200 uppercase tracking-widest mb-1">Total Akumulasi</p>
-                                <h3 class="text-2xl font-black">Rp. {{ number_format($total_usaha, 0, ',', '.') }}</h3>
-                            </div>
+                        @else
+                        <div class="text-center py-8">
+                            <i class="bi bi-heart text-4xl text-slate-200 mb-2"></i>
+                            <p class="text-xs text-slate-400">Belum ada riwayat sumbangan</p>
                         </div>
+                        @endif
                     </div>
 
                     <!-- Tab: Tenaga Kerja -->
@@ -398,81 +451,148 @@
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.05em]">Penyesuaian identitas dan administrasi unit</p>
                 </div>
 
-                <form action="{{ url('administrator/update_post_add_usaha') }}" method="POST" enctype="multipart/form-data" class="p-8 pt-4 space-y-8">
+                <form action="{{ url('administrator/update_post_add_usaha') }}" method="POST" enctype="multipart/form-data" class="p-8 pt-4 space-y-6 max-h-[70vh] overflow-y-auto">
                     @csrf @method('PUT')
                     <input type="hidden" name="tb_hidden_usaha" value="{{ $rows->id_usaha }}">
                     <input type="hidden" name="tb_hidden_detail_usaha" value="{{ $rows->id_detail_usaha }}">
-                    <input type="hidden" name="tb_hidden_pj" value="{{ $rows->id_penanggung_jawab }}">
+                    <input type="hidden" name="tb_hidden_pngg_usaha" value="{{ $rows->id_penanggung_jawab }}">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-                        <!-- Nama Usaha -->
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Usaha</label>
-                            <input type="text" name="text_title_new" value="{{ $rows->nama_usaha }}" required 
-                                   class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
-                        </div>
-                        <!-- Email -->
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">E-Mail Usaha</label>
-                            <input type="email" name="text_email_usaha_new" value="{{ $rows->email_usaha }}" required 
-                                   class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
-                        </div>
-
-                        <!-- Banjar -->
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Banjar Wilayah</label>
-                            <select name="text_desc_new" class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none appearance-none focus:border-primary-light transition-all">
-                                @foreach($banjar as $b)
-                                <option value="{{ $b->id_data_banjar }}" {{ $rows->id_banjar == $b->id_data_banjar ? 'selected' : '' }}>{{ $b->nama_banjar }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <!-- Kategori -->
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Kategori Usaha</label>
-                            <select name="cmb_kategori_usaha" class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none appearance-none focus:border-primary-light transition-all">
-                                @foreach($kategori as $kat)
-                                <option value="{{ $kat->id_kategori_usaha }}" {{ $rows->id_jenis_usaha == $kat->id_kategori_usaha ? 'selected' : '' }}>{{ $kat->nama_kategori_usaha }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- No WA -->
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">No. WhatsApp (Aktif)</label>
-                            <input type="text" name="text_notelp_was" value="{{ $rows->no_wa }}" required 
-                                   class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-emerald-600 outline-none focus:border-primary-light transition-all">
-                        </div>
-                        <!-- Min Punia -->
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Min. Punia Wajib (Rp)</label>
-                            <input type="number" name="text_minimal_pembayaran" value="{{ $rows->minimal_bayar }}" required 
-                                   class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
-                        </div>
-
-                        <!-- Logo Upload -->
-                        <div class="md:col-span-2 space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Logo Unit Usaha (Upload)</label>
-                            <div class="flex items-center gap-4 p-4 bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-2xl group hover:border-primary-light transition-all">
-                                <i class="bi bi-image text-2xl text-slate-300 group-hover:text-primary-light"></i>
-                                <input type="file" name="logo_usaha" accept="image/*" 
-                                       class="text-xs font-bold text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary-light file:text-white hover:file:bg-primary-light/90 transition-all cursor-pointer">
+                    <!-- Section: Data Usaha -->
+                    <div>
+                        <h4 class="text-xs font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i class="bi bi-building text-primary-light"></i> Informasi Usaha
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Usaha</label>
+                                <input type="text" name="text_title_new" value="{{ $rows->nama_usaha }}" required 
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
                             </div>
-                        </div>
-
-                        <!-- Alamat -->
-                        <div class="md:col-span-2 space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Lengkap</label>
-                            <textarea name="t_alamat_usaha" rows="2" 
-                                      class="w-full bg-slate-50/50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">{{ $rows->alamat_banjar }}</textarea>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">E-Mail Usaha</label>
+                                <input type="email" name="text_email_usaha_new" value="{{ $rows->email_usaha }}" required 
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Banjar Wilayah</label>
+                                <select name="text_desc_new" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none appearance-none focus:border-primary-light transition-all">
+                                    @foreach($banjar as $b)
+                                    <option value="{{ $b->id_data_banjar }}" {{ $rows->id_banjar == $b->id_data_banjar ? 'selected' : '' }}>{{ $b->nama_banjar }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Kategori Usaha</label>
+                                <select name="cmb_kategori_usaha" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none appearance-none focus:border-primary-light transition-all">
+                                    @foreach($kategori as $kat)
+                                    <option value="{{ $kat->id_kategori_usaha }}" {{ $rows->id_jenis_usaha == $kat->id_kategori_usaha ? 'selected' : '' }}>{{ $kat->nama_kategori_usaha }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">No. WhatsApp Usaha</label>
+                                <input type="text" name="text_notelp_was" value="{{ $rows->no_wa }}" required 
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">No. Telp Kantor</label>
+                                <input type="text" name="text_telpkantor_new" value="{{ $rows->no_telp }}" 
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Min. Punia Wajib (Rp)</label>
+                                <input type="number" name="text_minimal_pembayaran" value="{{ $rows->minimal_bayar }}" required 
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Logo Unit Usaha</label>
+                                <div class="flex items-center gap-3 p-3 bg-slate-50/50 border border-dashed border-slate-200 rounded-xl group hover:border-primary-light transition-all">
+                                    <i class="bi bi-image text-xl text-slate-300 group-hover:text-primary-light"></i>
+                                    <input type="file" name="logo_usaha" accept="image/*" 
+                                           class="text-xs font-bold text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary-light file:text-white cursor-pointer">
+                                </div>
+                            </div>
+                            <div class="md:col-span-2 space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Lengkap</label>
+                                <textarea name="t_alamat_usaha" rows="2" 
+                                          class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">{{ $rows->alamat_banjar }}</textarea>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-slate-100">
+                    <!-- Section: PJ Usaha -->
+                    <div class="pt-4 border-t border-slate-100">
+                        <h4 class="text-xs font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i class="bi bi-person-badge text-primary-light"></i> Penanggung Jawab
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama PJ</label>
+                                <input type="text" name="text_namapngg_new" value="{{ $rows->nama }}" 
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Jabatan PJ</label>
+                                <input type="text" name="text_statuspngg_new" value="{{ $rows->status_penanggung_jawab }}" 
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email PJ</label>
+                                <input type="email" name="text_email_pngg_new" value="{{ $rows->email }}" 
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">WhatsApp PJ</label>
+                                <input type="text" name="text_notelp_pngg_new" value="{{ $rows->no_wa_pngg }}" 
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="md:col-span-2 space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat PJ</label>
+                                <textarea name="text_alamat_pngg_new" rows="2" 
+                                          class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">{{ $rows->alamat }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Social Media -->
+                    <div class="pt-4 border-t border-slate-100">
+                        <h4 class="text-xs font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i class="bi bi-globe2 text-primary-light"></i> Social Media & Web
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Facebook URL</label>
+                                <input type="url" name="cmb_social_facebook" value="{{ $rows->facebook_url }}" placeholder="https://facebook.com/..."
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Instagram URL</label>
+                                <input type="url" name="cmb_social_twitter" value="{{ $rows->twitter_url }}" placeholder="https://instagram.com/..."
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Website URL</label>
+                                <input type="url" name="cmb_social_website" value="{{ $rows->website_url }}" placeholder="https://..."
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Password Baru</label>
+                                <input type="password" name="text_password_new" placeholder="Kosongkan jika tidak ubah"
+                                       class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">
+                            </div>
+                            <div class="md:col-span-2 space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Google Maps Embed</label>
+                                <textarea name="text_google_maps" rows="2" placeholder="<iframe src=...></iframe>"
+                                          class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-light transition-all">{{ $rows->google_maps }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-slate-100 sticky bottom-0 bg-white pb-2">
                         <p class="text-[10px] italic text-slate-400 font-medium">* Perubahan akan berdampak pada akses login unit usaha terkait.</p>
                         <div class="flex items-center gap-4 w-full md:w-auto">
-                            <button type="button" @click="showEditModal = false" class="flex-1 md:flex-none px-6 py-4 text-[10px] font-black uppercase text-slate-400 hover:text-rose-500 transition-colors">Batal</button>
-                            <button type="submit" class="flex-1 md:flex-none px-10 py-4 bg-primary-light hover:bg-primary-dark text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-900/20 transition-all active:scale-95">
+                            <button type="button" @click="showEditModal = false" class="flex-1 md:flex-none px-6 py-3 text-[10px] font-black uppercase text-slate-400 hover:text-rose-500 transition-colors">Batal</button>
+                            <button type="submit" class="flex-1 md:flex-none px-10 py-3 bg-primary-light hover:bg-primary-dark text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-900/20 transition-all active:scale-95">
                                 Update Data
                             </button>
                         </div>

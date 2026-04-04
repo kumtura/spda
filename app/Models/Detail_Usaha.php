@@ -23,6 +23,9 @@ class Detail_Usaha extends Model
         'twitter_url', 
         'website_url', 
         'google_maps', 
+        'jumlah_tk_total',
+        'jumlah_tk_bali',
+        'jumlah_tk_lokal',
         'tanggal_daftar', 
         'aktif'
     ];

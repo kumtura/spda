@@ -10,15 +10,27 @@ use Illuminate\Support\Facades\Storage;
 
 class ObjekWisataController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $query = ObjekWisata::with('banjar')
-            ->withSum(['tiket as total_pemasukan' => function($q) {
-                $q->where('status_pembayaran', 'completed');
-            }], 'total_harga')
-            ->withCount(['tiket as total_tiket_terjual' => function($q) {
-                $q->where('status_pembayaran', 'completed');
-            }]);
+        $tanggalDari = $request->input('tanggal_dari');
+        $tanggalSampai = $request->input('tanggal_sampai');
+
+        $dateFilter = function($q) use ($tanggalDari, $tanggalSampai) {
+            $q->where('status_pembayaran', 'completed');
+            if ($tanggalDari) {
+                $q->whereDate('created_at', '>=', $tanggalDari);
+            }
+            if ($tanggalSampai) {
+                $q->whereDate('created_at', '<=', $tanggalSampai);
+            }
+        };
+
+        $query = ObjekWisata::with(['banjar', 'tiket' => function($q) use ($dateFilter) {
+                $dateFilter($q);
+                $q->with('details.kategoriTiket')->orderBy('created_at', 'desc');
+            }])
+            ->withSum(['tiket as total_pemasukan' => $dateFilter], 'total_harga')
+            ->withCount(['tiket as total_tiket_terjual' => $dateFilter]);
 
         // Kelian only sees objects from their banjar
         if (auth()->user()->id_level != config('myconfig.level.bendesa', 1)) {
@@ -28,7 +40,7 @@ class ObjekWisataController extends Controller
         }
 
         $objekWisata = $query->orderBy('created_at', 'desc')->get();
-        return view('admin.pages.objek_wisata.index', compact('objekWisata'));
+        return view('admin.pages.objek_wisata.index', compact('objekWisata', 'tanggalDari', 'tanggalSampai'));
     }
 
     public function create()

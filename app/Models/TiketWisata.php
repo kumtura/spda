@@ -12,7 +12,9 @@ class TiketWisata extends Model
     protected $fillable = [
         'kode_tiket',
         'id_objek_wisata',
+        'nama_pengunjung',
         'email',
+        'no_wa',
         'tanggal_kunjungan',
         'total_harga',
         'metode_pembelian',

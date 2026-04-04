@@ -963,7 +963,10 @@ class LandingController extends Controller
                 'id_objek_wisata' => $request->id_objek_wisata,
                 'tanggal_kunjungan' => $request->tanggal_kunjungan,
                 'total_harga' => $total,
-                'kategori' => $kategoriData
+                'kategori' => $kategoriData,
+                'nama_pengunjung' => $request->input('nama_pengunjung'),
+                'no_wa' => $request->input('no_wa'),
+                'email' => $request->input('email'),
             ]
         ]);
 
@@ -1006,7 +1009,9 @@ class LandingController extends Controller
         $tiket = TiketWisata::create([
             'kode_tiket' => $kodeTicket,
             'id_objek_wisata' => $tiketData['id_objek_wisata'],
-            'email' => null,
+            'nama_pengunjung' => $tiketData['nama_pengunjung'] ?? null,
+            'email' => $tiketData['email'] ?? null,
+            'no_wa' => $tiketData['no_wa'] ?? null,
             'total_harga' => $tiketData['total_harga'],
             'tanggal_kunjungan' => $tiketData['tanggal_kunjungan'],
             'metode_pembelian' => 'online',
@@ -1127,7 +1132,9 @@ class LandingController extends Controller
         $tiket = TiketWisata::create([
             'kode_tiket' => $kodeTicket,
             'id_objek_wisata' => $tiketData['id_objek_wisata'],
-            'email' => null,
+            'nama_pengunjung' => $tiketData['nama_pengunjung'] ?? null,
+            'email' => $tiketData['email'] ?? null,
+            'no_wa' => $tiketData['no_wa'] ?? null,
             'total_harga' => $tiketData['total_harga'],
             'tanggal_kunjungan' => $tiketData['tanggal_kunjungan'],
             'metode_pembelian' => 'online',

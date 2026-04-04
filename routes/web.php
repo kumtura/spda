@@ -404,6 +404,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/settings/delete_hero_slide', 'Administrator\SettingController@delete_hero_slide');
             Route::post('/settings/update_village', 'Administrator\SettingController@update_village');
             Route::post('/settings/update_bank_accounts', 'Administrator\SettingController@update_bank_accounts');
+            Route::post('/settings/update_waha', 'Administrator\SettingController@update_waha');
             
             // Payment Gateway Settings
             Route::get('/settings/payment_gateway', 'Administrator\PaymentGatewayController@index')->name('settings.payment_gateway');

@@ -282,5 +282,48 @@
             </form>
         </div>
     </div>
+
+    <!-- WAHA WhatsApp API Settings -->
+    <div class="bg-white rounded-4xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition duration-300">
+        <h3 class="text-lg font-bold text-slate-800 mb-2 pb-3 border-b border-slate-100 flex items-center gap-2">
+            <i class="bi bi-whatsapp text-green-500"></i> WAHA WhatsApp API
+        </h3>
+        <p class="text-[11px] text-slate-500 mb-6 leading-relaxed">Konfigurasi WAHA API untuk pengiriman e-ticket otomatis via WhatsApp setelah pembayaran berhasil.</p>
+
+        <form action="{{ url('administrator/settings/update_waha') }}" method="POST">
+            @csrf
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1.5">WAHA API URL</label>
+                    <input type="url" name="waha_url" value="{{ $village['waha_url'] ?? '' }}" placeholder="https://your-waha-server.com"
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                    <p class="text-[9px] text-slate-400 px-1 mt-1">URL server WAHA Anda (contoh: https://waha.example.com)</p>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1.5">API Key / Token</label>
+                    <input type="text" name="waha_token" value="{{ $village['waha_token'] ?? '' }}" placeholder="your-api-key"
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all font-mono">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1.5">Session Name</label>
+                    <input type="text" name="waha_session" value="{{ $village['waha_session'] ?? 'default' }}" placeholder="default"
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary-light/20 transition-all">
+                    <p class="text-[9px] text-slate-400 px-1 mt-1">Nama session WAHA (default: "default")</p>
+                </div>
+                
+                <div class="flex items-center gap-3 px-1">
+                    <input type="checkbox" name="waha_enabled" value="1" {{ ($village['waha_enabled'] ?? false) ? 'checked' : '' }}
+                           class="h-4 w-4 rounded text-primary-light border-slate-300 focus:ring-primary-light/20">
+                    <label class="text-xs font-bold text-slate-700">Aktifkan pengiriman WhatsApp otomatis</label>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-6">
+                <button type="submit" class="bg-primary-light hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 transition-colors flex items-center gap-2">
+                    <i class="bi bi-save"></i> Simpan Pengaturan WAHA
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 @endsection

@@ -155,5 +155,29 @@ class SettingController extends Controller
 
         return redirect()->back()->with('success', 'Rekening bank berhasil diperbarui!');
     }
+
+    public function update_waha(Request $request)
+    {
+        $request->validate([
+            'waha_url' => 'nullable|url|max:255',
+            'waha_token' => 'nullable|string|max:255',
+            'waha_session' => 'nullable|string|max:100',
+        ]);
+
+        $settingsPath = storage_path('app/settings.json');
+        $settings = [];
+        if (File::exists($settingsPath)) {
+            $settings = json_decode(File::get($settingsPath), true);
+        }
+
+        $settings['waha_url'] = $request->waha_url;
+        $settings['waha_token'] = $request->waha_token;
+        $settings['waha_session'] = $request->waha_session ?: 'default';
+        $settings['waha_enabled'] = $request->has('waha_enabled');
+
+        File::put($settingsPath, json_encode($settings));
+
+        return redirect()->back()->with('success', 'Pengaturan WAHA berhasil diperbarui!');
+    }
 }
 

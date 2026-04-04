@@ -40,10 +40,10 @@
                     <template x-if="selectedDate && availabilityInfo">
                         <div class="flex items-center gap-1.5 px-1">
                             <template x-if="availabilityInfo.unlimited">
-                                <span class="text-[10px] text-emerald-600 font-bold"><i class="bi bi-check-circle mr-1"></i>Tiket tersedia</span>
+                                <span class="text-[10px] text-slate-600 font-bold"><i class="bi bi-check-circle mr-1"></i>Tiket tersedia</span>
                             </template>
                             <template x-if="!availabilityInfo.unlimited && availabilityInfo.available > 0">
-                                <span class="text-[10px] text-amber-600 font-bold"><i class="bi bi-exclamation-circle mr-1"></i>Sisa <span x-text="availabilityInfo.available"></span> tiket</span>
+                                <span class="text-[10px] text-slate-600 font-bold"><i class="bi bi-exclamation-circle mr-1"></i>Sisa <span x-text="availabilityInfo.available"></span> tiket</span>
                             </template>
                             <template x-if="!availabilityInfo.unlimited && availabilityInfo.available <= 0">
                                 <span class="text-[10px] text-rose-600 font-bold"><i class="bi bi-x-circle mr-1"></i>Tiket habis untuk tanggal ini</span>
@@ -70,12 +70,12 @@
                 <!-- Market Type Toggle -->
                 <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
                     <button type="button" @click="marketFilter = 'local'" 
-                        :class="marketFilter === 'local' ? 'bg-white shadow-sm text-emerald-700' : 'text-slate-500'"
+                        :class="marketFilter === 'local' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500'"
                         class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5">
                         <i class="bi bi-geo-alt"></i> Lokal
                     </button>
                     <button type="button" @click="marketFilter = 'wna'" 
-                        :class="marketFilter === 'wna' ? 'bg-white shadow-sm text-violet-700' : 'text-slate-500'"
+                        :class="marketFilter === 'wna' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500'"
                         class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5">
                         <i class="bi bi-globe"></i> WNA
                     </button>
@@ -87,7 +87,7 @@
                     @if($orangLocal->count() > 0)
                     <div x-show="marketFilter === 'local' || marketFilter === 'all'" x-transition class="space-y-3">
                         @if(!$hasMultipleMarkets && $orangLocal->count() > 0)
-                        <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-1"><i class="bi bi-geo-alt"></i> Lokal</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><i class="bi bi-geo-alt"></i> Lokal</p>
                         @endif
                         @foreach($orangLocal as $kategori)
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
@@ -98,7 +98,7 @@
                                     <p class="text-[10px] text-slate-500">{{ $kategori->deskripsi }}</p>
                                     @endif
                                 </div>
-                                <p class="text-base font-black text-emerald-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                                <p class="text-base font-black text-slate-800">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
                             </div>
                             <div class="flex items-center gap-3">
                                 <button type="button" @click="decrementQty({{ $kategori->id_kategori_tiket }})" class="h-9 w-9 bg-white border border-slate-200 rounded-lg flex items-center justify-center">
@@ -121,7 +121,7 @@
                     @if($orangWna->count() > 0)
                     <div x-show="marketFilter === 'wna' || marketFilter === 'all'" x-transition class="space-y-3">
                         @if(!$hasMultipleMarkets && $orangWna->count() > 0)
-                        <p class="text-[10px] font-bold text-violet-600 uppercase tracking-widest flex items-center gap-1"><i class="bi bi-globe"></i> WNA</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><i class="bi bi-globe"></i> WNA</p>
                         @endif
                         @foreach($orangWna as $kategori)
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
@@ -132,7 +132,7 @@
                                     <p class="text-[10px] text-slate-500">{{ $kategori->deskripsi }}</p>
                                     @endif
                                 </div>
-                                <p class="text-base font-black text-violet-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                                <p class="text-base font-black text-slate-800">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
                             </div>
                             <div class="flex items-center gap-3">
                                 <button type="button" @click="decrementQty({{ $kategori->id_kategori_tiket }})" class="h-9 w-9 bg-white border border-slate-200 rounded-lg flex items-center justify-center">
@@ -180,7 +180,7 @@
 
                     {{-- Kendaraan tickets --}}
                     @if($kendaraanKategori->count() > 0)
-                    <p class="text-[10px] font-bold text-amber-600 uppercase tracking-widest flex items-center gap-1 pt-2"><i class="bi bi-car-front"></i> Kendaraan</p>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1 pt-2"><i class="bi bi-car-front"></i> Kendaraan</p>
                     @foreach($kendaraanKategori as $kategori)
                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
                         <div class="flex items-center justify-between mb-3">
@@ -190,7 +190,7 @@
                                 <p class="text-[10px] text-slate-500">{{ $kategori->deskripsi }}</p>
                                 @endif
                             </div>
-                            <p class="text-base font-black text-amber-600">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
+                            <p class="text-base font-black text-slate-800">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</p>
                         </div>
                         <div class="flex items-center gap-3">
                             <button type="button" @click="decrementQty({{ $kategori->id_kategori_tiket }})" class="h-9 w-9 bg-white border border-slate-200 rounded-lg flex items-center justify-center">
@@ -217,6 +217,44 @@
                 </div>
             </div>
             @endif
+
+            <!-- Biodata Pengunjung (Opsional) -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Data Pengunjung</h3>
+                    <button type="button" @click="skipBiodata = !skipBiodata" class="text-[10px] font-bold" :class="skipBiodata ? 'text-[#00a6eb]' : 'text-slate-400'">
+                        <span x-text="skipBiodata ? 'Isi Data' : 'Lewati'"></span>
+                    </button>
+                </div>
+
+                <div x-show="!skipBiodata" x-transition class="space-y-3">
+                    <p class="text-[10px] text-slate-500 leading-relaxed">Isi data untuk menerima e-ticket via WhatsApp & Email secara otomatis setelah pembayaran berhasil.</p>
+                    
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-1.5 block">Nama Lengkap</label>
+                        <input type="text" name="nama_pengunjung" x-model="biodataNama" placeholder="Masukkan nama lengkap"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:ring-4 focus:ring-[#00a6eb]/10 focus:border-[#00a6eb]/50 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-1.5 block">No. WhatsApp</label>
+                        <input type="tel" name="no_wa" x-model="biodataWa" placeholder="08xxxxxxxxxx"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:ring-4 focus:ring-[#00a6eb]/10 focus:border-[#00a6eb]/50 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-1.5 block">Email</label>
+                        <input type="email" name="email" x-model="biodataEmail" placeholder="email@contoh.com"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:ring-4 focus:ring-[#00a6eb]/10 focus:border-[#00a6eb]/50 outline-none transition-all">
+                    </div>
+                </div>
+
+                <div x-show="skipBiodata" x-transition class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <div class="flex items-start gap-3">
+                        <i class="bi bi-info-circle text-slate-400 text-lg shrink-0"></i>
+                        <p class="text-[10px] text-slate-500 leading-relaxed">Data pengunjung dilewati. E-ticket hanya bisa diunduh langsung setelah pembayaran berhasil dan tidak akan dikirim via WhatsApp/Email.</p>
+                    </div>
+                    <input type="hidden" name="skip_biodata" value="1">
+                </div>
+            </div>
 
             <!-- Summary -->
             <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
@@ -246,8 +284,12 @@
             <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
                 <div class="flex items-start gap-3">
                     <i class="bi bi-info-circle text-[#00a6eb] text-lg shrink-0"></i>
-                    <p class="text-[10px] text-slate-600 leading-relaxed">Setelah ini, Anda akan memilih metode pembayaran untuk menyelesaikan pembelian tiket.</p>
+                    <div class="text-[10px] text-slate-600 leading-relaxed space-y-1">
+                        <p>Setelah pembayaran berhasil, Anda akan menerima <strong>e-ticket</strong> berisi <strong>barcode</strong> dan <strong>kode tiket</strong> yang dapat digunakan untuk masuk ke objek wisata.</p>
+                        <p>Jika data pengunjung diisi, e-ticket akan dikirim otomatis via <strong>WhatsApp</strong> dan <strong>Email</strong>.</p>
+                    </div>
                 </div>
+            </div>
             </div>
 
             <!-- Submit Button -->
@@ -319,7 +361,7 @@
                             <span x-text="cell.day"></span>
                             <template x-if="cell.date && !cell.isPast && cell.hasLimit && !cell.soldOut">
                                 <span class="text-[7px] font-bold leading-none mt-0.5"
-                                      :class="cell.dateStr === selectedDate ? 'text-white/80' : (cell.available <= 5 ? 'text-amber-500' : 'text-emerald-500')"
+                                      :class="cell.dateStr === selectedDate ? 'text-white/80' : (cell.available <= 5 ? 'text-slate-500' : 'text-slate-500')"
                                       x-text="cell.available + ' left'"></span>
                             </template>
                             <template x-if="cell.soldOut && !cell.isPast">
@@ -373,6 +415,10 @@ function ticketApp() {
         totalPrice: 0,
         marketFilter: '{{ ($orangLocal ?? collect())->count() > 0 ? "local" : (($orangWna ?? collect())->count() > 0 ? "wna" : "all") }}',
         availabilityInfo: null,
+        skipBiodata: false,
+        biodataNama: '',
+        biodataWa: '',
+        biodataEmail: '',
 
         init() {
             this.fetchAvailability(this.calendarMonth + 1, this.calendarYear);

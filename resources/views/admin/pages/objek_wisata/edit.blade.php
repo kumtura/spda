@@ -12,6 +12,8 @@
     // Form fields for single-add/edit
     formNama: '',
     formHarga: '',
+    formHargaLocal: '',
+    formHargaWna: '',
     formDeskripsi: '',
     formId: '',
     formMarketType: 'all',
@@ -24,6 +26,8 @@
         this.marketType = 'all';
         this.formNama = '';
         this.formHarga = '';
+        this.formHargaLocal = '';
+        this.formHargaWna = '';
         this.formDeskripsi = '';
         this.formId = '';
         this.formMarketType = 'all';
@@ -509,6 +513,18 @@
                         <i class="bi bi-chevron-right text-slate-300 ml-auto"></i>
                     </button>
                     
+                    <button type="button" @click="selectMarket('dual')" 
+                            class="w-full p-4 bg-gradient-to-r from-emerald-50 to-violet-50 border-2 border-emerald-100 rounded-xl text-left hover:border-emerald-400 hover:from-emerald-100/50 hover:to-violet-100/50 transition-all group flex items-center gap-4">
+                        <div class="h-10 w-10 bg-gradient-to-br from-emerald-500 to-violet-500 text-white rounded-lg flex items-center justify-center">
+                            <i class="bi bi-arrow-left-right text-lg"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">Lokal & WNA</p>
+                            <p class="text-[10px] text-slate-500">Buat harga Lokal dan WNA sekaligus</p>
+                        </div>
+                        <i class="bi bi-chevron-right text-slate-300 ml-auto"></i>
+                    </button>
+
                     <button type="button" @click="selectMarket('all')" 
                             class="w-full p-4 bg-blue-50 border-2 border-blue-100 rounded-xl text-left hover:border-blue-400 hover:bg-blue-100/50 transition-all group flex items-center gap-4">
                         <div class="h-10 w-10 bg-blue-500 text-white rounded-lg flex items-center justify-center">
@@ -530,9 +546,9 @@
                         </button>
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pengaturan Harga</p>
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-bold ml-auto"
-                              :class="marketType === 'wna' ? 'bg-violet-100 text-violet-700' : (marketType === 'local' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700')"
+                              :class="marketType === 'wna' ? 'bg-violet-100 text-violet-700' : (marketType === 'local' ? 'bg-emerald-100 text-emerald-700' : (marketType === 'dual' ? 'bg-gradient-to-r from-emerald-100 to-violet-100 text-emerald-700' : 'bg-blue-100 text-blue-700'))"
                               x-show="tipeKategori === 'orang'">
-                            <span x-text="marketType === 'wna' ? 'WNA' : (marketType === 'local' ? 'Lokal' : 'Semua')"></span>
+                            <span x-text="marketType === 'wna' ? 'WNA' : (marketType === 'local' ? 'Lokal' : (marketType === 'dual' ? 'Lokal & WNA' : 'Semua'))"></span>
                         </span>
                     </div>
                     
@@ -594,8 +610,8 @@
                         </button>
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest" x-text="subOrang === 'sama' ? 'Tiket Umum' : 'Pilih Kategori Usia'"></p>
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-bold ml-auto"
-                              :class="marketType === 'wna' ? 'bg-violet-100 text-violet-700' : (marketType === 'local' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700')">
-                            <span x-text="marketType === 'wna' ? 'WNA' : (marketType === 'local' ? 'Lokal' : 'Semua')"></span>
+                              :class="marketType === 'wna' ? 'bg-violet-100 text-violet-700' : (marketType === 'local' ? 'bg-emerald-100 text-emerald-700' : (marketType === 'dual' ? 'bg-gradient-to-r from-emerald-100 to-violet-100 text-emerald-700' : 'bg-blue-100 text-blue-700'))">
+                            <span x-text="marketType === 'wna' ? 'WNA' : (marketType === 'local' ? 'Lokal' : (marketType === 'dual' ? 'Lokal & WNA' : 'Semua'))"></span>
                         </span>
                     </div>
                     
@@ -637,9 +653,9 @@
                     <!-- Market type badge -->
                     <div class="mb-3" x-show="tipeKategori === 'orang'">
                         <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-bold"
-                              :class="formMarketType === 'wna' ? 'bg-violet-100 text-violet-700' : (formMarketType === 'local' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700')">
-                            <i class="bi" :class="formMarketType === 'wna' ? 'bi-globe' : (formMarketType === 'local' ? 'bi-geo-alt' : 'bi-people')"></i>
-                            <span x-text="formMarketType === 'wna' ? 'WNA' : (formMarketType === 'local' ? 'Lokal' : 'Semua')"></span>
+                              :class="formMarketType === 'wna' ? 'bg-violet-100 text-violet-700' : (formMarketType === 'local' ? 'bg-emerald-100 text-emerald-700' : (formMarketType === 'dual' ? 'bg-gradient-to-r from-emerald-100 to-violet-100 text-emerald-700' : 'bg-blue-100 text-blue-700'))">
+                            <i class="bi" :class="formMarketType === 'wna' ? 'bi-globe' : (formMarketType === 'local' ? 'bi-geo-alt' : (formMarketType === 'dual' ? 'bi-arrow-left-right' : 'bi-people'))"></i>
+                            <span x-text="formMarketType === 'wna' ? 'WNA' : (formMarketType === 'local' ? 'Lokal' : (formMarketType === 'dual' ? 'Lokal & WNA' : 'Semua'))"></span>
                         </span>
                     </div>
                     
@@ -669,11 +685,32 @@
                             </select>
                         </div>
                         
-                        <div>
+                        <!-- Single price (non-dual mode) -->
+                        <div x-show="formMarketType !== 'dual'">
                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Harga Tiket (Rp) <span class="text-rose-500">*</span></label>
-                            <input type="number" name="harga" x-model="formHarga" required min="0" autocomplete="off"
+                            <input type="number" name="harga" x-model="formHarga" :required="formMarketType !== 'dual'" min="0" autocomplete="off"
                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black text-slate-800 outline-none focus:ring-4 focus:ring-primary-light/10 transition-all"
                                    placeholder="Contoh: 10000">
+                        </div>
+
+                        <!-- Dual price (Lokal & WNA mode) -->
+                        <div x-show="formMarketType === 'dual'" class="space-y-3">
+                            <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                                <label class="block text-[10px] font-bold text-emerald-700 uppercase mb-2 flex items-center gap-1">
+                                    <i class="bi bi-geo-alt"></i> Harga Lokal (Rp) <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="number" name="harga_local" x-model="formHargaLocal" :required="formMarketType === 'dual'" min="0" autocomplete="off"
+                                       class="w-full bg-white border border-emerald-200 rounded-xl px-4 py-3 text-sm font-black text-slate-800 outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all"
+                                       placeholder="Harga untuk pengunjung domestik">
+                            </div>
+                            <div class="bg-violet-50 border border-violet-100 rounded-xl p-4">
+                                <label class="block text-[10px] font-bold text-violet-700 uppercase mb-2 flex items-center gap-1">
+                                    <i class="bi bi-globe"></i> Harga WNA (Rp) <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="number" name="harga_wna" x-model="formHargaWna" :required="formMarketType === 'dual'" min="0" autocomplete="off"
+                                       class="w-full bg-white border border-violet-200 rounded-xl px-4 py-3 text-sm font-black text-slate-800 outline-none focus:ring-4 focus:ring-violet-500/10 transition-all"
+                                       placeholder="Harga untuk wisatawan asing">
+                            </div>
                         </div>
                         
                         <div>
@@ -685,7 +722,7 @@
 
                         <button type="submit" class="w-full mt-2 bg-primary-light hover:bg-primary-dark text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl transition-all shadow-lg shadow-primary-light/30 active:scale-95 flex items-center justify-center gap-2">
                             <i class="bi bi-save-fill text-lg"></i> 
-                            <span x-text="editMode ? 'Update Harga' : 'Simpan Harga'"></span>
+                            <span x-text="editMode ? 'Update Harga' : (formMarketType === 'dual' ? 'Simpan Harga Lokal & WNA' : 'Simpan Harga')"></span>
                         </button>
                     </form>
                 </div>

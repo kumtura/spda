@@ -36,6 +36,9 @@
     calYear: new Date().getFullYear(),
     calAvail: {},
     calLoading: false,
+    calCellsArr: [],
+    calTitleStr: '',
+    summaryStr: '',
     _today: null,
     _months: ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
     _days: ['Min','Sen','Sel','Rab','Kam','Jum','Sab'],
@@ -43,6 +46,7 @@
     init: function() {
         this._today = new Date();
         this._today.setHours(0,0,0,0);
+        this.buildCalCells();
     },
 
     openCalendar: function() {
@@ -72,15 +76,12 @@
                 }
             })
             .catch(function() {})
-            .finally(function() { self.calLoading = false; });
+            .finally(function() { self.calLoading = false; self.buildCalCells(); });
         @endif
     },
 
-    get calTitle() {
-        return this._months[this.calMonth] + ' ' + this.calYear;
-    },
-
-    get calCells() {
+    buildCalCells: function() {
+        this.calTitleStr = this._months[this.calMonth] + ' ' + this.calYear;
         var first = new Date(this.calYear, this.calMonth, 1);
         var last = new Date(this.calYear, this.calMonth + 1, 0);
         var cells = [];
@@ -89,21 +90,23 @@
             var dt = new Date(this.calYear, this.calMonth, d);
             var str = this.calYear + '-' + String(this.calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
             var avail = this.calAvail[str];
-            var isSold = avail && avail.available <= 0;
+            var isSold = !!(avail && avail.available <= 0);
             cells.push({ day: d, dateStr: str, isPast: dt < this._today, avail: avail || null, isSold: isSold });
         }
-        return cells;
+        this.calCellsArr = cells;
     },
 
     prevMonth: function() {
         if (this.calMonth === 0) { this.calMonth = 11; this.calYear--; }
         else { this.calMonth--; }
+        this.buildCalCells();
         this.fetchAvail();
     },
 
     nextMonth: function() {
         if (this.calMonth === 11) { this.calMonth = 0; this.calYear++; }
         else { this.calMonth++; }
+        this.buildCalCells();
         this.fetchAvail();
     },
 
@@ -150,12 +153,8 @@
         }
         this.totalPrice = Object.values(this.summaryItems).reduce(function(sum, item) { return sum + item.subtotal; }, 0);
         this.totalQty = Object.values(this.summaryItems).reduce(function(sum, item) { return sum + item.qty; }, 0);
-    },
-
-    get summaryText() {
-        var items = Object.values(this.summaryItems);
-        if (items.length === 0) return '';
-        return items.map(function(i) { return i.name + ' x' + i.qty; }).join(', ');
+        var sitems = Object.values(this.summaryItems);
+        this.summaryStr = sitems.length === 0 ? '' : sitems.map(function(i) { return i.name + ' x' + i.qty; }).join(', ');
     },
 
     submitForm: function() {
@@ -433,7 +432,7 @@
                 <div class="flex-1 min-w-0">
                     <p class="text-[10px] text-slate-400 font-medium">Total (<span x-text="totalQty"></span> pax):</p>
                     <p class="text-lg font-black text-slate-800" x-text="'IDR ' + totalPrice.toLocaleString('id-ID')"></p>
-                    <p class="text-[9px] text-slate-400 truncate" x-text="summaryText"></p>
+                    <p class="text-[9px] text-slate-400 truncate" x-text="summaryStr"></p>
                 </div>
                 <button type="button" @click="submitForm()" class="bg-[#00a6eb] text-white px-6 py-3 rounded-xl font-black text-sm shadow-lg shadow-blue-200/50 active:scale-95 transition-all shrink-0">
                     Pesan
@@ -473,7 +472,7 @@
                     <button type="button" @click="prevMonth()" class="h-9 w-9 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-all active:scale-95">
                         <i class="bi bi-chevron-left text-sm"></i>
                     </button>
-                    <h3 class="text-sm font-black text-slate-800" x-text="calTitle"></h3>
+                    <h3 class="text-sm font-black text-slate-800" x-text="calTitleStr"></h3>
                     <button type="button" @click="nextMonth()" class="h-9 w-9 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-all active:scale-95">
                         <i class="bi bi-chevron-right text-sm"></i>
                     </button>
@@ -488,7 +487,7 @@
 
                 <!-- Date grid -->
                 <div class="grid grid-cols-7 gap-1">
-                    <template x-for="(cell, idx) in calCells" :key="idx">
+                    <template x-for="(cell, idx) in calCellsArr" :key="idx">
                         <div>
                             <template x-if="cell === null">
                                 <div class="aspect-square"></div>
@@ -496,7 +495,7 @@
                             <template x-if="cell !== null">
                                 <button type="button"
                                     :disabled="cell.isPast || cell.isSold"
-                                    @click="!cell.isPast && !cell.isSold && pickDate(cell.dateStr, cell.isSold)"
+                                    @click="pickDate(cell.dateStr, cell.isPast || cell.isSold)"
                                     class="w-full rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-all py-1" style="min-height: 44px;"
                                     :class="{
                                         'bg-[#00a6eb] text-white shadow-md shadow-blue-200 font-black scale-105': cell.dateStr === selectedDate,

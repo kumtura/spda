@@ -367,6 +367,43 @@ class ObjekWisataController extends Controller
     // Kategori Tiket Management
     public function store_kategori(Request $request)
     {
+        if ($request->market_type === 'dual') {
+            $request->validate([
+                'id_objek_wisata' => 'required|exists:tb_objek_wisata,id_objek_wisata',
+                'nama_kategori' => 'required|string|max:100',
+                'tipe_kategori' => 'required|in:orang,kendaraan,paket',
+                'harga_local' => 'required|numeric|min:0',
+                'harga_wna' => 'required|numeric|min:0',
+                'deskripsi' => 'nullable|string'
+            ]);
+
+            $maxUrutan = KategoriTiket::where('id_objek_wisata', $request->id_objek_wisata)->max('urutan') ?? 0;
+
+            KategoriTiket::create([
+                'id_objek_wisata' => $request->id_objek_wisata,
+                'nama_kategori' => $request->nama_kategori,
+                'tipe_kategori' => $request->tipe_kategori,
+                'market_type' => 'local',
+                'harga' => $request->harga_local,
+                'deskripsi' => $request->deskripsi,
+                'urutan' => $maxUrutan + 1,
+                'aktif' => 1
+            ]);
+
+            KategoriTiket::create([
+                'id_objek_wisata' => $request->id_objek_wisata,
+                'nama_kategori' => $request->nama_kategori,
+                'tipe_kategori' => $request->tipe_kategori,
+                'market_type' => 'wna',
+                'harga' => $request->harga_wna,
+                'deskripsi' => $request->deskripsi,
+                'urutan' => $maxUrutan + 2,
+                'aktif' => 1
+            ]);
+
+            return redirect()->back()->with('success', 'Kategori tiket Lokal & WNA berhasil ditambahkan');
+        }
+
         $request->validate([
             'id_objek_wisata' => 'required|exists:tb_objek_wisata,id_objek_wisata',
             'nama_kategori' => 'required|string|max:100',

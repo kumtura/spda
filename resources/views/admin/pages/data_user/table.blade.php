@@ -6,13 +6,34 @@
     showModal: false,
     isEdit: false,
     userId: '', userName: '', userEmail: '', userPassword: '', userPhone: '', userLevel: '', userBanjar: '',
-    openAdd() { this.isEdit = false; this.userId = ''; this.userName = ''; this.userEmail = ''; this.userPassword = ''; this.userPhone = ''; this.userLevel = ''; this.userBanjar = ''; this.showModal = true; },
+    objekWisataList: [],
+    selectedObjekWisata: [],
+    loadingObjek: false,
+    openAdd() { this.isEdit = false; this.userId = ''; this.userName = ''; this.userEmail = ''; this.userPassword = ''; this.userPhone = ''; this.userLevel = ''; this.userBanjar = ''; this.objekWisataList = []; this.selectedObjekWisata = []; this.showModal = true; },
     openEdit(id) {
         fetch('{{ url('administrator/ambil_user') }}/' + id).then(r => r.json()).then(data => {
             this.isEdit = true; this.userId = data.id; this.userName = data.name; this.userEmail = data.email;
-            this.userPassword = ''; this.userLevel = data.id_level; this.userPhone = data.no_wa; this.userBanjar = data.id_banjar || '';
+            this.userPassword = ''; this.userLevel = String(data.id_level); this.userPhone = data.no_wa; this.userBanjar = data.id_banjar || '';
+            this.selectedObjekWisata = data.assigned_objek_ids || [];
+            if (this.userLevel == '5' && this.userBanjar) { this.fetchObjekWisata(this.userBanjar); }
             this.showModal = true;
         });
+    },
+    fetchObjekWisata(banjarId) {
+        if (!banjarId) { this.objekWisataList = []; return; }
+        this.loadingObjek = true;
+        fetch('{{ url('administrator/get_objek_wisata_by_banjar') }}/' + banjarId)
+            .then(r => r.json()).then(data => { this.objekWisataList = data; this.loadingObjek = false; })
+            .catch(() => { this.loadingObjek = false; });
+    },
+    toggleObjek(id) {
+        const idx = this.selectedObjekWisata.indexOf(id);
+        if (idx === -1) this.selectedObjekWisata.push(id);
+        else this.selectedObjekWisata.splice(idx, 1);
+    },
+    selectAllObjek() {
+        if (this.selectedObjekWisata.length === this.objekWisataList.length) this.selectedObjekWisata = [];
+        else this.selectedObjekWisata = this.objekWisataList.map(o => o.id_objek_wisata);
     }
 }">
 
@@ -93,15 +114,48 @@
                                 <option value="4">Admin Sistem</option><option value="1">Bendesa Adat</option>
                                 @endif
                                 <option value="2">Kelian Adat</option><option value="3">Unit Usaha</option>
+                                @if(Session::get('level') == '1' || Session::get('level') == '4')
+                                <option value="5">Ticket Counter</option>
+                                @endif
                             </select>
                         </div>
-                        <div class="space-y-1.5" x-show="userLevel == 2 || userLevel == 3" x-transition>
+                        <div class="space-y-1.5" x-show="userLevel == 2 || userLevel == 3 || userLevel == 5" x-transition>
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Banjar</label>
-                            <select name="banjarinput_edit" x-model="userBanjar" :required="userLevel == 2 || userLevel == 3" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                            <select name="banjarinput_edit" x-model="userBanjar" :required="userLevel == 2 || userLevel == 3 || userLevel == 5" @change="if(userLevel == 5) fetchObjekWisata($event.target.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
                                 <option value="">Pilih</option>
                                 @foreach($banjar as $b)<option value="{{ $b->id_data_banjar }}">{{ $b->nama_banjar }}</option>@endforeach
                             </select>
                         </div>
+                    </div>
+
+                    {{-- Objek Wisata Multi-Select (Level 5 / Ticket Counter) --}}
+                    <div x-show="userLevel == 5 && userBanjar" x-transition class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Objek Wisata yang Ditugaskan *</label>
+                            <button type="button" @click="selectAllObjek()" class="text-[10px] font-bold text-blue-500 hover:text-blue-700 px-1" x-show="objekWisataList.length > 0">
+                                <span x-text="selectedObjekWisata.length === objekWisataList.length ? 'Batal Semua' : 'Pilih Semua'"></span>
+                            </button>
+                        </div>
+                        <div x-show="loadingObjek" class="text-xs text-slate-400 py-3 text-center">Memuat objek wisata...</div>
+                        <div x-show="!loadingObjek && objekWisataList.length === 0 && userBanjar" class="text-xs text-slate-400 py-3 text-center bg-slate-50 rounded-xl">
+                            Tidak ada objek wisata di banjar ini.
+                        </div>
+                        <div x-show="!loadingObjek && objekWisataList.length > 0" class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                            <template x-for="objek in objekWisataList" :key="objek.id_objek_wisata">
+                                <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
+                                    :class="selectedObjekWisata.includes(objek.id_objek_wisata) ? 'bg-blue-50 border-blue-300' : 'bg-slate-50 border-slate-200 hover:border-blue-200'">
+                                    <input type="checkbox" :value="objek.id_objek_wisata" :checked="selectedObjekWisata.includes(objek.id_objek_wisata)"
+                                        @change="toggleObjek(objek.id_objek_wisata)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                    <div>
+                                        <span class="text-xs font-bold text-slate-700" x-text="objek.nama_objek"></span>
+                                        <span class="text-[10px] text-slate-400 block" x-text="objek.status === 'aktif' ? 'Aktif' : 'Nonaktif'"></span>
+                                    </div>
+                                </label>
+                            </template>
+                        </div>
+                        <template x-for="id in selectedObjekWisata" :key="'hidden_'+id">
+                            <input type="hidden" name="objek_wisata[]" :value="id">
+                        </template>
                     </div>
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
                         <button type="button" @click="showModal = false" class="px-6 py-2.5 font-black text-[10px] uppercase text-slate-400">Batal</button>
@@ -135,6 +189,7 @@
                     if(data.toLowerCase().includes('bendesa')) c='bg-emerald-50 text-emerald-600 border border-emerald-100'; 
                     if(data.toLowerCase().includes('kelian')) c='bg-amber-50 text-amber-600 border border-amber-100'; 
                     if(data.toLowerCase().includes('usaha')) c='bg-rose-50 text-rose-600 border border-rose-100'; 
+                    if(data.toLowerCase().includes('ticket counter')) c='bg-purple-50 text-purple-600 border border-purple-100'; 
                     return '<span class="text-[9px] font-bold px-2.5 py-1 rounded bg-slate-50 border uppercase tracking-widest ' + c + '">' + data + '</span>'; 
                 } },
                 { "data": 'nama_banjar', "className": "px-6 py-4", "render": function(data) { 

@@ -9,6 +9,8 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 use App\Models\User;
 use App\Models\Jemaah;
+use App\Models\TicketCounterAssignment;
+use App\Models\ObjekWisata;
 
 use DB;
 use File;
@@ -191,6 +193,9 @@ class UserController extends BaseController
             else if($lvl == 4){
                 $level = "Admin Sistem";
             }
+            else if($lvl == 5){
+                $level = "Ticket Counter";
+            }
     		else{
     			$level = "Guest";
     		}
@@ -244,18 +249,37 @@ class UserController extends BaseController
 		
 		 $list->save();
 
+         // Handle ticket counter assignments (Level 5)
+         if ($list->id_level == 5 && $request->has('objek_wisata')) {
+             foreach ($request->input('objek_wisata', []) as $objekId) {
+                 TicketCounterAssignment::create([
+                     'id_user' => $list->id,
+                     'id_objek_wisata' => $objekId,
+                     'aktif' => '1',
+                 ]);
+             }
+         }
+
 		 echo "success";
     }
 
     public function ambil_user(Request $request , $index){
     	 $data = User::where('id' , $index)->orderBy('id' , 'desc')->firstOrfail();
+         
+         // Include assigned objek wisata IDs for ticket counter
+         $arr = $data->toArray();
+         $arr['assigned_objek_ids'] = TicketCounterAssignment::where('id_user', $index)
+             ->where('aktif', '1')
+             ->pluck('id_objek_wisata')
+             ->map(fn($v) => (int)$v)
+             ->toArray();
 
-		 echo json_encode($data);
-		 //return redirect('view-kategori-barang');
+		 echo json_encode($arr);
     }
 
     public function updateuser(Request $request){
-		User::where('id', $request->input('iduserinput_edit'))->update(array(
+		$userId = $request->input('iduserinput_edit');
+		User::where('id', $userId)->update(array(
 	            'name' =>  $request->input('textinput_edit'),
                 'email' =>  $request->input('emailinput_edit'),
                 'id_level' =>  $request->input('levelinput_edit'),
@@ -263,11 +287,31 @@ class UserController extends BaseController
                 'no_wa' =>  $request->input('nowainput_edit')
         ));
 
+        // Handle ticket counter assignments (Level 5)
+        $level = $request->input('levelinput_edit');
+        if ($level == 5) {
+            // Deactivate old assignments
+            TicketCounterAssignment::where('id_user', $userId)->update(['aktif' => '0']);
+            // Create new assignments
+            foreach ($request->input('objek_wisata', []) as $objekId) {
+                TicketCounterAssignment::updateOrCreate(
+                    ['id_user' => $userId, 'id_objek_wisata' => $objekId],
+                    ['aktif' => '1']
+                );
+            }
+        } else {
+            // If no longer ticket counter, deactivate assignments
+            TicketCounterAssignment::where('id_user', $userId)->update(['aktif' => '0']);
+        }
+
 		echo "success";
 	}
 
     public function destroy(Request $request){
         $userId = $request->input('id');
+        
+        // Deactivate ticket counter assignments
+        TicketCounterAssignment::where('id_user', $userId)->update(['aktif' => '0']);
         
         // Cascade delete: remove loker associated with usaha owned by this user
         $usahaIds = \DB::table('tb_usaha')
@@ -285,5 +329,15 @@ class UserController extends BaseController
         echo "success";
     }
 
+    public function getObjekWisataByBanjar($id_banjar)
+    {
+        $data = ObjekWisata::where('id_data_banjar', $id_banjar)
+            ->where('aktif', '1')
+            ->select('id_objek_wisata', 'nama_objek', 'status')
+            ->orderBy('nama_objek')
+            ->get();
+
+        return response()->json($data);
+    }
 
 }

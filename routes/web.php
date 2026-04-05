@@ -339,6 +339,11 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::get('ambil_user/{index}','UserController@ambil_user');
 			Route::post('updateuser','UserController@updateuser');
 			Route::get('hapususer','UserController@destroy');
+			Route::get('get_objek_wisata_by_banjar/{id}','UserController@getObjekWisataByBanjar');
+
+			// Staff Counter Management
+			Route::get('/staff_counter', 'Administrator\StaffCounterController@index');
+			Route::get('/staff_counter/detail/{id}', 'Administrator\StaffCounterController@detail');
 
 			Route::get('/datakategori', function () {
 				return view('admin.pages.data_kategori.table');

@@ -105,6 +105,7 @@
                   <li><a href="{{ url('administrator/settings') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/settings') ? 'text-white bg-white/5' : '' }}">Pengaturan Website</a></li>
                   <li><a href="{{ route('administrator.settings.payment_gateway') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/settings/payment_gateway*') ? 'text-white bg-white/5' : '' }}">Payment Gateway</a></li>
                   <li><a href="{{ url('administrator/settings/waha') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/settings/waha*') ? 'text-white bg-white/5' : '' }}">WAHA WhatsApp</a></li>
+                  <li><a href="{{ url('administrator/settings/api') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/settings/api*') ? 'text-white bg-white/5' : '' }}">API Management</a></li>
                   @endif
                   
             </ul>

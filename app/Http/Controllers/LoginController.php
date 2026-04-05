@@ -139,6 +139,9 @@ class LoginController extends BaseController
             elseif($pt->id_level == config('myconfig.level.usaha')){
                 $status = config('myconfig.roles.3');
             }
+            elseif($pt->id_level == config('myconfig.level.ticket_counter')){
+                $status = config('myconfig.roles.5');
+            }
             else{
                 $status = "Guest";
             }

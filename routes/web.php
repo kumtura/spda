@@ -111,14 +111,14 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			'uses' => 'Administrator\DashboardController@indexhome',
 		]);
 
-		Route::get('/home', [DashboardController::class, 'indexhome'])->name('home')->middleware('role:1,2,3,4');
+		Route::get('/home', [DashboardController::class, 'indexhome'])->name('home')->middleware('role:1,2,3,4,5');
 
 		Route::get('/get_danapunia_range', [
 			'uses' => 'Administrator\DashboardController@get_danapunia_range',
 		]);
 
 		// Profile & General
-		Route::get('/userprofile', 'UserController@indexuser')->middleware('role:1,2,3');
+		Route::get('/userprofile', 'UserController@indexuser')->middleware('role:1,2,3,5');
         Route::post('update_user', 'UserController@updatepost_profile'); // For profile update
 
 		// Usaha Management
@@ -186,6 +186,31 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/kelian/tiket/kategori/store', 'Administrator\ObjekWisataController@store_kategori');
             Route::put('/kelian/tiket/kategori/update/{id}', 'Administrator\ObjekWisataController@update_kategori');
             Route::get('/kelian/tiket/kategori/delete/{id}', 'Administrator\ObjekWisataController@delete_kategori');
+        });
+
+        // Ticket Counter (Level 5)
+        Route::group(['middleware' => 'role:5'], function() {
+            // Dashboard
+            Route::get('/ticketcounter', 'Administrator\TicketCounterController@index');
+            
+            // Absensi
+            Route::get('/ticketcounter/absensi', 'Administrator\TicketCounterController@absensi');
+            Route::post('/ticketcounter/absensi/clockin', 'Administrator\TicketCounterController@clockIn');
+            Route::post('/ticketcounter/absensi/clockout', 'Administrator\TicketCounterController@clockOut');
+            
+            // Tiket
+            Route::get('/ticketcounter/tiket', 'Administrator\TicketCounterTiketController@index');
+            Route::get('/ticketcounter/tiket/scan', 'Administrator\TicketCounterTiketController@scan');
+            Route::get('/ticketcounter/tiket/jual', 'Administrator\TicketCounterTiketController@jual');
+            Route::post('/ticketcounter/tiket/jual/submit', 'Administrator\TicketCounterTiketController@jualSubmit');
+            Route::get('/ticketcounter/tiket/jual/success/{id}', 'Administrator\TicketCounterTiketController@jualSuccess');
+            Route::post('/ticketcounter/tiket/scan/validate', 'Administrator\TicketCounterTiketController@scanValidate');
+            
+            // Transaksi masuk
+            Route::get('/ticketcounter/tiket/transaksi', 'Administrator\TicketCounterTiketController@transaksi');
+            
+            // Laporan harian
+            Route::get('/ticketcounter/tiket/laporan', 'Administrator\TicketCounterTiketController@laporan');
         });
 
         // Kelian Adat only (Level 2) - Mobile Pendatang Pages

@@ -10,11 +10,13 @@ return [
         1 => 'Bendesa Adat',
         2 => 'Kelian Adat',
         3 => 'Unit Usaha',
+        5 => 'Ticket Counter',
     ],
     
     'level' => [
-        'bendesa' => 1,
-        'kelian'  => 2,
-        'usaha'   => 3,
+        'bendesa'        => 1,
+        'kelian'         => 2,
+        'usaha'          => 3,
+        'ticket_counter' => 5,
     ]
 ];

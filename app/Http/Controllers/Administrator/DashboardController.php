@@ -86,6 +86,9 @@ class DashboardController extends BaseController
         } else if ($level == "3") {
             // Unit Usaha uses the Mobile Dashboard
             return view('backend.usaha.home',compact('usaha','totalpunia','jml_karyawan'));
+        } else if ($level == "5") {
+            // Ticket Counter redirects to ticket counter dashboard
+            return redirect()->to('administrator/ticketcounter');
         }
 
         // Fallback to desktop home if level not specified

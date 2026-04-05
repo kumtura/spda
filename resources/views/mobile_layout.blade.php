@@ -40,7 +40,7 @@
             </div>
             <div class="flex items-center gap-2">
                 @php
-                    $roleLabel = Session::get('level') == '2' ? 'Kelian' : (Session::get('level') == '3' ? 'Usaha' : 'Admin');
+                    $roleLabel = Session::get('level') == '2' ? 'Kelian' : (Session::get('level') == '3' ? 'Usaha' : (Session::get('level') == '5' ? 'Counter' : 'Admin'));
                 @endphp
                 <span class="bg-white/20 backdrop-blur-md text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">{{ $roleLabel }}</span>
             </div>
@@ -89,6 +89,26 @@
                 <a href="{{ url('administrator/kelian/pendatang') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/kelian/pendatang*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
                     <i class="bi bi-people text-xl"></i>
                     <span class="text-[10px] font-semibold">Pendatang</span>
+                </a>
+            @endif
+
+            @if(Session::get('level') == "5")
+                <!-- Ticket Counter Features -->
+                <a href="{{ url('administrator/ticketcounter') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/ticketcounter') && !Request::is('administrator/ticketcounter/*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-house-door{{ Request::is('administrator/ticketcounter') && !Request::is('administrator/ticketcounter/*') ? '-fill' : '' }} text-xl"></i>
+                    <span class="text-[10px] font-semibold">Home</span>
+                </a>
+                <a href="{{ url('administrator/ticketcounter/absensi') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/ticketcounter/absensi*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-clipboard-check text-xl"></i>
+                    <span class="text-[10px] font-semibold">Absensi</span>
+                </a>
+                <a href="{{ url('administrator/ticketcounter/tiket') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/ticketcounter/tiket*') && !Request::is('administrator/ticketcounter/tiket/transaksi*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-ticket-perforated text-xl"></i>
+                    <span class="text-[10px] font-semibold">Tiket</span>
+                </a>
+                <a href="{{ url('administrator/ticketcounter/tiket/transaksi') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/ticketcounter/tiket/transaksi*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-receipt text-xl"></i>
+                    <span class="text-[10px] font-semibold">Transaksi</span>
                 </a>
             @endif
 

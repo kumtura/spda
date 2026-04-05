@@ -53,4 +53,15 @@ class User extends Authenticatable
     {
         return $this->hasOne(Banjar::class, 'id_user_kelian', 'id');
     }
+
+    public function ticketCounterAssignments()
+    {
+        return $this->hasMany(TicketCounterAssignment::class, 'id_user', 'id')
+            ->where('aktif', '1');
+    }
+
+    public function absensiCounter()
+    {
+        return $this->hasMany(AbsensiCounter::class, 'id_user', 'id');
+    }
 }

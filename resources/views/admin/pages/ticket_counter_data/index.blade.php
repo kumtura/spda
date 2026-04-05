@@ -3,18 +3,13 @@
 @section('isi_menu')
 <div class="space-y-6">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div class="flex items-center gap-5">
-            <div class="h-16 w-16 rounded-2xl bg-sky-500 text-white flex items-center justify-center shadow-xl shadow-sky-100">
-                <i class="bi bi-qr-code-scan text-3xl"></i>
-            </div>
-            <div>
-                <h1 class="text-2xl font-bold text-slate-800 tracking-tight mb-0.5">Dashboard Ticket Counter</h1>
-                <p class="text-slate-500 font-semibold text-sm">Monitoring staff on-duty, penjualan tiket hari ini & statistik.</p>
-            </div>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight">Dashboard Ticket Counter</h1>
+            <p class="text-slate-500 font-medium text-sm">Monitoring staff on-duty, penjualan tiket hari ini & statistik.</p>
         </div>
-        <a href="{{ url('administrator/ticket_counter_data/history') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-50 text-sky-600 hover:bg-sky-100 rounded-xl text-xs font-bold transition-colors">
-            <i class="bi bi-clock-history"></i> Lihat Riwayat Pembelian
+        <a href="{{ url('administrator/ticket_counter_data/history') }}" class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl shadow-lg shadow-slate-200/50 transition-all text-xs font-black uppercase tracking-widest active:scale-95">
+            <i class="bi bi-clock-history"></i> Riwayat Pembelian
         </a>
     </div>
 
@@ -22,7 +17,7 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center">
+                <div class="h-12 w-12 rounded-xl bg-blue-50 text-primary-light flex items-center justify-center">
                     <i class="bi bi-people-fill text-xl"></i>
                 </div>
                 <div>
@@ -44,7 +39,7 @@
         </div>
         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+                <div class="h-12 w-12 rounded-xl bg-blue-50 text-primary-light flex items-center justify-center">
                     <i class="bi bi-ticket-perforated-fill text-xl"></i>
                 </div>
                 <div>
@@ -52,7 +47,7 @@
                     <p class="text-2xl font-black text-slate-800">{{ $totalTiketHariIni }}</p>
                     <div class="flex gap-2 mt-1">
                         <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">{{ $offlineHariIni }} offline</span>
-                        <span class="text-[9px] font-bold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">{{ $onlineHariIni }} online</span>
+                        <span class="text-[9px] font-bold text-primary-light bg-blue-50 px-1.5 py-0.5 rounded">{{ $onlineHariIni }} online</span>
                     </div>
                 </div>
             </div>
@@ -83,7 +78,7 @@
             @foreach($staffOnDuty as $shift)
             <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center font-bold text-sm">
+                    <div class="h-10 w-10 rounded-xl bg-blue-50 border border-blue-100 text-primary-light flex items-center justify-center font-bold text-sm">
                         {{ strtoupper(substr($shift->user->name ?? '-', 0, 2)) }}
                     </div>
                     <div>
@@ -128,7 +123,7 @@
                         <td class="px-5 py-3 font-bold text-slate-800">{{ $objek->nama_objek }}</td>
                         <td class="px-3 py-3 text-center font-bold">{{ $objek->jumlah_tiket }}</td>
                         <td class="px-3 py-3 text-center"><span class="bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded">{{ $objek->offline_count }}</span></td>
-                        <td class="px-3 py-3 text-center"><span class="bg-sky-50 text-sky-700 font-bold px-2 py-0.5 rounded">{{ $objek->online_count }}</span></td>
+                        <td class="px-3 py-3 text-center"><span class="bg-blue-50 text-primary-light font-bold px-2 py-0.5 rounded">{{ $objek->online_count }}</span></td>
                         <td class="px-5 py-3 text-right font-black text-slate-800">Rp {{ number_format($objek->total_pendapatan, 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
@@ -142,7 +137,7 @@
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         <div class="p-5 border-b border-slate-100 flex items-center justify-between">
             <h2 class="text-sm font-bold text-slate-800">Transaksi Terbaru</h2>
-            <a href="{{ url('administrator/ticket_counter_data/history') }}" class="text-[10px] font-bold text-sky-600 hover:text-sky-700">Lihat Semua <i class="bi bi-arrow-right"></i></a>
+            <a href="{{ url('administrator/ticket_counter_data/history') }}" class="text-[10px] font-black text-primary-light hover:text-primary-dark uppercase tracking-widest">Lihat Semua <i class="bi bi-arrow-right"></i></a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-xs">
@@ -161,7 +156,7 @@
                         <td class="px-5 py-3 font-mono font-bold text-slate-800">{{ $trx->kode_tiket }}</td>
                         <td class="px-3 py-3 font-medium text-slate-700">{{ $trx->objekWisata->nama_objek ?? '-' }}</td>
                         <td class="px-3 py-3 text-center">
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded font-bold {{ $trx->metode_pembelian == 'offline' ? 'bg-emerald-50 text-emerald-700' : 'bg-sky-50 text-sky-700' }}">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded font-bold {{ $trx->metode_pembelian == 'offline' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-primary-light' }}">
                                 <i class="bi {{ $trx->metode_pembelian == 'offline' ? 'bi-shop' : 'bi-globe' }}"></i>
                                 {{ ucfirst($trx->metode_pembelian) }}
                             </span>

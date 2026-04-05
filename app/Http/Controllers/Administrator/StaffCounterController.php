@@ -315,12 +315,10 @@ class StaffCounterController extends Controller
 
         $tikets = $query->paginate(25)->appends($request->query());
 
-        $totalCompleted = (clone $query)->where('status_pembayaran', 'completed')->sum('total_harga');
-
         $objekWisataList = ObjekWisata::where('aktif', '1')->orderBy('nama_objek')->get();
 
         return view('admin.pages.ticket_counter_data.history', compact(
-            'tikets', 'totalCompleted', 'objekWisataList'
+            'tikets', 'objekWisataList'
         ));
     }
 }

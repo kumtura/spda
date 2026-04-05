@@ -8,7 +8,7 @@
             <a href="{{ url('administrator/staff_counter') }}" class="h-10 w-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             </a>
-            <div class="h-14 w-14 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 font-black text-xl uppercase">
+            <div class="h-14 w-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-primary-light font-black text-xl uppercase">
                 {{ substr($staff->name, 0, 1) }}
             </div>
             <div>
@@ -40,7 +40,7 @@
                     <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
                 @endfor
             </select>
-            <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-xl text-sm font-bold hover:bg-purple-700 transition-all">Tampilkan</button>
+            <button type="submit" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-all">Tampilkan</button>
         </form>
     </div>
 

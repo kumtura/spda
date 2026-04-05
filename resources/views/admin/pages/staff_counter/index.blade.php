@@ -3,15 +3,10 @@
 @section('isi_menu')
 <div class="space-y-6">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div class="flex items-center gap-5">
-            <div class="h-16 w-16 rounded-2xl bg-purple-500 text-white flex items-center justify-center shadow-xl shadow-purple-100">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            </div>
-            <div>
-                <h1 class="text-2xl font-bold text-slate-800 tracking-tight mb-0.5">Staff Counter</h1>
-                <p class="text-slate-500 font-semibold text-sm">Monitor staff ticket counter, absensi dan performa penjualan.</p>
-            </div>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight">Staff Counter</h1>
+            <p class="text-slate-500 font-medium text-sm">Monitor staff ticket counter, absensi dan performa penjualan.</p>
         </div>
     </div>
 
@@ -19,7 +14,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center">
+                <div class="h-12 w-12 rounded-xl bg-blue-50 text-primary-light flex items-center justify-center">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path></svg>
                 </div>
                 <div>
@@ -62,7 +57,7 @@
                 @endforeach
             </select>
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama / email..." class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 outline-none w-64">
-            <button type="submit" class="px-5 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-bold hover:bg-purple-700 transition-all">Filter</button>
+            <button type="submit" class="px-5 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-all">Filter</button>
             @if(request()->hasAny(['id_data_banjar', 'search']))
                 <a href="{{ url('administrator/staff_counter') }}" class="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all">Reset</a>
             @endif
@@ -72,10 +67,10 @@
     <!-- Staff List -->
     <div class="space-y-4">
         @forelse($staffList as $staff)
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:border-purple-200 transition-all">
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:border-blue-200 transition-all">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 font-black text-lg uppercase flex-shrink-0">
+                    <div class="h-12 w-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-primary-light font-black text-lg uppercase flex-shrink-0">
                         {{ substr($staff->name, 0, 1) }}
                     </div>
                     <div class="space-y-1">
@@ -123,7 +118,7 @@
                         <p class="text-lg font-black text-blue-600">Rp {{ number_format($staff->penjualan_bulan_ini, 0, ',', '.') }}</p>
                         <p class="text-[9px] font-bold text-slate-400 uppercase">Bulan Ini</p>
                     </div>
-                    <a href="{{ url('administrator/staff_counter/detail/' . $staff->id) }}" class="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-xl text-xs font-bold hover:bg-purple-200 transition-all flex-shrink-0">
+                    <a href="{{ url('administrator/staff_counter/detail/' . $staff->id) }}" class="px-4 py-2.5 bg-blue-50 text-primary-light rounded-xl text-xs font-bold hover:bg-blue-100 transition-all flex-shrink-0">
                         Detail
                     </a>
                 </div>

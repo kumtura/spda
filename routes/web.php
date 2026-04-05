@@ -438,6 +438,14 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/settings/payment_gateway', 'Administrator\PaymentGatewayController@index')->name('settings.payment_gateway');
             Route::post('/settings/payment_gateway/post', 'Administrator\PaymentGatewayController@store')->name('settings.payment_gateway.post');
             Route::post('/settings/payment_gateway/channel/{id}', 'Administrator\PaymentGatewayController@updateChannel')->name('settings.payment_gateway.channel.update');
+
+            // API Management Settings
+            Route::get('/settings/api', 'Administrator\ApiSettingController@index')->name('settings.api');
+            Route::post('/settings/api/store', 'Administrator\ApiSettingController@store')->name('settings.api.store');
+            Route::post('/settings/api/toggle/{id}', 'Administrator\ApiSettingController@toggle')->name('settings.api.toggle');
+            Route::put('/settings/api/update/{id}', 'Administrator\ApiSettingController@update')->name('settings.api.update');
+            Route::delete('/settings/api/delete/{id}', 'Administrator\ApiSettingController@destroy')->name('settings.api.destroy');
+            Route::get('/settings/api/logs', 'Administrator\ApiSettingController@logs')->name('settings.api.logs');
         });
 
 		// Misc / Legacy

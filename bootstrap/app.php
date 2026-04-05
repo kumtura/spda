@@ -29,11 +29,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'wartawan.guest' => \App\Http\Middleware\RedirectIfWartawan::class,
             'auth.legacy' => \App\Http\Middleware\RedirectIfNotAuthenticated::class,
             'public.redirect' => \App\Http\Middleware\RedirectAuthenticatedFromPublic::class,
+            'api_token' => \App\Http\Middleware\ApiTokenAuth::class,
         ]);
         
         $middleware->validateCsrfTokens(except: [
             'api/webhooks/xendit',
-            'api/upload_gambar_usaha/*'
+            'api/upload_gambar_usaha/*',
+            'api/v1/*'
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

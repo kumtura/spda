@@ -48,6 +48,7 @@
                   <li><a href="{{ url('administrator/datamenu') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10">Data Member Menu</a></li>
                   <li><a href="#" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10 uppercase text-[10px] font-bold tracking-widest opacity-30 mt-4 px-2">Integrasi</a></li>
                   <li><a href="{{ url('administrator/settings/payment_gateway') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10">Payment Gateway</a></li>
+                  <li><a href="{{ url('administrator/settings/api') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10">API Management</a></li>
                   
                   <!-- Data Gambar Nest -->
                   <li>

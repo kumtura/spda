@@ -10,6 +10,7 @@ return [
         1 => 'Bendesa Adat',
         2 => 'Kelian Adat',
         3 => 'Unit Usaha',
+        4 => 'Admin Sistem',
         5 => 'Ticket Counter',
     ],
     
@@ -17,6 +18,7 @@ return [
         'bendesa'        => 1,
         'kelian'         => 2,
         'usaha'          => 3,
+        'admin'          => 4,
         'ticket_counter' => 5,
     ]
 ];

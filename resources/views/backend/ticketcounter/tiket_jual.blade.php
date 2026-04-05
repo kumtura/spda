@@ -117,6 +117,7 @@
                     'id' => $kat->id_kategori_tiket,
                     'nama' => $kat->nama_kategori,
                     'tipe' => $kat->tipe_kategori,
+                    'market_type' => $kat->market_type,
                     'harga' => $kat->harga,
                     'deskripsi' => $kat->deskripsi
                 ];
@@ -150,31 +151,54 @@ function loadKategori() {
     selectedKategori = {};
     list.innerHTML = '';
     
+    // Group categories by market_type
+    const marketLabels = { local: 'Lokal', wna: 'WNA (Wisatawan Asing)', all: 'Semua' };
+    const marketColors = { local: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' }, wna: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' }, all: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-100' } };
+    
+    const grouped = {};
     objek.kategori.forEach(kat => {
-        const div = document.createElement('div');
-        div.className = 'bg-slate-50 border border-slate-200 rounded-lg p-3';
-        div.innerHTML = `
-            <div class="flex items-center justify-between gap-3">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                        <h4 class="text-xs font-bold text-slate-800">${kat.nama}</h4>
-                        <span class="text-[8px] font-bold text-[#00a6eb] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">${kat.tipe}</span>
+        const mt = kat.market_type || 'all';
+        if (!grouped[mt]) grouped[mt] = [];
+        grouped[mt].push(kat);
+    });
+    
+    const order = ['local', 'wna', 'all'];
+    order.forEach(mt => {
+        if (!grouped[mt]) return;
+        const colors = marketColors[mt] || marketColors.all;
+        
+        // Section header
+        const header = document.createElement('div');
+        header.className = `${colors.bg} ${colors.border} border rounded-lg px-3 py-2 mt-2 first:mt-0`;
+        header.innerHTML = `<span class="text-[10px] font-black ${colors.text} uppercase tracking-wider"><i class="bi bi-tag-fill mr-1"></i>${marketLabels[mt] || mt}</span>`;
+        list.appendChild(header);
+        
+        grouped[mt].forEach(kat => {
+            const div = document.createElement('div');
+            div.className = 'bg-slate-50 border border-slate-200 rounded-lg p-3';
+            div.innerHTML = `
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="text-xs font-bold text-slate-800">${kat.nama}</h4>
+                            <span class="text-[8px] font-bold text-[#00a6eb] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">${kat.tipe}</span>
+                        </div>
+                        <p class="text-[10px] font-bold text-[#00a6eb]">Rp ${parseInt(kat.harga).toLocaleString('id-ID')}</p>
+                        ${kat.deskripsi ? `<p class="text-[9px] text-slate-500 mt-1">${kat.deskripsi}</p>` : ''}
                     </div>
-                    <p class="text-[10px] font-bold text-[#00a6eb]">Rp ${parseInt(kat.harga).toLocaleString('id-ID')}</p>
-                    ${kat.deskripsi ? `<p class="text-[9px] text-slate-500 mt-1">${kat.deskripsi}</p>` : ''}
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="updateQty(${kat.id}, -1)" class="h-8 w-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors">
+                            <i class="bi bi-dash text-slate-600"></i>
+                        </button>
+                        <span id="qty-${kat.id}" class="text-sm font-bold text-slate-800 w-8 text-center">0</span>
+                        <button type="button" onclick="updateQty(${kat.id}, 1)" class="h-8 w-8 bg-[#00a6eb] text-white rounded-lg flex items-center justify-center hover:bg-[#0090d0] transition-colors">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="updateQty(${kat.id}, -1)" class="h-8 w-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors">
-                        <i class="bi bi-dash text-slate-600"></i>
-                    </button>
-                    <span id="qty-${kat.id}" class="text-sm font-bold text-slate-800 w-8 text-center">0</span>
-                    <button type="button" onclick="updateQty(${kat.id}, 1)" class="h-8 w-8 bg-[#00a6eb] text-white rounded-lg flex items-center justify-center hover:bg-[#0090d0] transition-colors">
-                        <i class="bi bi-plus"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-        list.appendChild(div);
+            `;
+            list.appendChild(div);
+        });
     });
     
     container.classList.remove('hidden');

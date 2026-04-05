@@ -311,15 +311,6 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::post('/alokasi_punia/update','Administrator\AlokasiPuniaController@update');
 			Route::get('/alokasi_punia/hapus/{id}','Administrator\AlokasiPuniaController@destroy');
 			
-			// Objek Wisata Routes
-			Route::get('/objek_wisata','Administrator\ObjekWisataController@index');
-			Route::get('/objek_wisata/create','Administrator\ObjekWisataController@create');
-			Route::post('/objek_wisata/store','Administrator\ObjekWisataController@store');
-			Route::get('/objek_wisata/edit/{id}','Administrator\ObjekWisataController@edit');
-			Route::put('/objek_wisata/update/{id}','Administrator\ObjekWisataController@update');
-			Route::get('/objek_wisata/delete/{id}','Administrator\ObjekWisataController@destroy');
-			Route::get('/objek_wisata/toggle/{id}','Administrator\ObjekWisataController@toggle_status');
-			
 			Route::get('/data_usaha','Administrator\UsahaController@ambil_listUsaha');
 			
 			Route::get('/databanjar','Administrator\BanjarController@index');
@@ -344,6 +335,19 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			// Staff Counter Management
 			Route::get('/staff_counter', 'Administrator\StaffCounterController@index');
 			Route::get('/staff_counter/detail/{id}', 'Administrator\StaffCounterController@detail');
+
+			// Objek Wisata Routes
+			Route::get('/objek_wisata','Administrator\ObjekWisataController@index');
+			Route::get('/objek_wisata/create','Administrator\ObjekWisataController@create');
+			Route::post('/objek_wisata/store','Administrator\ObjekWisataController@store');
+			Route::get('/objek_wisata/edit/{id}','Administrator\ObjekWisataController@edit');
+			Route::put('/objek_wisata/update/{id}','Administrator\ObjekWisataController@update');
+			Route::get('/objek_wisata/delete/{id}','Administrator\ObjekWisataController@destroy');
+			Route::get('/objek_wisata/toggle/{id}','Administrator\ObjekWisataController@toggle_status');
+
+			// Ticket Counter Data (Admin view - history, stats)
+			Route::get('/ticket_counter_data', 'Administrator\StaffCounterController@ticketData');
+			Route::get('/ticket_counter_data/history', 'Administrator\StaffCounterController@ticketHistory');
 
 			Route::get('/datakategori', function () {
 				return view('admin.pages.data_kategori.table');

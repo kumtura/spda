@@ -203,4 +203,124 @@ class StaffCounterController extends Controller
             'bulan', 'tahun'
         ));
     }
+
+    /**
+     * Dashboard data ticket counter - overview staff on duty, stats
+     */
+    public function ticketData(Request $request)
+    {
+        $today = Carbon::today();
+
+        // Staff on duty right now
+        $staffOnDuty = AbsensiCounter::whereNull('waktu_keluar')
+            ->with(['user', 'objekWisata'])
+            ->orderBy('waktu_masuk', 'desc')
+            ->get();
+
+        // Summary stats
+        $totalStaff = User::where('id_level', 5)->count();
+        $staffAktifHariIni = AbsensiCounter::whereDate('waktu_masuk', $today)
+            ->distinct('id_user')
+            ->count('id_user');
+
+        $penjualanHariIni = TiketWisata::whereDate('created_at', $today)
+            ->where('status_pembayaran', 'completed')
+            ->where('aktif', '1');
+
+        $totalPenjualanHariIni = (clone $penjualanHariIni)->sum('total_harga');
+        $totalTiketHariIni = (clone $penjualanHariIni)->count();
+
+        // Breakdown online vs offline today
+        $offlineHariIni = (clone $penjualanHariIni)->where('metode_pembelian', 'offline')->count();
+        $onlineHariIni = (clone $penjualanHariIni)->where('metode_pembelian', 'online')->count();
+
+        // Per objek wisata stats today
+        $perObjekHariIni = TiketWisata::whereDate('tb_tiket_wisata.created_at', $today)
+            ->where('tb_tiket_wisata.status_pembayaran', 'completed')
+            ->where('tb_tiket_wisata.aktif', '1')
+            ->join('tb_objek_wisata', 'tb_tiket_wisata.id_objek_wisata', '=', 'tb_objek_wisata.id_objek_wisata')
+            ->select(
+                'tb_objek_wisata.nama_objek',
+                'tb_objek_wisata.id_objek_wisata',
+                DB::raw('COUNT(*) as jumlah_tiket'),
+                DB::raw('SUM(tb_tiket_wisata.total_harga) as total_pendapatan'),
+                DB::raw("SUM(CASE WHEN tb_tiket_wisata.metode_pembelian = 'offline' THEN 1 ELSE 0 END) as offline_count"),
+                DB::raw("SUM(CASE WHEN tb_tiket_wisata.metode_pembelian = 'online' THEN 1 ELSE 0 END) as online_count")
+            )
+            ->groupBy('tb_objek_wisata.nama_objek', 'tb_objek_wisata.id_objek_wisata')
+            ->get();
+
+        // Recent 10 transactions
+        $recentTransactions = TiketWisata::where('status_pembayaran', 'completed')
+            ->where('aktif', '1')
+            ->with(['objekWisata', 'petugas', 'details.kategoriTiket'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('admin.pages.ticket_counter_data.index', compact(
+            'staffOnDuty', 'totalStaff', 'staffAktifHariIni',
+            'totalPenjualanHariIni', 'totalTiketHariIni',
+            'offlineHariIni', 'onlineHariIni',
+            'perObjekHariIni', 'recentTransactions'
+        ));
+    }
+
+    /**
+     * Full history of ticket purchases (online & offline)
+     */
+    public function ticketHistory(Request $request)
+    {
+        $query = TiketWisata::where('aktif', '1')
+            ->with(['objekWisata', 'petugas', 'details.kategoriTiket'])
+            ->orderBy('created_at', 'desc');
+
+        // Filter tanggal
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('created_at', '>=', $request->tanggal_dari);
+        }
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('created_at', '<=', $request->tanggal_sampai);
+        }
+
+        // Default: last 7 days if no date filter
+        if (!$request->filled('tanggal_dari') && !$request->filled('tanggal_sampai')) {
+            $query->whereDate('created_at', '>=', Carbon::today()->subDays(7));
+        }
+
+        // Filter metode pembelian
+        if ($request->filled('metode_pembelian')) {
+            $query->where('metode_pembelian', $request->metode_pembelian);
+        }
+
+        // Filter status
+        if ($request->filled('status')) {
+            $query->where('status_pembayaran', $request->status);
+        }
+
+        // Filter objek wisata
+        if ($request->filled('id_objek_wisata')) {
+            $query->where('id_objek_wisata', $request->id_objek_wisata);
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('kode_tiket', 'like', "%{$s}%")
+                  ->orWhere('nama_pengunjung', 'like', "%{$s}%")
+                  ->orWhere('email', 'like', "%{$s}%");
+            });
+        }
+
+        $tikets = $query->paginate(25)->appends($request->query());
+
+        $totalCompleted = (clone $query)->where('status_pembayaran', 'completed')->sum('total_harga');
+
+        $objekWisataList = ObjekWisata::where('aktif', '1')->orderBy('nama_objek')->get();
+
+        return view('admin.pages.ticket_counter_data.history', compact(
+            'tikets', 'totalCompleted', 'objekWisataList'
+        ));
+    }
 }

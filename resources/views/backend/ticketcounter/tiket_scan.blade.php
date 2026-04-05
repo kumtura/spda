@@ -117,14 +117,21 @@
         <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
             <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <i class="bi bi-keyboard text-[12px]"></i>
-                Input Manual Kode Tiket
+                Input Manual / Barcode Scanner
             </h3>
             <div class="flex gap-2">
-                <input type="text" id="manual-code" placeholder="TKT-XXXX-..." 
-                    class="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-[12px] font-medium text-slate-600 focus:ring-2 focus:ring-blue-50 focus:border-[#00a6eb] transition-all outline-none">
+                <input type="text" id="manual-code" placeholder="TKT-XXXX-... (atau scan barcode)" 
+                    class="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-[12px] font-medium text-slate-600 focus:ring-2 focus:ring-blue-50 focus:border-[#00a6eb] transition-all outline-none"
+                    autofocus>
                 <button onclick="validateManual()" class="px-6 py-3 bg-[#00a6eb] text-white text-[10px] font-bold rounded-xl uppercase tracking-widest active:scale-95 transition-all">
                     Cek
                 </button>
+            </div>
+            <div id="scanner-mode-indicator" class="mt-3 hidden">
+                <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+                    <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
+                    <p class="text-[10px] text-emerald-700 font-bold">Barcode Scanner terdeteksi - siap scan</p>
+                </div>
             </div>
         </div>
 
@@ -272,6 +279,70 @@ function validateManual() {
     const code = document.getElementById('manual-code').value.trim();
     if(code) validateTicket(code);
 }
+
+// ============================================
+// Hardware Barcode Scanner Support
+// ============================================
+// Barcode scanners emulate keyboard input: they type characters very fast 
+// and end with Enter. We detect this pattern by measuring input speed.
+let barcodeBuffer = '';
+let barcodeTimeout = null;
+let lastKeyTime = 0;
+const BARCODE_SPEED_THRESHOLD = 50; // Max ms between keystrokes for barcode
+const BARCODE_MIN_LENGTH = 5; // Minimum code length to auto-validate
+
+document.addEventListener('keydown', function(e) {
+    const activeEl = document.activeElement;
+    const manualInput = document.getElementById('manual-code');
+    
+    // If user is typing in the manual input field, handle Enter
+    if (activeEl === manualInput) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            validateManual();
+        }
+        return;
+    }
+    
+    const now = Date.now();
+    
+    // Enter key = end of barcode scan
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        if (barcodeBuffer.length >= BARCODE_MIN_LENGTH) {
+            // Show indicator
+            document.getElementById('scanner-mode-indicator').classList.remove('hidden');
+            // Set the value in manual input for visibility
+            manualInput.value = barcodeBuffer;
+            // Validate
+            if (navigator.vibrate) navigator.vibrate(50);
+            validateTicket(barcodeBuffer);
+        }
+        barcodeBuffer = '';
+        clearTimeout(barcodeTimeout);
+        return;
+    }
+    
+    // Only accept printable characters
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const timeDiff = now - lastKeyTime;
+        
+        // If typing is fast enough, it's a barcode scanner
+        if (timeDiff > 500) {
+            // Too slow = new sequence
+            barcodeBuffer = '';
+        }
+        
+        barcodeBuffer += e.key;
+        lastKeyTime = now;
+        
+        // Auto-clear buffer after inactivity
+        clearTimeout(barcodeTimeout);
+        barcodeTimeout = setTimeout(function() {
+            barcodeBuffer = '';
+        }, 200);
+    }
+});
 
 function showCameraError(msg) {
     document.getElementById('camera-error-text').textContent = msg;

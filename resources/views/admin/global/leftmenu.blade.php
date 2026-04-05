@@ -5,7 +5,8 @@
         openDonasi: {{ Request::is('administrator/datasumbangan*') || Request::is('administrator/kategori_donasi*') || Request::is('administrator/program_donasi*') ? 'true' : 'false' }},
         openBlog: false,
         openTenaga: false,
-        openAgenda: {{ Request::is('administrator/agenda*') || Request::is('administrator/kategori_agenda*') ? 'true' : 'false' }}
+        openAgenda: {{ Request::is('administrator/agenda*') || Request::is('administrator/kategori_agenda*') ? 'true' : 'false' }},
+        openTicketCounter: {{ Request::is('administrator/staff_counter*') || Request::is('administrator/ticket_counter_data*') ? 'true' : 'false' }}
     }"
     :class="mobileSidebarOpen ? 'translate-x-0' : (sidebarOpen ? 'max-lg:-translate-x-full translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20')"
     class="fixed top-0 left-0 z-50 w-64 h-screen transition-all duration-300 sidebar-gradient border-r border-white/10 overflow-y-auto no-scrollbar shadow-2xl" 
@@ -141,12 +142,31 @@
           </li>
 
           <!-- Objek Wisata (Standalone) -->
+          @if(Session::get('level') == "1" || Session::get('level') == "2" || Session::get('level') == "4")
           <li>
             <a href="{{ url('administrator/objek_wisata') }}" class="flex items-center p-2.5 text-white rounded-xl hover:bg-white/10 group {{ Request::is('administrator/objek_wisata*') ? 'bg-white/15' : '' }}">
                <i class="bi bi-geo-alt w-5 h-5 text-white flex items-center justify-center"></i>
                <span class="ms-3 text-sm font-semibold tracking-tight" x-show="sidebarOpen">Objek Wisata</span>
             </a>
           </li>
+          @endif
+
+          <!-- Ticket Counter Management Dropdown -->
+          @if(Session::get('level') == "1" || Session::get('level') == "2" || Session::get('level') == "4")
+          <li>
+            <button type="button" @click="openTicketCounter = !openTicketCounter" 
+                    class="flex items-center w-full p-2.5 text-white transition duration-75 rounded-xl group hover:bg-white/10">
+                  <i class="bi bi-qr-code-scan w-5 h-5 text-white flex items-center justify-center"></i>
+                  <span class="flex-1 ms-3 text-left text-sm font-semibold tracking-tight" x-show="sidebarOpen">Ticket Counter</span>
+                  <i class="bi bi-chevron-down w-3 h-3 transition-transform duration-300" :class="openTicketCounter ? 'rotate-180' : ''" x-show="sidebarOpen"></i>
+            </button>
+            <ul x-show="openTicketCounter && sidebarOpen" x-transition x-cloak class="py-2 space-y-1 ml-4 border-l border-white/10 pl-2">
+                  <li><a href="{{ url('administrator/ticket_counter_data') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/ticket_counter_data') ? 'text-white bg-white/5' : '' }}">Dashboard Tiket</a></li>
+                  <li><a href="{{ url('administrator/staff_counter') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/staff_counter*') ? 'text-white bg-white/5' : '' }}">Staff Counter</a></li>
+                  <li><a href="{{ url('administrator/ticket_counter_data/history') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/ticket_counter_data/history*') ? 'text-white bg-white/5' : '' }}">Riwayat Pembelian</a></li>
+            </ul>
+          </li>
+          @endif
 
           <!-- Data Blog Dropdown -->
           <li>

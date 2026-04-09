@@ -6,9 +6,9 @@
     .mobile-container { padding-bottom: 0 !important; }
 </style>
 @php
-    $orangWna = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'wna');
-    $orangLocal = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'local');
-    $orangAll = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'all');
+    $orangWna = $objek->kategoriTiket->filter(fn($k) => $k->tipe_kategori !== 'kendaraan' && $k->market_type === 'wna');
+    $orangLocal = $objek->kategoriTiket->filter(fn($k) => $k->tipe_kategori !== 'kendaraan' && $k->market_type === 'local');
+    $orangAll = $objek->kategoriTiket->filter(fn($k) => $k->tipe_kategori !== 'kendaraan' && !in_array($k->market_type, ['wna', 'local']));
     $kendaraanKategori = $objek->kategoriTiket->where('tipe_kategori', 'kendaraan');
     $hasMultipleMarkets = ($orangWna->count() > 0 && $orangLocal->count() > 0);
     $defaultMarket = $orangLocal->count() > 0 ? 'local' : ($orangWna->count() > 0 ? 'wna' : 'all');

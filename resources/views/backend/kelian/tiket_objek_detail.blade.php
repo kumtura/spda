@@ -226,7 +226,6 @@
             </button>
         </div>
     </div>
-</div>
 
 <!-- Modal Kategori -->
 <template x-teleport="body">
@@ -310,6 +309,7 @@
         </div>
     </div>
 </template>
+</div>
 
 <script>
 const kategoriData = @json($objek->kategoriTiket);

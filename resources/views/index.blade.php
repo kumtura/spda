@@ -91,5 +91,6 @@
          @click="mobileSidebarOpen = false"
          x-cloak>
     </div>
+@stack('scripts')
 </body>
 </html>

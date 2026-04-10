@@ -82,9 +82,9 @@
     
     getFormAction() {
         if (this.editMode) {
-            return '{{ url('administrator/kelian/tiket/kategori/update') }}/' + this.formId;
+            return '{{ url('administrator/objek_wisata/kategori/update') }}/' + this.formId;
         }
-        return '{{ url('administrator/kelian/tiket/kategori/store') }}';
+        return '{{ url('administrator/objek_wisata/kategori/store') }}';
     }
 }">
     <!-- Header -->
@@ -292,9 +292,9 @@
                 </h3>
 
                 @php
-                    $orangWna = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'wna');
-                    $orangLocal = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'local');
-                    $orangAll = $objek->kategoriTiket->where('tipe_kategori', 'orang')->where('market_type', 'all');
+                    $orangWna = $objek->kategoriTiket->filter(fn($k) => $k->tipe_kategori !== 'kendaraan' && $k->market_type === 'wna');
+                    $orangLocal = $objek->kategoriTiket->filter(fn($k) => $k->tipe_kategori !== 'kendaraan' && $k->market_type === 'local');
+                    $orangAll = $objek->kategoriTiket->filter(fn($k) => $k->tipe_kategori !== 'kendaraan' && !in_array($k->market_type, ['wna', 'local']));
                     $kendaraanKategori = $objek->kategoriTiket->where('tipe_kategori', 'kendaraan');
                 @endphp
 
@@ -740,7 +740,7 @@ const kategoriData = @json($objek->kategoriTiket);
 
 function deleteKategori(id) {
     if (confirm('Hapus kategori tiket ini secara permanen?')) {
-        window.location.href = '{{ url("administrator/kelian/tiket/kategori/delete") }}/' + id;
+        window.location.href = '{{ url("administrator/objek_wisata/kategori/delete") }}/' + id;
     }
 }
 </script>

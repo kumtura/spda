@@ -345,6 +345,11 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::get('/objek_wisata/delete/{id}','Administrator\ObjekWisataController@destroy');
 			Route::get('/objek_wisata/toggle/{id}','Administrator\ObjekWisataController@toggle_status');
 
+			// Kategori Tiket Management (Admin level)
+			Route::post('/objek_wisata/kategori/store', 'Administrator\ObjekWisataController@store_kategori');
+			Route::put('/objek_wisata/kategori/update/{id}', 'Administrator\ObjekWisataController@update_kategori');
+			Route::get('/objek_wisata/kategori/delete/{id}', 'Administrator\ObjekWisataController@delete_kategori');
+
 			// Ticket Counter Data (Admin view - history, stats)
 			Route::get('/ticket_counter_data', 'Administrator\StaffCounterController@ticketData');
 			Route::get('/ticket_counter_data/history', 'Administrator\StaffCounterController@ticketHistory');

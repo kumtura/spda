@@ -128,7 +128,7 @@
         <div>
             <div class="flex items-center justify-between mb-3">
                 <h4 class="text-xs font-bold text-slate-800">Kategori Harga Tiket</h4>
-                <button @click="showKategoriModal = true; editMode = false" class="h-7 px-3 bg-[#00a6eb] text-white rounded-lg text-[10px] font-bold">
+                <button @click="showKategoriModal = true; editMode = false; $nextTick(() => { resetFormForAdd() })" class="h-7 px-3 bg-[#00a6eb] text-white rounded-lg text-[10px] font-bold">
                     <i class="bi bi-plus-lg mr-1"></i>Tambah
                 </button>
             </div>
@@ -338,8 +338,28 @@ function editKategori(id) {
     document.getElementById('deskripsi-kategori').value = kategori.deskripsi || '';
     document.getElementById('market-type').value = kategori.market_type || 'all';
     
-    // Trigger Alpine.js to show modal
-    document.querySelector('[x-data]').__x.$data.showKategoriModal = true;
+    // Trigger Alpine.js to show modal in edit mode
+    const el = document.querySelector('[x-data]');
+    Alpine.$data(el).editMode = true;
+    Alpine.$data(el).showKategoriModal = true;
+}
+
+function resetFormForAdd() {
+    document.getElementById('modal-title').textContent = 'Tambah Kategori';
+    document.getElementById('submit-text').textContent = 'Simpan';
+    document.getElementById('kategori-form').action = '{{ url("administrator/kelian/tiket/kategori/store") }}';
+    document.getElementById('kategori-form').method = 'POST';
+    
+    document.getElementById('kategori-id').value = '';
+    document.getElementById('nama-kategori').value = '';
+    document.getElementById('tipe-kategori').value = 'orang';
+    document.getElementById('harga-kategori').value = '';
+    document.getElementById('deskripsi-kategori').value = '';
+    document.getElementById('market-type').value = 'all';
+    
+    // Remove method spoofing if exists
+    const methodInput = document.getElementById('kategori-form').querySelector('input[name="_method"]');
+    if (methodInput) methodInput.remove();
 }
 
 function deleteKategori(id) {
@@ -353,33 +373,5 @@ function confirmDelete() {
         window.location.href = '{{ url("administrator/kelian/tiket/objek/delete/".$objek->id_objek_wisata) }}';
     }
 }
-
-// Reset form when opening modal for add
-document.addEventListener('alpine:init', () => {
-    Alpine.data('kategoriModal', () => ({
-        showKategoriModal: false,
-        init() {
-            this.$watch('showKategoriModal', value => {
-                if (value && !this.editMode) {
-                    document.getElementById('modal-title').textContent = 'Tambah Kategori';
-                    document.getElementById('submit-text').textContent = 'Simpan';
-                    document.getElementById('kategori-form').action = '{{ url("administrator/kelian/tiket/kategori/store") }}';
-                    document.getElementById('kategori-form').method = 'POST';
-                    
-                    document.getElementById('kategori-id').value = '';
-                    document.getElementById('nama-kategori').value = '';
-                    document.getElementById('tipe-kategori').value = 'orang';
-                    document.getElementById('harga-kategori').value = '';
-                    document.getElementById('deskripsi-kategori').value = '';
-                    document.getElementById('market-type').value = 'all';
-                    
-                    // Remove method spoofing if exists
-                    const methodInput = document.getElementById('kategori-form').querySelector('input[name="_method"]');
-                    if (methodInput) methodInput.remove();
-                }
-            });
-        }
-    }));
-});
 </script>
 @endsection

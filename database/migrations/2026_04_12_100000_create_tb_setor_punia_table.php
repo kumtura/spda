@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('tb_setor_punia')) {
+            return; // Table already exists, skip
+        }
+
         Schema::create('tb_setor_punia', function (Blueprint $table) {
             $table->id('id_setor_punia');
             $table->unsignedBigInteger('id_keuangan')->nullable(); // relasi ke tb_keuangan saat diproses

@@ -16,6 +16,7 @@ use App\Models\PuniaPendatang;
 use App\Models\SaldoKas;
 use App\Models\RiwayatBagiHasil;
 use App\Services\BagiHasilService;
+use Illuminate\Support\Facades\Schema;
 
 class SetorPuniaController extends BaseController
 {
@@ -25,15 +26,25 @@ class SetorPuniaController extends BaseController
         $filterBanjar = $request->get('banjar', '');
         $filterJenis = $request->get('jenis', '');
 
-        // === SALDO KAS: Desa Adat ===
-        $saldoDesa = SaldoKas::getOrCreate(null);
+        // === SALDO KAS (defensive — tables may not exist yet) ===
+        $hasSaldoTable = Schema::hasTable('tb_saldo_kas');
+        $hasRiwayatTable = Schema::hasTable('tb_riwayat_bagi_hasil');
 
-        // === SALDO KAS: Per Banjar ===
+        if ($hasSaldoTable) {
+            $saldoDesa = SaldoKas::getOrCreate(null);
+        } else {
+            $saldoDesa = (object)['saldo_cash' => 0, 'saldo_online' => 0, 'total_masuk' => 0, 'total_keluar' => 0, 'total_saldo' => 0];
+        }
+
         $banjarSaldos = [];
         foreach ($banjarList as $b) {
-            $saldo = SaldoKas::getOrCreate($b->id_data_banjar);
-            $hutangKeDesa = BagiHasilService::getHutangBanjarKeDesa($b->id_data_banjar);
-            $hakDariBanjar = BagiHasilService::getHutangDesaKeBanjar($b->id_data_banjar);
+            if ($hasSaldoTable) {
+                $saldo = SaldoKas::getOrCreate($b->id_data_banjar);
+            } else {
+                $saldo = (object)['saldo_cash' => 0, 'saldo_online' => 0, 'total_masuk' => 0, 'total_keluar' => 0, 'total_saldo' => 0];
+            }
+            $hutangKeDesa = $hasRiwayatTable ? BagiHasilService::getHutangBanjarKeDesa($b->id_data_banjar) : 0;
+            $hakDariBanjar = $hasRiwayatTable ? BagiHasilService::getHutangDesaKeBanjar($b->id_data_banjar) : 0;
             $banjarSaldos[] = [
                 'banjar' => $b,
                 'saldo' => $saldo,
@@ -43,7 +54,9 @@ class SetorPuniaController extends BaseController
         }
 
         // Total saldo all banjars
-        $totalSaldoBanjar = SaldoKas::whereNotNull('id_data_banjar')->sum(DB::raw('saldo_cash + saldo_online'));
+        $totalSaldoBanjar = $hasSaldoTable
+            ? SaldoKas::whereNotNull('id_data_banjar')->sum(DB::raw('saldo_cash + saldo_online'))
+            : 0;
 
         // === TRACKING: Legacy cash/online totals (backward compat) ===
         $totalCashTamiu = PuniaPendatang::where('aktif', '1')

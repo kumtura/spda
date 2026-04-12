@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('tb_pengaturan_bagi_hasil')) {
+            return;
+        }
+
         Schema::create('tb_pengaturan_bagi_hasil', function (Blueprint $table) {
             $table->id('id_pengaturan');
             $table->enum('jenis_punia', ['usaha', 'tamiu']);

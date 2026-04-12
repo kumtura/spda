@@ -16,15 +16,19 @@
         
     $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
     $puniaGlobal = $settings['punia_pendatang_global'] ?? 0;
+    $fromPunia = request('from') === 'punia';
     $baseUrl = 'administrator/pendatang';
+    $backUrl = $fromPunia ? url('administrator/datapunia_pendatang') : url('administrator/pendatang');
+    $backLabel = $fromPunia ? 'Kembali ke Iuran Pendatang' : 'Kembali ke Data Pendatang';
+    $fromParam = $fromPunia ? '?from=punia' : '';
 @endphp
 
 <div class="space-y-6" x-data="{ showPaymentModal: false, paymentId: null, paymentTitle: '', paymentAmount: 0 }">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <a href="{{ url('administrator/pendatang') }}" class="text-sm text-primary-light hover:underline font-medium mb-1 inline-block">
-                <i class="bi bi-arrow-left mr-1"></i> Kembali ke Data Pendatang
+            <a href="{{ $backUrl }}" class="text-sm text-primary-light hover:underline font-medium mb-1 inline-block">
+                <i class="bi bi-arrow-left mr-1"></i> {{ $backLabel }}
             </a>
             <div class="flex items-center gap-3">
                 <div class="h-12 w-12 bg-primary-light/10 rounded-xl flex items-center justify-center text-primary-light font-bold text-lg">
@@ -39,10 +43,10 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ url($baseUrl.'/edit/'.$pendatang->id_pendatang) }}" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-50 transition-all">
+            <a href="{{ url($baseUrl.'/edit/'.$pendatang->id_pendatang.$fromParam) }}" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-50 transition-all">
                 <i class="bi bi-pencil"></i> Edit
             </a>
-            <a href="{{ url($baseUrl.'/kartu-punia/'.$pendatang->id_pendatang) }}" class="flex items-center gap-2 bg-white border border-slate-200 text-primary-light px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-50 transition-all">
+            <a href="{{ url($baseUrl.'/kartu-punia/'.$pendatang->id_pendatang.$fromParam) }}" class="flex items-center gap-2 bg-white border border-slate-200 text-primary-light px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-50 transition-all">
                 <i class="bi bi-wallet2"></i> Kartu Iuran
             </a>
             <a href="{{ url($baseUrl.'/toggle/'.$pendatang->id_pendatang) }}" onclick="return confirm('Ubah status pendatang ini?')" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-500 px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-50 transition-all">

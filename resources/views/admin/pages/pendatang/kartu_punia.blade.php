@@ -10,6 +10,11 @@
         9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
     ];
     $paidThisMonth = $payments[$currentMonth] ?? null;
+    $fromPunia = request('from') === 'punia';
+    $fromParam = $fromPunia ? '&from=punia' : '';
+    $backUrl = $fromPunia 
+        ? url('administrator/pendatang/detail/'.$pendatang->id_pendatang.'?from=punia') 
+        : url('administrator/pendatang/detail/'.$pendatang->id_pendatang);
 @endphp
 
 <div class="space-y-6" x-data="{ 
@@ -22,7 +27,7 @@
     {{-- Header --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <a href="{{ url('administrator/pendatang/detail/'.$pendatang->id_pendatang) }}" class="text-sm text-primary-light hover:underline font-medium mb-1 inline-block">
+            <a href="{{ $backUrl }}" class="text-sm text-primary-light hover:underline font-medium mb-1 inline-block">
                 <i class="bi bi-arrow-left mr-1"></i> Kembali ke Detail
             </a>
             <h1 class="text-2xl font-black text-slate-800 tracking-tight">Kartu Punia</h1>
@@ -33,14 +38,14 @@
                class="h-9 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center justify-center gap-1.5 transition-colors text-sm font-bold">
                 <i class="bi bi-printer"></i> Cetak
             </a>
-            <button @click="window.location.href = '{{ url('administrator/pendatang/kartu-punia/'.$pendatang->id_pendatang) }}?year=' + (selectedYear - 1)" 
+            <button @click="window.location.href = '{{ url('administrator/pendatang/kartu-punia/'.$pendatang->id_pendatang) }}?year=' + (selectedYear - 1) + '{{ $fromParam }}'" 
                     class="h-9 w-9 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center justify-center transition-colors">
                 <i class="bi bi-chevron-left"></i>
             </button>
             <div class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-1.5">
                 <span class="text-sm font-bold text-slate-700" x-text="selectedYear"></span>
             </div>
-            <button @click="if(selectedYear < {{ date('Y') }}) window.location.href = '{{ url('administrator/pendatang/kartu-punia/'.$pendatang->id_pendatang) }}?year=' + (selectedYear + 1)" 
+            <button @click="if(selectedYear < {{ date('Y') }}) window.location.href = '{{ url('administrator/pendatang/kartu-punia/'.$pendatang->id_pendatang) }}?year=' + (selectedYear + 1) + '{{ $fromParam }}'" 
                     :disabled="selectedYear >= {{ date('Y') }}"
                     :class="selectedYear >= {{ date('Y') }} ? 'h-9 w-9 bg-slate-50 text-slate-300 rounded-lg flex items-center justify-center cursor-not-allowed' : 'h-9 w-9 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center justify-center transition-colors'">
                 <i class="bi bi-chevron-right"></i>

@@ -4,11 +4,14 @@
 @php
     $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
     $puniaGlobal = $settings['punia_pendatang_global'] ?? 0;
+    $fromPunia = request('from') === 'punia';
+    $fromParam = $fromPunia ? '?from=punia' : '';
+    $backUrl = url('administrator/pendatang/detail/'.$pendatang->id_pendatang.$fromParam);
 @endphp
 
 <div class="space-y-6">
     <div>
-        <a href="{{ url('administrator/pendatang/detail/'.$pendatang->id_pendatang) }}" class="text-sm text-primary-light hover:underline font-medium mb-1 inline-block">
+        <a href="{{ $backUrl }}" class="text-sm text-primary-light hover:underline font-medium mb-1 inline-block">
             <i class="bi bi-arrow-left mr-1"></i> Kembali ke Detail
         </a>
         <h1 class="text-2xl font-black text-slate-800 tracking-tight">Edit Pendatang</h1>

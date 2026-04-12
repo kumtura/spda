@@ -121,7 +121,7 @@ class LandingController extends Controller
         // Calculate total pengeluaran
         $total_pengeluaran = \App\Models\AlokasiPunia::where('aktif', '1')->sum('nominal');
         
-        // Get recent pemasukan (income)
+        // Get recent pemasukan (income) - all sources combined
         $pemasukan = Danapunia::where('aktif', '1')
             ->where('status_pembayaran', 'completed')
             ->orderBy('tanggal_pembayaran', 'desc')
@@ -144,7 +144,79 @@ class LandingController extends Controller
             ];
         });
 
-        return view('front.pages.punia', compact('total_punia', 'village', 'kategori_punia', 'total_pengeluaran', 'pemasukan', 'pengeluaran', 'chart_data'));
+        // === Arus Uang: Pemasukan by category ===
+        // Punia Umum (masyarakat umum, no id_usaha)
+        $punia_umum = Danapunia::where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->whereNull('id_usaha')
+            ->orderBy('tanggal_pembayaran', 'desc')
+            ->take(20)->get();
+        $total_punia_umum = Danapunia::where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->whereNull('id_usaha')
+            ->sum('jumlah_dana');
+
+        // Punia Unit Usaha
+        $punia_usaha = Danapunia::where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->whereNotNull('id_usaha')
+            ->orderBy('tanggal_pembayaran', 'desc')
+            ->take(20)->get();
+        $total_punia_usaha = Danapunia::where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->whereNotNull('id_usaha')
+            ->sum('jumlah_dana');
+
+        // Punia Krama Tamiu
+        $punia_pendatang = \App\Models\PuniaPendatang::with('pendatang')
+            ->where('aktif', '1')
+            ->where('status_pembayaran', 'lunas')
+            ->orderBy('tanggal_bayar', 'desc')
+            ->take(20)->get();
+        $total_punia_pendatang = \App\Models\PuniaPendatang::where('aktif', '1')
+            ->where('status_pembayaran', 'lunas')
+            ->sum('nominal');
+
+        // Punia Pura
+        $punia_pura = \App\Models\PuniaPura::with('pura')
+            ->where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->orderBy('tanggal_pembayaran', 'desc')
+            ->take(20)->get();
+        $total_punia_pura = \App\Models\PuniaPura::where('aktif', '1')
+            ->where('status_pembayaran', 'completed')
+            ->sum('nominal');
+
+        // === Arus Uang: Pengeluaran by category ===
+        // Alokasi Umum
+        $alokasi_umum = \App\Models\AlokasiPunia::with('kategori')
+            ->where('aktif', '1')
+            ->orderBy('tanggal_alokasi', 'desc')
+            ->take(20)->get();
+
+        // Kas Setor/Transfer (setor punia)
+        $kas_setor = \App\Models\SetorPunia::with(['banjar'])
+            ->where('aktif', '1')
+            ->where('status', 'diterima')
+            ->orderBy('tanggal_setor', 'desc')
+            ->take(20)->get();
+        $total_kas_setor = \App\Models\SetorPunia::where('aktif', '1')
+            ->where('status', 'diterima')
+            ->sum('nominal');
+
+        // Grand total pemasukan (all sources)
+        $grand_total_pemasukan = $total_punia + $total_punia_pendatang + $total_punia_pura;
+
+        return view('front.pages.punia', compact(
+            'total_punia', 'village', 'kategori_punia', 'total_pengeluaran',
+            'pemasukan', 'pengeluaran', 'chart_data',
+            'punia_umum', 'total_punia_umum',
+            'punia_usaha', 'total_punia_usaha',
+            'punia_pendatang', 'total_punia_pendatang',
+            'punia_pura', 'total_punia_pura',
+            'alokasi_umum', 'kas_setor', 'total_kas_setor',
+            'grand_total_pemasukan'
+        ));
     }
 
     public function punia_pembayaran()

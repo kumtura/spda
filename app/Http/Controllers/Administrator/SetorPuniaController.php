@@ -150,7 +150,7 @@ class SetorPuniaController extends BaseController
             'nama_bank' => $request->nama_bank,
             'no_rekening' => $request->no_rekening,
             'status' => 'pending',
-            'id_user' => Session::get('id'),
+            'id_user' => Auth::id(),
             'aktif' => 1,
         ];
 
@@ -184,7 +184,7 @@ class SetorPuniaController extends BaseController
         ]);
 
         $setor->status = $request->action;
-        $setor->verified_by = Session::get('id');
+        $setor->verified_by = Auth::id();
         $setor->verified_at = now();
         $setor->catatan_verifikasi = $request->catatan;
 

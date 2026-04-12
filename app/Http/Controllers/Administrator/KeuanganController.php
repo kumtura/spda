@@ -197,7 +197,7 @@ class KeuanganController extends BaseController
             'no_rekening' => $request->no_rekening,
             'nama_bank' => $request->nama_bank,
             'tanggal' => $request->tanggal,
-            'id_user' => Session::get('id'),
+            'id_user' => Auth::id(),
             'aktif' => 1,
         ];
 

@@ -150,84 +150,329 @@
     </div>
 
     <!-- Pemasukan List -->
-    <div x-show="activeTab === 'pemasukan'" x-transition class="space-y-2.5">
-        <h4 class="text-sm font-bold text-slate-800">Riwayat Pemasukan</h4>
+    <div x-show="activeTab === 'pemasukan'" x-transition class="space-y-4" x-data="{ subTab: 'semua' }">
+        <h4 class="text-sm font-bold text-slate-800">Arus Uang Masuk</h4>
         
-        @forelse($pemasukan as $item)
-        <div class="bg-white rounded-xl border border-slate-100 p-3.5 hover:border-slate-200 transition-colors">
-            <div class="flex items-start justify-between gap-3">
-                <div class="flex items-start gap-3 flex-1 min-w-0">
-                    <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
-                        @if($item->id_usaha)
-                            <i class="bi bi-shop text-slate-400 text-sm"></i>
-                        @else
-                            <i class="bi bi-person text-slate-400 text-sm"></i>
-                        @endif
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->nama_donatur ?: 'Anonim' }}</p>
-                        <p class="text-[10px] text-slate-400">{{ \Carbon\Carbon::parse($item->tanggal_pembayaran)->translatedFormat('d M Y') }}</p>
-                    </div>
-                </div>
-                <div class="text-right shrink-0">
-                    <p class="text-xs font-bold text-emerald-600">+Rp {{ number_format($item->jumlah_dana, 0, ',', '.') }}</p>
-                </div>
+        <!-- Sub-category Pills -->
+        <div class="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-2">
+            <button @click="subTab = 'semua'" 
+                    :class="subTab === 'semua' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
+                    class="shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all">
+                Semua
+            </button>
+            <button @click="subTab = 'umum'" 
+                    :class="subTab === 'umum' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
+                    class="shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all">
+                Punia Umum
+            </button>
+            <button @click="subTab = 'usaha'" 
+                    :class="subTab === 'usaha' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
+                    class="shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all">
+                Unit Usaha
+            </button>
+            <button @click="subTab = 'pendatang'" 
+                    :class="subTab === 'pendatang' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
+                    class="shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all">
+                Krama Tamiu
+            </button>
+            <button @click="subTab = 'pura'" 
+                    :class="subTab === 'pura' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
+                    class="shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all">
+                Punia Pura
+            </button>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 gap-2">
+            <div x-show="subTab === 'semua' || subTab === 'umum'" class="bg-blue-50 border border-blue-100 rounded-xl p-3">
+                <p class="text-[9px] text-blue-400 uppercase font-bold">Punia Umum</p>
+                <p class="text-sm font-black text-blue-700">Rp {{ number_format($total_punia_umum, 0, ',', '.') }}</p>
+            </div>
+            <div x-show="subTab === 'semua' || subTab === 'usaha'" class="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+                <p class="text-[9px] text-emerald-400 uppercase font-bold">Unit Usaha</p>
+                <p class="text-sm font-black text-emerald-700">Rp {{ number_format($total_punia_usaha, 0, ',', '.') }}</p>
+            </div>
+            <div x-show="subTab === 'semua' || subTab === 'pendatang'" class="bg-amber-50 border border-amber-100 rounded-xl p-3">
+                <p class="text-[9px] text-amber-400 uppercase font-bold">Krama Tamiu</p>
+                <p class="text-sm font-black text-amber-700">Rp {{ number_format($total_punia_pendatang, 0, ',', '.') }}</p>
+            </div>
+            <div x-show="subTab === 'semua' || subTab === 'pura'" class="bg-purple-50 border border-purple-100 rounded-xl p-3">
+                <p class="text-[9px] text-purple-400 uppercase font-bold">Punia Pura</p>
+                <p class="text-sm font-black text-purple-700">Rp {{ number_format($total_punia_pura, 0, ',', '.') }}</p>
             </div>
         </div>
-        @empty
-        <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-6 text-center">
-            <p class="text-xs text-slate-400">Belum ada pemasukan tercatat</p>
+
+        <!-- Semua (All) -->
+        <div x-show="subTab === 'semua'" class="space-y-2.5">
+            @forelse($pemasukan as $item)
+            <div class="bg-white rounded-xl border border-slate-100 p-3.5">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                        <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
+                            @if($item->id_usaha)
+                                <i class="bi bi-shop text-slate-400 text-sm"></i>
+                            @else
+                                <i class="bi bi-person text-slate-400 text-sm"></i>
+                            @endif
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->nama_donatur ?: 'Anonim' }}</p>
+                            <div class="flex items-center gap-2 text-[9px] text-slate-400">
+                                <span>{{ \Carbon\Carbon::parse($item->tanggal_pembayaran)->translatedFormat('d M Y') }}</span>
+                                @if($item->metode_pembayaran ?? $item->metode)
+                                <span>&middot; {{ strtoupper($item->metode_pembayaran ?? $item->metode) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold text-emerald-600 shrink-0">+Rp {{ number_format($item->jumlah_dana, 0, ',', '.') }}</p>
+                </div>
+            </div>
+            @empty
+            <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-6 text-center">
+                <p class="text-xs text-slate-400">Belum ada pemasukan tercatat</p>
+            </div>
+            @endforelse
         </div>
-        @endforelse
+
+        <!-- Punia Umum -->
+        <div x-show="subTab === 'umum'" class="space-y-2.5">
+            @forelse($punia_umum as $item)
+            <div class="bg-white rounded-xl border border-slate-100 p-3.5">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                        <div class="h-9 w-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 border border-blue-100">
+                            <i class="bi bi-person text-blue-400 text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->nama_donatur ?: 'Anonim' }}</p>
+                            <div class="flex items-center gap-2 text-[9px] text-slate-400">
+                                <span>{{ \Carbon\Carbon::parse($item->tanggal_pembayaran)->translatedFormat('d M Y') }}</span>
+                                @if($item->metode_pembayaran ?? $item->metode)
+                                <span>&middot; {{ strtoupper($item->metode_pembayaran ?? $item->metode) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold text-emerald-600 shrink-0">+Rp {{ number_format($item->jumlah_dana, 0, ',', '.') }}</p>
+                </div>
+            </div>
+            @empty
+            <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-4 text-center">
+                <p class="text-xs text-slate-400">Belum ada punia umum</p>
+            </div>
+            @endforelse
+        </div>
+
+        <!-- Punia Unit Usaha -->
+        <div x-show="subTab === 'usaha'" class="space-y-2.5">
+            @forelse($punia_usaha as $item)
+            <div class="bg-white rounded-xl border border-slate-100 p-3.5">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                        <div class="h-9 w-9 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0 border border-emerald-100">
+                            <i class="bi bi-shop text-emerald-400 text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->nama_donatur ?: 'Unit Usaha' }}</p>
+                            <div class="flex items-center gap-2 text-[9px] text-slate-400">
+                                <span>{{ \Carbon\Carbon::parse($item->tanggal_pembayaran)->translatedFormat('d M Y') }}</span>
+                                @if($item->metode_pembayaran ?? $item->metode)
+                                <span>&middot; {{ strtoupper($item->metode_pembayaran ?? $item->metode) }}</span>
+                                @endif
+                                @if($item->bulan_punia)
+                                <span>&middot; Bln {{ $item->bulan_punia }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold text-emerald-600 shrink-0">+Rp {{ number_format($item->jumlah_dana, 0, ',', '.') }}</p>
+                </div>
+            </div>
+            @empty
+            <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-4 text-center">
+                <p class="text-xs text-slate-400">Belum ada punia unit usaha</p>
+            </div>
+            @endforelse
+        </div>
+
+        <!-- Punia Krama Tamiu -->
+        <div x-show="subTab === 'pendatang'" class="space-y-2.5">
+            @forelse($punia_pendatang as $item)
+            <div class="bg-white rounded-xl border border-slate-100 p-3.5">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                        <div class="h-9 w-9 bg-amber-50 rounded-lg flex items-center justify-center shrink-0 border border-amber-100">
+                            <i class="bi bi-person-badge text-amber-400 text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->pendatang->nama ?? 'Pendatang' }}</p>
+                            <div class="flex items-center gap-2 text-[9px] text-slate-400">
+                                <span>{{ $item->tanggal_bayar ? $item->tanggal_bayar->translatedFormat('d M Y') : '-' }}</span>
+                                @if($item->metode_pembayaran)
+                                <span>&middot; {{ strtoupper($item->metode_pembayaran) }}</span>
+                                @endif
+                                <span>&middot; {{ ucfirst($item->jenis_punia) }}</span>
+                                @if($item->bulan_tahun)
+                                <span>&middot; {{ $item->bulan_tahun }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold text-emerald-600 shrink-0">+Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
+                </div>
+            </div>
+            @empty
+            <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-4 text-center">
+                <p class="text-xs text-slate-400">Belum ada punia krama tamiu</p>
+            </div>
+            @endforelse
+        </div>
+
+        <!-- Punia Pura -->
+        <div x-show="subTab === 'pura'" class="space-y-2.5">
+            @forelse($punia_pura as $item)
+            <div class="bg-white rounded-xl border border-slate-100 p-3.5">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                        <div class="h-9 w-9 bg-purple-50 rounded-lg flex items-center justify-center shrink-0 border border-purple-100">
+                            <i class="bi bi-building text-purple-400 text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->nama_donatur ?: 'Anonim' }}</p>
+                            <div class="flex items-center gap-2 text-[9px] text-slate-400">
+                                <span>{{ $item->tanggal_pembayaran ? \Carbon\Carbon::parse($item->tanggal_pembayaran)->translatedFormat('d M Y') : '-' }}</span>
+                                @if($item->metode_pembayaran)
+                                <span>&middot; {{ strtoupper($item->metode_pembayaran) }}</span>
+                                @endif
+                                @if($item->pura)
+                                <span>&middot; {{ $item->pura->nama_pura }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold text-emerald-600 shrink-0">+Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
+                </div>
+            </div>
+            @empty
+            <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-4 text-center">
+                <p class="text-xs text-slate-400">Belum ada punia pura</p>
+            </div>
+            @endforelse
+        </div>
     </div>
 
     <!-- Pengeluaran List -->
-    <div x-show="activeTab === 'pengeluaran'" x-transition class="space-y-4" x-data="{ selectedKategori: 'all' }">
-        <h4 class="text-sm font-bold text-slate-800">Riwayat Pengeluaran</h4>
+    <div x-show="activeTab === 'pengeluaran'" x-transition class="space-y-4" x-data="{ subTabOut: 'semua' }">
+        <h4 class="text-sm font-bold text-slate-800">Arus Uang Keluar</h4>
         
-        <!-- Category Filter Pills -->
+        <!-- Sub-category Pills -->
         <div class="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-2">
-            <button @click="selectedKategori = 'all'" 
-                    :class="selectedKategori === 'all' ? 'bg-[#00a6eb] text-white border-[#00a6eb] shadow-md shadow-blue-200/50' : 'bg-white text-slate-500 border-slate-200 hover:border-[#00a6eb]/30'"
-                    class="shrink-0 px-4 py-2 rounded-full text-[10px] font-bold border transition-all active:scale-95">
+            <button @click="subTabOut = 'semua'" 
+                    :class="subTabOut === 'semua' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
+                    class="shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all">
                 Semua
             </button>
-            @foreach($kategori_punia as $kat)
-            <button @click="selectedKategori = '{{ $kat->id_kategori_punia }}'" 
-                    :class="selectedKategori === '{{ $kat->id_kategori_punia }}' ? 'bg-[#00a6eb] text-white border-[#00a6eb] shadow-md shadow-blue-200/50' : 'bg-white text-slate-500 border-slate-200 hover:border-[#00a6eb]/30'"
-                    class="shrink-0 px-4 py-2 rounded-full text-[10px] font-bold border transition-all active:scale-95">
-                {{ $kat->nama_kategori }}
+            <button @click="subTabOut = 'alokasi'" 
+                    :class="subTabOut === 'alokasi' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
+                    class="shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all">
+                Alokasi Umum
             </button>
-            @endforeach
+            <button @click="subTabOut = 'kas'" 
+                    :class="subTabOut === 'kas' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
+                    class="shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all">
+                Kas Setor/Transfer
+            </button>
         </div>
 
-        <!-- Pengeluaran Items -->
-        <div class="space-y-2.5">
-            @forelse($pengeluaran as $item)
-            <a href="{{ route('public.punia.alokasi.detail', $item->id_alokasi_punia) }}" 
-               x-show="selectedKategori === 'all' || selectedKategori === '{{ $item->id_kategori_punia }}'"
-               x-transition
-               class="block bg-white rounded-xl border border-slate-100 p-3.5 hover:border-[#00a6eb]/30 transition-all group">
+        <!-- Summary -->
+        <div class="grid grid-cols-2 gap-2">
+            <div class="bg-rose-50 border border-rose-100 rounded-xl p-3">
+                <p class="text-[9px] text-rose-400 uppercase font-bold">Alokasi Umum</p>
+                <p class="text-sm font-black text-rose-700">Rp {{ number_format($total_pengeluaran, 0, ',', '.') }}</p>
+            </div>
+            <div class="bg-orange-50 border border-orange-100 rounded-xl p-3">
+                <p class="text-[9px] text-orange-400 uppercase font-bold">Kas Setor</p>
+                <p class="text-sm font-black text-orange-700">Rp {{ number_format($total_kas_setor, 0, ',', '.') }}</p>
+            </div>
+        </div>
+
+        <!-- Semua Pengeluaran -->
+        <div x-show="subTabOut === 'semua' || subTabOut === 'alokasi'" class="space-y-2.5" x-data="{ selectedKategori: 'all' }">
+            <p x-show="subTabOut === 'semua'" class="text-[10px] font-bold text-slate-500 uppercase">Alokasi Dana</p>
+            
+            <!-- Category Filter Pills (for alokasi) -->
+            <div class="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-2">
+                <button @click="selectedKategori = 'all'" 
+                        :class="selectedKategori === 'all' ? 'bg-rose-500 text-white border-rose-500' : 'bg-white text-slate-500 border-slate-200'"
+                        class="shrink-0 px-3 py-1.5 rounded-full text-[9px] font-bold border transition-all">
+                    Semua
+                </button>
+                @foreach($kategori_punia as $kat)
+                <button @click="selectedKategori = '{{ $kat->id_kategori_punia }}'" 
+                        :class="selectedKategori === '{{ $kat->id_kategori_punia }}' ? 'bg-rose-500 text-white border-rose-500' : 'bg-white text-slate-500 border-slate-200'"
+                        class="shrink-0 px-3 py-1.5 rounded-full text-[9px] font-bold border transition-all">
+                    {{ $kat->nama_kategori }}
+                </button>
+                @endforeach
+            </div>
+
+            @forelse($alokasi_umum as $item)
+            <div x-show="selectedKategori === 'all' || selectedKategori === '{{ $item->id_kategori_punia }}'"
+                 class="bg-white rounded-xl border border-slate-100 p-3.5 hover:border-[#00a6eb]/30 transition-all">
                 <div class="flex items-start gap-3">
-                    <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
-                        <i class="bi bi-box-arrow-up-right text-slate-400 text-sm"></i>
+                    <div class="h-9 w-9 bg-rose-50 rounded-lg flex items-center justify-center shrink-0 border border-rose-100">
+                        <i class="bi bi-box-arrow-up-right text-rose-400 text-sm"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs font-bold text-slate-800 mb-1 line-clamp-1 group-hover:text-[#00a6eb] transition-colors">{{ $item->judul }}</p>
-                        <div class="flex items-center gap-1.5 mb-1.5">
+                        <p class="text-xs font-bold text-slate-800 mb-0.5 line-clamp-1">{{ $item->judul }}</p>
+                        <div class="flex items-center gap-1.5 mb-0.5">
                             <span class="text-[8px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">{{ $item->kategori->nama_kategori ?? '-' }}</span>
-                            <span class="text-[10px] text-slate-400">{{ \Carbon\Carbon::parse($item->tanggal_alokasi)->translatedFormat('d M Y') }}</sdaniv>
+                            <span class="text-[9px] text-slate-400">{{ \Carbon\Carbon::parse($item->tanggal_alokasi)->translatedFormat('d M Y') }}</span>
                         </div>
                         <p class="text-xs font-bold text-rose-600">-Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
                     </div>
-                    <div class="shrink-0 self-center">
-                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-colors text-sm"></i>
-                    </div>
                 </div>
-            </a>
+            </div>
             @empty
-            <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-6 text-center">
-                <p class="text-xs text-slate-400">Belum ada pengeluaran tercatat</p>
+            <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-4 text-center">
+                <p class="text-xs text-slate-400">Belum ada alokasi tercatat</p>
+            </div>
+            @endforelse
+        </div>
+
+        <!-- Kas Setor/Transfer -->
+        <div x-show="subTabOut === 'semua' || subTabOut === 'kas'" class="space-y-2.5">
+            <p x-show="subTabOut === 'semua'" class="text-[10px] font-bold text-slate-500 uppercase mt-4">Kas Setor / Transfer</p>
+            
+            @forelse($kas_setor as $item)
+            <div class="bg-white rounded-xl border border-slate-100 p-3.5">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                        <div class="h-9 w-9 bg-orange-50 rounded-lg flex items-center justify-center shrink-0 border border-orange-100">
+                            <i class="bi bi-arrow-left-right text-orange-400 text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-800 truncate mb-0.5">
+                                {{ ucfirst(str_replace('_', ' ', $item->jenis_alur ?? 'Transfer')) }}
+                            </p>
+                            <div class="flex items-center gap-2 text-[9px] text-slate-400">
+                                <span>{{ $item->tanggal_setor ? $item->tanggal_setor->translatedFormat('d M Y') : '-' }}</span>
+                                @if($item->banjar)
+                                <span>&middot; {{ $item->banjar->nama_banjar }}</span>
+                                @endif
+                                @if($item->sumber_punia)
+                                <span>&middot; {{ ucfirst(str_replace('_', ' ', $item->sumber_punia)) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold text-rose-600 shrink-0">-Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
+                </div>
+            </div>
+            @empty
+            <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-4 text-center">
+                <p class="text-xs text-slate-400">Belum ada kas setor tercatat</p>
             </div>
             @endforelse
         </div>
@@ -280,24 +525,6 @@
                             <p class="text-[10px] text-slate-500 leading-relaxed">Untuk krama desa dan masyarakat umum yang ingin berkontribusi</p>
                             <div class="mt-3 flex items-center gap-2 text-slate-400 group-hover:text-[#00a6eb]">
                                 <span class="text-[9px] font-bold uppercase tracking-wider transition-colors">Bayar Sekarang</span>
-                                <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Unit Usaha Option -->
-                <a href="{{ route('login') }}" 
-                   class="block bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
-                    <div class="flex items-start gap-4">
-                        <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
-                            <i class="bi bi-shop text-slate-400 text-xl group-hover:text-white"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-sm font-black text-slate-800 mb-1">Unit Usaha / Investor</h4>
-                            <p class="text-[10px] text-slate-500 leading-relaxed">Gunakan akun bisnis Anda untuk penyaluran dana punia resmi</p>
-                            <div class="mt-3 flex items-center gap-2 text-slate-400 group-hover:text-[#00a6eb]">
-                                <span class="text-[9px] font-bold uppercase tracking-wider transition-colors">Login Terlebih Dahulu</span>
                                 <i class="bi bi-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                             </div>
                         </div>

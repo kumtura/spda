@@ -258,14 +258,23 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             
             // Pendatang/Krama Tamiu
             Route::get('/penagih/pendatang', 'Administrator\PenagihController@pendatang');
+            Route::get('/penagih/pendatang/create', 'Administrator\PenagihController@pendatangCreate');
+            Route::post('/penagih/pendatang/store', 'Administrator\PenagihController@pendatangStore');
             Route::get('/penagih/pendatang/detail/{id}', 'Administrator\PenagihController@pendatangDetail');
+            Route::get('/penagih/pendatang/edit/{id}', 'Administrator\PenagihController@pendatangEdit');
+            Route::put('/penagih/pendatang/update/{id}', 'Administrator\PenagihController@pendatangUpdate');
+            Route::get('/penagih/pendatang/delete/{id}', 'Administrator\PenagihController@pendatangDelete');
+            Route::get('/penagih/pendatang/toggle/{id}', 'Administrator\PenagihController@pendatangToggle');
+            Route::get('/penagih/pendatang/kartu-punia/print/{id}', 'Administrator\PenagihController@printKartuPunia');
             Route::get('/penagih/pendatang/kartu-punia/{id}', 'Administrator\PenagihController@kartuPunia');
             Route::post('/penagih/pendatang/kartu-punia/bayar', 'Administrator\PenagihController@bayarKartuPunia');
+            Route::post('/penagih/pendatang/kartu-punia/hapus', 'Administrator\PenagihController@hapusKartuPunia');
             Route::post('/penagih/pendatang/punia/bayar/{id}', 'Administrator\PenagihController@bayarPuniaPendatang');
             Route::get('/penagih/pendatang/generate-tagihan/{id}', 'Administrator\PenagihController@generateTagihan');
             
             // Unit Usaha
             Route::get('/penagih/usaha', 'Administrator\PenagihController@usaha');
+            Route::post('/penagih/usaha/store', 'Administrator\PenagihController@usahaStore');
             Route::get('/penagih/usaha/detail/{id}', 'Administrator\PenagihController@usahaDetail');
             Route::post('/penagih/usaha/bayar-manual', 'Administrator\PenagihController@usahaBayarManual');
         });

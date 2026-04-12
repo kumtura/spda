@@ -306,6 +306,12 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 
 			Route::get('download_pdf_danapunia','Administrator\DanaPuniaController@download_pdf_danapunia');
 			
+			// Setor & Tarik Punia Routes
+            Route::get('/setor_punia', 'Administrator\SetorPuniaController@index');
+            Route::post('/setor_punia/store', 'Administrator\SetorPuniaController@store');
+            Route::post('/setor_punia/verify/{id}', 'Administrator\SetorPuniaController@verify');
+            Route::get('/setor_punia/hapus/{id}', 'Administrator\SetorPuniaController@destroy');
+
 			// Kategori Punia Routes
 			Route::get('/kategori_punia','Administrator\KategoriPuniaController@index');
 			Route::post('/kategori_punia/post','Administrator\KategoriPuniaController@store');

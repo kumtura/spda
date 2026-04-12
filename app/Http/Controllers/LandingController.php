@@ -156,26 +156,40 @@ class LandingController extends Controller
             ->whereNull('id_usaha')
             ->sum('jumlah_dana');
 
-        // Punia Unit Usaha
+        // Punia Unit Usaha (with usaha->detail for banjar grouping)
         $punia_usaha = Danapunia::where('aktif', '1')
             ->where('status_pembayaran', 'completed')
             ->whereNotNull('id_usaha')
+            ->with(['usaha.detail'])
             ->orderBy('tanggal_pembayaran', 'desc')
-            ->take(20)->get();
+            ->take(50)->get();
         $total_punia_usaha = Danapunia::where('aktif', '1')
             ->where('status_pembayaran', 'completed')
             ->whereNotNull('id_usaha')
             ->sum('jumlah_dana');
 
-        // Punia Krama Tamiu
-        $punia_pendatang = \App\Models\PuniaPendatang::with('pendatang')
+        // Group usaha by banjar
+        $punia_usaha_by_banjar = $punia_usaha->groupBy(function($item) {
+            return $item->usaha->detail->id_banjar ?? 0;
+        });
+
+        // Punia Krama Tamiu (with pendatang.banjar for grouping)
+        $punia_pendatang = \App\Models\PuniaPendatang::with(['pendatang.banjar'])
             ->where('aktif', '1')
             ->where('status_pembayaran', 'lunas')
             ->orderBy('tanggal_bayar', 'desc')
-            ->take(20)->get();
+            ->take(50)->get();
         $total_punia_pendatang = \App\Models\PuniaPendatang::where('aktif', '1')
             ->where('status_pembayaran', 'lunas')
             ->sum('nominal');
+
+        // Group pendatang by banjar
+        $punia_pendatang_by_banjar = $punia_pendatang->groupBy(function($item) {
+            return $item->pendatang->id_data_banjar ?? 0;
+        });
+
+        // Get banjar list for display names
+        $banjar_list = \App\Models\Banjar::where('aktif', '1')->pluck('nama_banjar', 'id_data_banjar');
 
         // Punia Pura
         $punia_pura = \App\Models\PuniaPura::with('pura')
@@ -211,11 +225,11 @@ class LandingController extends Controller
             'total_punia', 'village', 'kategori_punia', 'total_pengeluaran',
             'pemasukan', 'pengeluaran', 'chart_data',
             'punia_umum', 'total_punia_umum',
-            'punia_usaha', 'total_punia_usaha',
-            'punia_pendatang', 'total_punia_pendatang',
+            'punia_usaha', 'total_punia_usaha', 'punia_usaha_by_banjar',
+            'punia_pendatang', 'total_punia_pendatang', 'punia_pendatang_by_banjar',
             'punia_pura', 'total_punia_pura',
             'alokasi_umum', 'kas_setor', 'total_kas_setor',
-            'grand_total_pemasukan'
+            'grand_total_pemasukan', 'banjar_list'
         ));
     }
 

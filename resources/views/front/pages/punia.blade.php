@@ -184,21 +184,21 @@
 
         <!-- Summary Cards -->
         <div class="grid grid-cols-2 gap-2">
-            <div x-show="subTab === 'semua' || subTab === 'umum'" class="bg-blue-50 border border-blue-100 rounded-xl p-3">
-                <p class="text-[9px] text-blue-400 uppercase font-bold">Punia Umum</p>
-                <p class="text-sm font-black text-blue-700">Rp {{ number_format($total_punia_umum, 0, ',', '.') }}</p>
+            <div x-show="subTab === 'semua' || subTab === 'umum'" class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <p class="text-[9px] text-slate-400 uppercase font-bold">Punia Umum</p>
+                <p class="text-sm font-black text-slate-800">Rp {{ number_format($total_punia_umum, 0, ',', '.') }}</p>
             </div>
-            <div x-show="subTab === 'semua' || subTab === 'usaha'" class="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
-                <p class="text-[9px] text-emerald-400 uppercase font-bold">Unit Usaha</p>
-                <p class="text-sm font-black text-emerald-700">Rp {{ number_format($total_punia_usaha, 0, ',', '.') }}</p>
+            <div x-show="subTab === 'semua' || subTab === 'usaha'" class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <p class="text-[9px] text-slate-400 uppercase font-bold">Unit Usaha</p>
+                <p class="text-sm font-black text-slate-800">Rp {{ number_format($total_punia_usaha, 0, ',', '.') }}</p>
             </div>
-            <div x-show="subTab === 'semua' || subTab === 'pendatang'" class="bg-amber-50 border border-amber-100 rounded-xl p-3">
-                <p class="text-[9px] text-amber-400 uppercase font-bold">Krama Tamiu</p>
-                <p class="text-sm font-black text-amber-700">Rp {{ number_format($total_punia_pendatang, 0, ',', '.') }}</p>
+            <div x-show="subTab === 'semua' || subTab === 'pendatang'" class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <p class="text-[9px] text-slate-400 uppercase font-bold">Krama Tamiu</p>
+                <p class="text-sm font-black text-slate-800">Rp {{ number_format($total_punia_pendatang, 0, ',', '.') }}</p>
             </div>
-            <div x-show="subTab === 'semua' || subTab === 'pura'" class="bg-purple-50 border border-purple-100 rounded-xl p-3">
-                <p class="text-[9px] text-purple-400 uppercase font-bold">Punia Pura</p>
-                <p class="text-sm font-black text-purple-700">Rp {{ number_format($total_punia_pura, 0, ',', '.') }}</p>
+            <div x-show="subTab === 'semua' || subTab === 'pura'" class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <p class="text-[9px] text-slate-400 uppercase font-bold">Punia Pura</p>
+                <p class="text-sm font-black text-slate-800">Rp {{ number_format($total_punia_pura, 0, ',', '.') }}</p>
             </div>
         </div>
 
@@ -241,8 +241,8 @@
             <div class="bg-white rounded-xl border border-slate-100 p-3.5">
                 <div class="flex items-start justify-between gap-3">
                     <div class="flex items-start gap-3 flex-1 min-w-0">
-                        <div class="h-9 w-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 border border-blue-100">
-                            <i class="bi bi-person text-blue-400 text-sm"></i>
+                        <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
+                            <i class="bi bi-person text-slate-400 text-sm"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->nama_donatur ?: 'Anonim' }}</p>
@@ -264,29 +264,38 @@
             @endforelse
         </div>
 
-        <!-- Punia Unit Usaha -->
-        <div x-show="subTab === 'usaha'" class="space-y-2.5">
-            @forelse($punia_usaha as $item)
-            <div class="bg-white rounded-xl border border-slate-100 p-3.5">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="flex items-start gap-3 flex-1 min-w-0">
-                        <div class="h-9 w-9 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0 border border-emerald-100">
-                            <i class="bi bi-shop text-emerald-400 text-sm"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->nama_donatur ?: 'Unit Usaha' }}</p>
-                            <div class="flex items-center gap-2 text-[9px] text-slate-400">
-                                <span>{{ \Carbon\Carbon::parse($item->tanggal_pembayaran)->translatedFormat('d M Y') }}</span>
-                                @if($item->metode_pembayaran ?? $item->metode)
-                                <span>&middot; {{ strtoupper($item->metode_pembayaran ?? $item->metode) }}</span>
-                                @endif
-                                @if($item->bulan_punia)
-                                <span>&middot; Bln {{ $item->bulan_punia }}</span>
-                                @endif
+        <!-- Punia Unit Usaha (grouped by banjar) -->
+        <div x-show="subTab === 'usaha'" class="space-y-4">
+            @forelse($punia_usaha_by_banjar as $banjarId => $items)
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">
+                    <i class="bi bi-geo-alt text-slate-400 mr-1"></i>{{ $banjar_list[$banjarId] ?? 'Banjar Tidak Diketahui' }}
+                </p>
+                <div class="space-y-2">
+                @foreach($items as $item)
+                <div class="bg-white rounded-xl border border-slate-100 p-3.5">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-start gap-3 flex-1 min-w-0">
+                            <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
+                                <i class="bi bi-shop text-slate-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->nama_donatur ?: 'Unit Usaha' }}</p>
+                                <div class="flex items-center gap-2 text-[9px] text-slate-400">
+                                    <span>{{ \Carbon\Carbon::parse($item->tanggal_pembayaran)->translatedFormat('d M Y') }}</span>
+                                    @if($item->metode_pembayaran ?? $item->metode)
+                                    <span>&middot; {{ strtoupper($item->metode_pembayaran ?? $item->metode) }}</span>
+                                    @endif
+                                    @if($item->bulan_punia)
+                                    <span>&middot; Bln {{ $item->bulan_punia }}</span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
+                        <p class="text-xs font-bold text-emerald-600 shrink-0">+Rp {{ number_format($item->jumlah_dana, 0, ',', '.') }}</p>
                     </div>
-                    <p class="text-xs font-bold text-emerald-600 shrink-0">+Rp {{ number_format($item->jumlah_dana, 0, ',', '.') }}</p>
+                </div>
+                @endforeach
                 </div>
             </div>
             @empty
@@ -296,30 +305,39 @@
             @endforelse
         </div>
 
-        <!-- Punia Krama Tamiu -->
-        <div x-show="subTab === 'pendatang'" class="space-y-2.5">
-            @forelse($punia_pendatang as $item)
-            <div class="bg-white rounded-xl border border-slate-100 p-3.5">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="flex items-start gap-3 flex-1 min-w-0">
-                        <div class="h-9 w-9 bg-amber-50 rounded-lg flex items-center justify-center shrink-0 border border-amber-100">
-                            <i class="bi bi-person-badge text-amber-400 text-sm"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->pendatang->nama ?? 'Pendatang' }}</p>
-                            <div class="flex items-center gap-2 text-[9px] text-slate-400">
-                                <span>{{ $item->tanggal_bayar ? $item->tanggal_bayar->translatedFormat('d M Y') : '-' }}</span>
-                                @if($item->metode_pembayaran)
-                                <span>&middot; {{ strtoupper($item->metode_pembayaran) }}</span>
-                                @endif
-                                <span>&middot; {{ ucfirst($item->jenis_punia) }}</span>
-                                @if($item->bulan_tahun)
-                                <span>&middot; {{ $item->bulan_tahun }}</span>
-                                @endif
+        <!-- Punia Krama Tamiu (grouped by banjar) -->
+        <div x-show="subTab === 'pendatang'" class="space-y-4">
+            @forelse($punia_pendatang_by_banjar as $banjarId => $items)
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">
+                    <i class="bi bi-geo-alt text-slate-400 mr-1"></i>{{ $banjar_list[$banjarId] ?? 'Banjar Tidak Diketahui' }}
+                </p>
+                <div class="space-y-2">
+                @foreach($items as $item)
+                <div class="bg-white rounded-xl border border-slate-100 p-3.5">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-start gap-3 flex-1 min-w-0">
+                            <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
+                                <i class="bi bi-person-badge text-slate-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->pendatang->nama ?? 'Pendatang' }}</p>
+                                <div class="flex items-center gap-2 text-[9px] text-slate-400">
+                                    <span>{{ $item->tanggal_bayar ? $item->tanggal_bayar->translatedFormat('d M Y') : '-' }}</span>
+                                    @if($item->metode_pembayaran)
+                                    <span>&middot; {{ strtoupper($item->metode_pembayaran) }}</span>
+                                    @endif
+                                    <span>&middot; {{ ucfirst($item->jenis_punia) }}</span>
+                                    @if($item->bulan_tahun)
+                                    <span>&middot; {{ $item->bulan_tahun }}</span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
+                        <p class="text-xs font-bold text-emerald-600 shrink-0">+Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
                     </div>
-                    <p class="text-xs font-bold text-emerald-600 shrink-0">+Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
+                </div>
+                @endforeach
                 </div>
             </div>
             @empty
@@ -335,8 +353,8 @@
             <div class="bg-white rounded-xl border border-slate-100 p-3.5">
                 <div class="flex items-start justify-between gap-3">
                     <div class="flex items-start gap-3 flex-1 min-w-0">
-                        <div class="h-9 w-9 bg-purple-50 rounded-lg flex items-center justify-center shrink-0 border border-purple-100">
-                            <i class="bi bi-building text-purple-400 text-sm"></i>
+                        <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
+                            <i class="bi bi-building text-slate-400 text-sm"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ $item->nama_donatur ?: 'Anonim' }}</p>
@@ -387,13 +405,13 @@
 
         <!-- Summary -->
         <div class="grid grid-cols-2 gap-2">
-            <div class="bg-rose-50 border border-rose-100 rounded-xl p-3">
-                <p class="text-[9px] text-rose-400 uppercase font-bold">Alokasi Umum</p>
-                <p class="text-sm font-black text-rose-700">Rp {{ number_format($total_pengeluaran, 0, ',', '.') }}</p>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <p class="text-[9px] text-slate-400 uppercase font-bold">Alokasi Umum</p>
+                <p class="text-sm font-black text-slate-800">Rp {{ number_format($total_pengeluaran, 0, ',', '.') }}</p>
             </div>
-            <div class="bg-orange-50 border border-orange-100 rounded-xl p-3">
-                <p class="text-[9px] text-orange-400 uppercase font-bold">Kas Setor</p>
-                <p class="text-sm font-black text-orange-700">Rp {{ number_format($total_kas_setor, 0, ',', '.') }}</p>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <p class="text-[9px] text-slate-400 uppercase font-bold">Kas Setor</p>
+                <p class="text-sm font-black text-slate-800">Rp {{ number_format($total_kas_setor, 0, ',', '.') }}</p>
             </div>
         </div>
 
@@ -404,13 +422,13 @@
             <!-- Category Filter Pills (for alokasi) -->
             <div class="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-2">
                 <button @click="selectedKategori = 'all'" 
-                        :class="selectedKategori === 'all' ? 'bg-rose-500 text-white border-rose-500' : 'bg-white text-slate-500 border-slate-200'"
+                        :class="selectedKategori === 'all' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
                         class="shrink-0 px-3 py-1.5 rounded-full text-[9px] font-bold border transition-all">
                     Semua
                 </button>
                 @foreach($kategori_punia as $kat)
                 <button @click="selectedKategori = '{{ $kat->id_kategori_punia }}'" 
-                        :class="selectedKategori === '{{ $kat->id_kategori_punia }}' ? 'bg-rose-500 text-white border-rose-500' : 'bg-white text-slate-500 border-slate-200'"
+                        :class="selectedKategori === '{{ $kat->id_kategori_punia }}' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
                         class="shrink-0 px-3 py-1.5 rounded-full text-[9px] font-bold border transition-all">
                     {{ $kat->nama_kategori }}
                 </button>
@@ -418,11 +436,12 @@
             </div>
 
             @forelse($alokasi_umum as $item)
-            <div x-show="selectedKategori === 'all' || selectedKategori === '{{ $item->id_kategori_punia }}'"
-                 class="bg-white rounded-xl border border-slate-100 p-3.5 hover:border-[#00a6eb]/30 transition-all">
+            <a href="{{ route('public.punia.alokasi.detail', $item->id_alokasi_punia) }}"
+               x-show="selectedKategori === 'all' || selectedKategori === '{{ $item->id_kategori_punia }}'"
+               class="block bg-white rounded-xl border border-slate-100 p-3.5 hover:border-[#00a6eb]/30 transition-all">
                 <div class="flex items-start gap-3">
-                    <div class="h-9 w-9 bg-rose-50 rounded-lg flex items-center justify-center shrink-0 border border-rose-100">
-                        <i class="bi bi-box-arrow-up-right text-rose-400 text-sm"></i>
+                    <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
+                        <i class="bi bi-box-arrow-up-right text-slate-400 text-sm"></i>
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-xs font-bold text-slate-800 mb-0.5 line-clamp-1">{{ $item->judul }}</p>
@@ -430,10 +449,11 @@
                             <span class="text-[8px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">{{ $item->kategori->nama_kategori ?? '-' }}</span>
                             <span class="text-[9px] text-slate-400">{{ \Carbon\Carbon::parse($item->tanggal_alokasi)->translatedFormat('d M Y') }}</span>
                         </div>
-                        <p class="text-xs font-bold text-rose-600">-Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
+                        <p class="text-xs font-bold text-slate-600">-Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
                     </div>
+                    <i class="bi bi-chevron-right text-slate-300 text-sm mt-1"></i>
                 </div>
-            </div>
+            </a>
             @empty
             <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-4 text-center">
                 <p class="text-xs text-slate-400">Belum ada alokasi tercatat</p>
@@ -449,8 +469,8 @@
             <div class="bg-white rounded-xl border border-slate-100 p-3.5">
                 <div class="flex items-start justify-between gap-3">
                     <div class="flex items-start gap-3 flex-1 min-w-0">
-                        <div class="h-9 w-9 bg-orange-50 rounded-lg flex items-center justify-center shrink-0 border border-orange-100">
-                            <i class="bi bi-arrow-left-right text-orange-400 text-sm"></i>
+                        <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
+                            <i class="bi bi-arrow-left-right text-slate-400 text-sm"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-bold text-slate-800 truncate mb-0.5">
@@ -467,7 +487,7 @@
                             </div>
                         </div>
                     </div>
-                    <p class="text-xs font-bold text-rose-600 shrink-0">-Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
+                    <p class="text-xs font-bold text-slate-600 shrink-0">-Rp {{ number_format($item->nominal, 0, ',', '.') }}</p>
                 </div>
             </div>
             @empty

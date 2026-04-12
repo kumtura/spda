@@ -12,6 +12,7 @@ use App\Models\Banjar;
 use App\Models\Danapunia;
 use App\Models\Pendatang;
 use App\Models\PuniaPendatang;
+use App\Models\Usaha;
 
 use DB;
 use File;
@@ -36,35 +37,96 @@ class DanaPuniaController extends BaseController
     
 
         public function list_datapunia_wajib(Request $request){
-            $month = (date("m") < 9) ? "0".date("m") : date("m"); 
-            $awal  = date("Y")."-".$month."-"."01";
-            $akhir = date("Y")."-".$month."-"."31";
-
-            $lists = Danapunia::get_dataPunia_inDate($request , $awal , $akhir);
-            $datalist = $lists;
-            
-            // print_r($datalist);
-            
-            // return;
-
-            //echo $datalist;
-            return view('admin.pages.data_punia_wajib.table' ,compact('datalist'));
+            $month = date("n");
+            $year = date("Y");
+            return $this->render_dashboard_punia($request, $month, $year);
         }
         
-        public function list_datapunia_wajib_param(Request $request , $months,$year){
-            $month = ($months < 9) ? "0".$months : $months; 
-            $awal  = $year."-".$months."-"."01";
-            $akhir = $year."-".$months."-"."31";
-            
-            // echo $awal." ".$akhir;
-            // return;
-
-            $datalist = Danapunia::get_dataPunia_inDate($request , $awal , $akhir);
-
-            //echo $datalist;
-             return view('admin.pages.data_punia_wajib.table' ,compact('datalist'));
+        public function list_datapunia_wajib_param(Request $request, $month, $year){
+            return $this->render_dashboard_punia($request, $month, $year);
         }
 
+        private function render_dashboard_punia(Request $request, $month, $year) {
+            $monthPadded = str_pad($month, 2, '0', STR_PAD_LEFT);
+            $awal = $year."-".$monthPadded."-01";
+            $akhir = $year."-".$monthPadded."-31";
+            $monthKey = $year . '-' . $monthPadded;
+
+            // === UNIT USAHA DATA ===
+            $usahaList = Usaha::select('tb_usaha.id_usaha', 'tb_usaha.aktif_status', 'tb_detail_usaha.nama_usaha', 'tb_detail_usaha.minimal_bayar', 'tb_penanggung_jawab.nama')
+                ->join("tb_detail_usaha", "tb_detail_usaha.id_detail_usaha", "tb_usaha.id_detail_usaha")
+                ->join("tb_penanggung_jawab", "tb_penanggung_jawab.id_penanggung_jawab", 'tb_usaha.id_penanggung_jawab')
+                ->where('tb_usaha.aktif_status', '1')
+                ->orderBy("tb_usaha.id_usaha", "desc")
+                ->get();
+
+            $usahaPaid = 0; $usahaUnpaid = 0; $totalUsaha = 0;
+            foreach($usahaList as $u) {
+                $payment = Danapunia::where('id_usaha', $u->id_usaha)
+                    ->where('aktif', '1')
+                    ->where('status_pembayaran', 'completed')
+                    ->where('tanggal_pembayaran', '>=', $awal)
+                    ->where('tanggal_pembayaran', '<=', $akhir)
+                    ->first();
+                if($payment) {
+                    $usahaPaid++;
+                    $totalUsaha += $payment->jumlah_dana;
+                } else {
+                    $usahaUnpaid++;
+                }
+            }
+
+            // === KRAMA TAMIU DATA ===
+            $pendatangAktif = Pendatang::where('aktif', '1')->where('status', 'aktif')->count();
+            $tamiuPaid = PuniaPendatang::where('aktif', '1')
+                ->where('jenis_punia', 'rutin')
+                ->where('bulan_tahun', 'LIKE', $monthKey . '%')
+                ->where('status_pembayaran', 'lunas')
+                ->count();
+            $totalTamiu = PuniaPendatang::where('aktif', '1')
+                ->where('status_pembayaran', 'lunas')
+                ->where('bulan_tahun', 'LIKE', $monthKey . '%')
+                ->sum('nominal');
+            $tamiuUnpaid = $pendatangAktif - $tamiuPaid;
+            if($tamiuUnpaid < 0) $tamiuUnpaid = 0;
+
+            // === RIWAYAT TERBARU GABUNGAN ===
+            $recentUsaha = Danapunia::select('tb_dana_punia.jumlah_dana as nominal', 'tb_dana_punia.tanggal_pembayaran as tanggal', 'tb_dana_punia.metode_pembayaran', 'tb_detail_usaha.nama_usaha as nama', DB::raw("'usaha' as sumber"))
+                ->join('tb_usaha', 'tb_usaha.id_usaha', 'tb_dana_punia.id_usaha')
+                ->join('tb_detail_usaha', 'tb_detail_usaha.id_detail_usaha', 'tb_usaha.id_detail_usaha')
+                ->where('tb_dana_punia.aktif', '1')
+                ->where('tb_dana_punia.status_pembayaran', 'completed')
+                ->orderBy('tb_dana_punia.tanggal_pembayaran', 'desc')
+                ->limit(10)
+                ->get();
+
+            $recentTamiu = PuniaPendatang::select('nominal', 'tanggal_bayar as tanggal', 'metode_pembayaran', DB::raw("'pendatang' as sumber"))
+                ->with('pendatang:id_pendatang,nama')
+                ->where('aktif', '1')
+                ->where('status_pembayaran', 'lunas')
+                ->orderBy('tanggal_bayar', 'desc')
+                ->limit(10)
+                ->get()
+                ->map(function($item) {
+                    $item->nama = $item->pendatang->nama ?? '-';
+                    return $item;
+                });
+
+            // Merge and sort
+            $recentAll = $recentUsaha->concat($recentTamiu)->sortByDesc('tanggal')->take(15);
+
+            $totalGabungan = $totalUsaha + $totalTamiu;
+
+            return view('admin.pages.data_punia_wajib.table', compact(
+                'month', 'year',
+                'usahaPaid', 'usahaUnpaid', 'totalUsaha',
+                'tamiuPaid', 'tamiuUnpaid', 'totalTamiu',
+                'totalGabungan', 'recentAll',
+                'usahaList', 'pendatangAktif'
+            ));
+        }
+
+        // === IURAN PENDATANG ===
         public function list_datapunia_pendatang(Request $request) {
             $month = date("n");
             $year = date("Y");
@@ -91,7 +153,6 @@ class DanaPuniaController extends BaseController
             $pendatangList = $query->orderBy('nama', 'asc')->get();
             
             foreach($pendatangList as $p) {
-                // Get payment for this specific month/year
                 $payment = PuniaPendatang::where('id_pendatang', $p->id_pendatang)
                     ->where('jenis_punia', 'rutin')
                     ->where('bulan_tahun', 'LIKE', $monthKey . '%')
@@ -106,6 +167,57 @@ class DanaPuniaController extends BaseController
             $banjarList = Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
 
             return view('admin.pages.data_punia_pendatang.table', compact('pendatangList', 'month', 'year', 'banjarList'));
+        }
+
+        // === IURAN UNIT USAHA ===
+        public function list_datapunia_usaha(Request $request) {
+            $month = date("n");
+            $year = date("Y");
+            return $this->list_datapunia_usaha_param($request, $month, $year);
+        }
+
+        public function list_datapunia_usaha_param(Request $request, $month, $year) {
+            $monthPadded = str_pad($month, 2, '0', STR_PAD_LEFT);
+            $awal = $year."-".$monthPadded."-01";
+            $akhir = $year."-".$monthPadded."-31";
+
+            $query = Usaha::select('tb_usaha.id_usaha', 'tb_usaha.aktif_status', 'tb_detail_usaha.nama_usaha', 'tb_detail_usaha.email_usaha', 'tb_detail_usaha.minimal_bayar', 'tb_detail_usaha.logo', 'tb_detail_usaha.id_banjar', 'tb_penanggung_jawab.nama', 'tb_penanggung_jawab.alamat')
+                ->join("tb_detail_usaha", "tb_detail_usaha.id_detail_usaha", "tb_usaha.id_detail_usaha")
+                ->join("tb_penanggung_jawab", "tb_penanggung_jawab.id_penanggung_jawab", 'tb_usaha.id_penanggung_jawab')
+                ->leftJoin("tb_data_banjar", "tb_data_banjar.id_data_banjar", "=", "tb_detail_usaha.id_banjar")
+                ->where('tb_usaha.aktif_status', '1');
+
+            if ($request->filled('banjar')) {
+                $query->where('tb_detail_usaha.id_banjar', $request->banjar);
+            }
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('tb_detail_usaha.nama_usaha', 'LIKE', '%'.$search.'%')
+                      ->orWhere('tb_penanggung_jawab.nama', 'LIKE', '%'.$search.'%');
+                });
+            }
+
+            $usahaList = $query->addSelect('tb_data_banjar.nama_banjar')
+                ->orderBy("tb_detail_usaha.nama_usaha", "asc")
+                ->get();
+
+            foreach($usahaList as $u) {
+                $payment = Danapunia::where('id_usaha', $u->id_usaha)
+                    ->where('aktif', '1')
+                    ->where('status_pembayaran', 'completed')
+                    ->where('tanggal_pembayaran', '>=', $awal)
+                    ->where('tanggal_pembayaran', '<=', $akhir)
+                    ->first();
+                    
+                $u->payment_status = $payment ? 'lunas' : 'belum';
+                $u->payment_data = $payment;
+            }
+
+            $banjarList = Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
+
+            return view('admin.pages.data_punia_usaha.table', compact('usahaList', 'month', 'year', 'banjarList'));
         }
 
         public function download_pdf_danapunia(Request $request){

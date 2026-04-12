@@ -301,6 +301,9 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/datapunia_pendatang', 'Administrator\DanaPuniaController@list_datapunia_pendatang');
             Route::get('/datapunia_pendatang/{month}/{year}', 'Administrator\DanaPuniaController@list_datapunia_pendatang_param');
 
+            Route::get('/datapunia_usaha', 'Administrator\DanaPuniaController@list_datapunia_usaha');
+            Route::get('/datapunia_usaha/{month}/{year}', 'Administrator\DanaPuniaController@list_datapunia_usaha_param');
+
 			Route::get('download_pdf_danapunia','Administrator\DanaPuniaController@download_pdf_danapunia');
 			
 			// Kategori Punia Routes

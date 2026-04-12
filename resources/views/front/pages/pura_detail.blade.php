@@ -35,6 +35,9 @@
                 <div>
                     <p class="text-[9px] text-slate-400 uppercase tracking-widest mb-0.5">Pemangku</p>
                     <p class="text-xs font-bold text-slate-700">{{ $pura->nama_pemangku ?? '-' }}</p>
+                    @if($pura->no_telp_pemangku)
+                    <a href="tel:{{ $pura->no_telp_pemangku }}" class="text-[10px] text-[#00a6eb]">{{ $pura->no_telp_pemangku }}</a>
+                    @endif
                 </div>
                 <div>
                     <p class="text-[9px] text-slate-400 uppercase tracking-widest mb-0.5">Wuku Odalan</p>
@@ -122,7 +125,13 @@
         @endif
 
         <!-- Map Link -->
-        @if($pura->latitude && $pura->longitude)
+        @if($pura->google_maps_url)
+        <a href="{{ $pura->google_maps_url }}" target="_blank" rel="noopener" 
+           class="block bg-slate-50 rounded-xl border border-slate-100 p-4 text-center hover:bg-slate-100 transition-colors">
+            <i class="bi bi-map text-slate-400 text-xl mb-1"></i>
+            <p class="text-xs font-bold text-slate-600">Lihat Lokasi di Maps</p>
+        </a>
+        @elseif($pura->latitude && $pura->longitude)
         <a href="https://maps.google.com/?q={{ $pura->latitude }},{{ $pura->longitude }}" target="_blank" rel="noopener" 
            class="block bg-slate-50 rounded-xl border border-slate-100 p-4 text-center hover:bg-slate-100 transition-colors">
             <i class="bi bi-map text-slate-400 text-xl mb-1"></i>

@@ -29,17 +29,17 @@
             <p class="text-sm text-slate-400">{{ $pura->lokasi ?? 'Lokasi belum diisi' }} &bull; Banjar {{ $pura->nama_banjar ?? '-' }}</p>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ url('administrator/puniapura/edit/'.$pura->id_pura) }}" class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-600 font-bold text-xs px-4 py-2 rounded-xl hover:bg-amber-100 transition-colors">
+            <a href="{{ url('administrator/puniapura/edit/'.$pura->id_pura) }}" class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 font-bold text-xs px-4 py-2 rounded-xl hover:bg-blue-100 transition-colors">
                 <i class="bi bi-pencil"></i> Edit
             </a>
-            <a href="{{ url('administrator/puniapura/qris/'.$pura->id_pura) }}" class="inline-flex items-center gap-1.5 bg-violet-50 text-violet-600 font-bold text-xs px-4 py-2 rounded-xl hover:bg-violet-100 transition-colors">
+            <a href="{{ url('administrator/puniapura/qris/'.$pura->id_pura) }}" class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 font-bold text-xs px-4 py-2 rounded-xl hover:bg-blue-100 transition-colors">
                 <i class="bi bi-qr-code"></i> Kelola QRIS
             </a>
         </div>
     </div>
 
     <!-- Hero Card -->
-    <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl overflow-hidden relative">
+    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] rounded-2xl overflow-hidden relative">
         <div class="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24"></div>
         <div class="flex flex-col md:flex-row gap-6 p-6 relative z-10">
             <!-- Image -->
@@ -56,17 +56,6 @@
             <div class="flex-1 text-white">
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                        <p class="text-[10px] text-white/60 uppercase tracking-widest">Ketua Pura</p>
-                        <p class="text-sm font-bold">{{ $pura->nama_ketua_pura ?? '-' }}</p>
-                        @if($pura->no_telp_ketua)
-                        <p class="text-xs text-white/70">{{ $pura->no_telp_ketua }}</p>
-                        @endif
-                    </div>
-                    <div>
-                        <p class="text-[10px] text-white/60 uppercase tracking-widest">Pemangku</p>
-                        <p class="text-sm font-bold">{{ $pura->nama_pemangku ?? '-' }}</p>
-                    </div>
-                    <div>
                         <p class="text-[10px] text-white/60 uppercase tracking-widest">Wuku Odalan</p>
                         <p class="text-sm font-bold">{{ $pura->wuku_odalan ?? '-' }}</p>
                     </div>
@@ -75,11 +64,82 @@
                         <p class="text-sm font-bold">{{ $pura->odalan_terdekat ? \Carbon\Carbon::parse($pura->odalan_terdekat)->format('d M Y') : '-' }}</p>
                     </div>
                 </div>
+                @if($pura->google_maps_url)
+                <a href="{{ $pura->google_maps_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-xs text-white/80 hover:text-white transition-colors">
+                    <i class="bi bi-geo-alt"></i> Lihat di Google Maps
+                </a>
+                @endif
                 @if($pura->deskripsi)
-                <p class="text-xs text-white/80 line-clamp-2">{{ $pura->deskripsi }}</p>
+                <p class="text-xs text-white/80 line-clamp-2 mt-2">{{ $pura->deskripsi }}</p>
                 @endif
             </div>
         </div>
+    </div>
+
+    <!-- Pengurus Pura -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest mb-4">Pengurus Pura</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Ketua Pura -->
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                <p class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-2">Ketua Pura</p>
+                <p class="text-sm font-bold text-slate-800">{{ $pura->nama_ketua_pura ?? '-' }}</p>
+                @if($pura->no_telp_ketua)
+                <p class="text-xs text-slate-500 mt-0.5"><i class="bi bi-telephone"></i> {{ $pura->no_telp_ketua }}</p>
+                @endif
+                <p class="text-xs text-slate-400 mt-0.5"><i class="bi bi-house-door"></i> 
+                    @if($pura->id_banjar_ketua && isset($banjarList[$pura->id_banjar_ketua]))
+                        Banjar {{ $banjarList[$pura->id_banjar_ketua] }}
+                    @elseif($pura->banjar_ketua_manual)
+                        {{ $pura->banjar_ketua_manual }}
+                    @else
+                        -
+                    @endif
+                </p>
+            </div>
+            <!-- Pemangku -->
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                <p class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-2">Pemangku</p>
+                <p class="text-sm font-bold text-slate-800">{{ $pura->nama_pemangku ?? '-' }}</p>
+                @if($pura->no_telp_pemangku)
+                <p class="text-xs text-slate-500 mt-0.5"><i class="bi bi-telephone"></i> {{ $pura->no_telp_pemangku }}</p>
+                @endif
+                <p class="text-xs text-slate-400 mt-0.5"><i class="bi bi-house-door"></i> 
+                    @if($pura->id_banjar_pemangku && isset($banjarList[$pura->id_banjar_pemangku]))
+                        Banjar {{ $banjarList[$pura->id_banjar_pemangku] }}
+                    @elseif($pura->banjar_pemangku_manual)
+                        {{ $pura->banjar_pemangku_manual }}
+                    @else
+                        -
+                    @endif
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Penanggung Jawab (Admin Pura) -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest mb-4">Penanggung Jawab (Admin Pura)</h3>
+        @if($adminPura)
+        <div class="flex items-center gap-4">
+            <div class="h-12 w-12 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                <i class="bi bi-person-gear text-blue-500 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-slate-800">{{ $adminPura->name }}</p>
+                <p class="text-xs text-slate-400">{{ $adminPura->email }}</p>
+                @if($adminPura->no_wa)
+                <p class="text-xs text-slate-500"><i class="bi bi-whatsapp"></i> {{ $adminPura->no_wa }}</p>
+                @endif
+            </div>
+        </div>
+        @else
+        <div class="bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4 text-center">
+            <i class="bi bi-person-x text-2xl text-slate-200 mb-1"></i>
+            <p class="text-xs text-slate-400">Belum ada admin pura yang ditugaskan</p>
+            <p class="text-[10px] text-slate-300 mt-1">Tambahkan melalui menu <a href="{{ url('administrator/datauser') }}" class="text-primary-light hover:underline font-bold">Data Pengguna</a> dengan role Admin Pura</p>
+        </div>
+        @endif
     </div>
 
     <!-- Gallery -->
@@ -98,8 +158,8 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
             <div class="flex items-center gap-3">
-                <div class="h-10 w-10 bg-emerald-50 rounded-xl flex items-center justify-center">
-                    <i class="bi bi-wallet2 text-emerald-500"></i>
+                <div class="h-10 w-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                    <i class="bi bi-wallet2 text-blue-500"></i>
                 </div>
                 <div>
                     <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Total Punia</p>
@@ -120,8 +180,8 @@
         </div>
         <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
             <div class="flex items-center gap-3">
-                <div class="h-10 w-10 bg-amber-50 rounded-xl flex items-center justify-center">
-                    <i class="bi bi-cash-stack text-amber-500"></i>
+                <div class="h-10 w-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                    <i class="bi bi-cash-stack text-blue-500"></i>
                 </div>
                 <div>
                     <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Manual</p>
@@ -131,8 +191,8 @@
         </div>
         <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
             <div class="flex items-center gap-3">
-                <div class="h-10 w-10 bg-violet-50 rounded-xl flex items-center justify-center">
-                    <i class="bi bi-calendar-check text-violet-500"></i>
+                <div class="h-10 w-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                    <i class="bi bi-calendar-check text-blue-500"></i>
                 </div>
                 <div>
                     <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Hari Ini</p>
@@ -148,11 +208,11 @@
             <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest">QRIS Statis (BPD Bali)</h3>
             <div class="flex items-center gap-2">
                 @if($qris)
-                <a href="{{ url('administrator/puniapura/qris/download/'.$pura->id_pura) }}" class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-600 font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors">
+                <a href="{{ url('administrator/puniapura/qris/download/'.$pura->id_pura) }}" class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">
                     <i class="bi bi-download"></i> Download QR
                 </a>
                 @endif
-                <a href="{{ url('administrator/puniapura/qris/'.$pura->id_pura) }}" class="inline-flex items-center gap-1.5 bg-violet-50 text-violet-600 font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-violet-100 transition-colors">
+                <a href="{{ url('administrator/puniapura/qris/'.$pura->id_pura) }}" class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">
                     <i class="bi bi-gear"></i> {{ $qris ? 'Ubah' : 'Setup' }} QRIS
                 </a>
             </div>
@@ -254,8 +314,8 @@
                             @php
                                 $metodeLabel = match($item->metode_pembayaran) {
                                     'xendit' => ['Xendit', 'bg-blue-50 text-blue-600'],
-                                    'qris_bpd' => ['QRIS BPD', 'bg-violet-50 text-violet-600'],
-                                    'manual' => ['Manual', 'bg-amber-50 text-amber-600'],
+                                    'qris_bpd' => ['QRIS BPD', 'bg-blue-50 text-blue-600'],
+                                    'manual' => ['Manual', 'bg-slate-50 text-slate-600'],
                                     'tarik' => ['Penarikan', 'bg-red-50 text-red-600'],
                                     default => ['Lainnya', 'bg-slate-50 text-slate-600'],
                                 };
@@ -266,7 +326,7 @@
                             @if($item->status_pembayaran === 'completed')
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-600"><i class="bi bi-check-circle"></i> Selesai</span>
                             @elseif($item->status_pembayaran === 'pending')
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-50 text-amber-600"><i class="bi bi-clock"></i> Pending</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-blue-50 text-blue-600"><i class="bi bi-clock"></i> Pending</span>
                             @else
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-red-50 text-red-600">{{ $item->status_pembayaran }}</span>
                             @endif
@@ -274,7 +334,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center py-8 text-sm text-slate-400">Belum ada log punia</td>
+                        <td colspan="5" class="px-6 py-8 text-center text-xs text-slate-400">Belum ada data punia</td>
                     </tr>
                     @endforelse
                 </tbody>

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [LandingController::class, 'home'])->name('public.home')->middleware('public.redirect');
+Route::get('/tentang-desa', [LandingController::class, 'tentang_desa'])->name('public.tentang_desa')->middleware('public.redirect');
 
 Route::get('/berita', [LandingController::class, 'berita'])->name('public.berita')->middleware('public.redirect');
 Route::get('/berita/kategori/{id}', [LandingController::class, 'berita_kategori'])->name('public.berita.kategori')->middleware('public.redirect');
@@ -394,7 +395,10 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 		Route::group(['middleware' => 'role:1,2,4'], function() {
 			Route::get('/datauser', function () {
                 $banjar = App\Models\Banjar::where('aktif', '1')->get();
-				return view('admin.pages.data_user.table', compact('banjar'));
+                $pura = App\Models\Pura::where('aktif', '1')->orderBy('nama_pura')->get();
+                // Get pura IDs already assigned to admin pura users
+                $assignedPuraIds = App\Models\User::whereNotNull('id_pura')->where('id_level', 6)->pluck('id_pura')->toArray();
+				return view('admin.pages.data_user.table', compact('banjar', 'pura', 'assignedPuraIds'));
 			});
 			Route::get('ambil_listuser','UserController@ambil_listuser');
 			Route::post('post_user','UserController@post_user');

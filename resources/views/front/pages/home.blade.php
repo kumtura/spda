@@ -70,6 +70,12 @@
     
     <!-- Menu -->
     <div class="grid grid-cols-4 gap-2">
+        <a href="{{ route('public.tentang_desa') }}" class="flex flex-col items-center gap-2 group">
+            <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">
+                <i class="bi bi-info-circle text-2xl text-[#00a6eb]"></i>
+            </div>
+            <span class="text-[10px] text-slate-500 font-bold text-center">Tentang Desa</span>
+        </a>
         <a href="{{ route('public.punia') }}" class="flex flex-col items-center gap-2 group">
             <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">
                 <i class="bi bi-wallet2 text-2xl text-[#00a6eb]"></i>
@@ -88,27 +94,21 @@
             </div>
             <span class="text-[10px] text-slate-500 font-bold">Objek Wisata</span>
         </a>
+    </div>
+
+    <!-- Row 2 Menu -->
+    <div class="grid grid-cols-4 gap-2 -mt-4">
         <a href="{{ route('public.agenda') }}" class="flex flex-col items-center gap-2 group">
             <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">
                 <i class="bi bi-calendar3 text-xl text-[#00a6eb]"></i>
             </div>
             <span class="text-[10px] text-slate-500 font-bold text-center">Agenda Desa Adat</span>
         </a>
-    </div>
-
-    <!-- Row 2 Menu -->
-    <div class="grid grid-cols-4 gap-2 -mt-4">
         <a href="{{ route('public.krama_tamiu') }}" class="flex flex-col items-center gap-2 group">
             <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">
                 <i class="bi bi-people text-2xl text-[#00a6eb]"></i>
             </div>
             <span class="text-[10px] text-slate-500 font-bold text-center">Krama Tamiu</span>
-        </a>
-        <a href="{{ route('public.pura') }}" class="flex flex-col items-center gap-2 group">
-            <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">
-                <i class="bi bi-building text-2xl text-[#00a6eb]"></i>
-            </div>
-            <span class="text-[10px] text-slate-500 font-bold">Pura</span>
         </a>
         <a href="{{ route('public.unit_usaha') }}" class="flex flex-col items-center gap-2 group">
             <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">

@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'no_wa',
         'id_level',
+        'id_pura',
     ];
 
     /**
@@ -63,5 +64,10 @@ class User extends Authenticatable
     public function absensiCounter()
     {
         return $this->hasMany(AbsensiCounter::class, 'id_user', 'id');
+    }
+
+    public function pura()
+    {
+        return $this->belongsTo(Pura::class, 'id_pura', 'id_pura');
     }
 }

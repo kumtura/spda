@@ -81,6 +81,22 @@ class LandingController extends Controller
         return view('front.pages.home', compact('village', 'berita', 'programs', 'totalKramaTamiu'));
     }
 
+    public function tentang_desa()
+    {
+        $village = $this->getVillageData();
+        $totalPura = \App\Models\Pura::where('aktif', '1')->count();
+        $totalBanjar = \App\Models\Banjar::where('aktif', '1')->count();
+        $totalKramaTamiu = \App\Models\Pendatang::where('aktif', '1')->where('status', 'aktif')->count();
+        $totalUsaha = \App\Models\Usaha::where('aktif', '1')->count();
+        $pura = \App\Models\Pura::where('aktif', '1')
+            ->leftJoin('tb_data_banjar', 'tb_pura.id_data_banjar', '=', 'tb_data_banjar.id_data_banjar')
+            ->select('tb_pura.*', 'tb_data_banjar.nama_banjar')
+            ->orderBy('tb_pura.nama_pura')
+            ->get();
+        $banjar = \App\Models\Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
+
+        return view('front.pages.tentang_desa', compact('village', 'totalPura', 'totalBanjar', 'totalKramaTamiu', 'totalUsaha', 'pura', 'banjar'));
+    }
 
 
     public function berita_detail($id)

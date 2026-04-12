@@ -9,9 +9,11 @@ class Pura extends Model
     protected $table = 'tb_pura';
     protected $primaryKey = 'id_pura';
     protected $fillable = [
-        'nama_pura', 'lokasi', 'latitude', 'longitude',
-        'nama_ketua_pura', 'no_telp_ketua', 'id_data_banjar',
-        'nama_pemangku', 'wuku_odalan', 'odalan_terdekat',
+        'nama_pura', 'lokasi', 'latitude', 'longitude', 'google_maps_url',
+        'nama_ketua_pura', 'no_telp_ketua', 'id_banjar_ketua', 'banjar_ketua_manual',
+        'id_data_banjar',
+        'nama_pemangku', 'no_telp_pemangku', 'id_banjar_pemangku', 'banjar_pemangku_manual',
+        'wuku_odalan', 'odalan_terdekat',
         'gambar_pura', 'deskripsi', 'aktif'
     ];
 

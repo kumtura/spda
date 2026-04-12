@@ -58,17 +58,10 @@
                 <textarea name="lokasi" rows="2" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">{{ old('lokasi', $isEdit ? $pura->lokasi : '') }}</textarea>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Latitude</label>
-                    <input type="text" name="latitude" value="{{ old('latitude', $isEdit ? $pura->latitude : '') }}" placeholder="-8.6500"
-                           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Longitude</label>
-                    <input type="text" name="longitude" value="{{ old('longitude', $isEdit ? $pura->longitude : '') }}" placeholder="115.2167"
-                           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">
-                </div>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Link Google Maps</label>
+                <input type="url" name="google_maps_url" value="{{ old('google_maps_url', $isEdit ? $pura->google_maps_url : '') }}" placeholder="https://maps.google.com/..."
+                       class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">
             </div>
 
             <div>
@@ -78,9 +71,13 @@
         </div>
 
         <!-- Pengurus -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4" x-data="{
+            ketuaBanjarMode: '{{ old('banjar_ketua_manual', ($isEdit && $pura->banjar_ketua_manual) ? $pura->banjar_ketua_manual : '') ? 'manual' : 'select' }}',
+            pemangkuBanjarMode: '{{ old('banjar_pemangku_manual', ($isEdit && $pura->banjar_pemangku_manual) ? $pura->banjar_pemangku_manual : '') ? 'manual' : 'select' }}'
+        }">
             <h2 class="text-sm font-black text-slate-700 uppercase tracking-widest">Informasi Pengurus</h2>
             
+            <!-- Ketua Pura -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nama Ketua Pura</label>
@@ -93,11 +90,61 @@
                            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">
                 </div>
             </div>
-
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nama Pemangku</label>
-                <input type="text" name="nama_pemangku" value="{{ old('nama_pemangku', $isEdit ? $pura->nama_pemangku : '') }}"
-                       class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">
+                <div class="flex items-center gap-3 mb-1">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Banjar Ketua</label>
+                    <button type="button" @click="ketuaBanjarMode = ketuaBanjarMode === 'select' ? 'manual' : 'select'" class="text-[10px] font-bold text-primary-light hover:underline">
+                        <span x-text="ketuaBanjarMode === 'select' ? 'Input Manual' : 'Pilih dari Daftar'"></span>
+                    </button>
+                </div>
+                <div x-show="ketuaBanjarMode === 'select'">
+                    <select name="id_banjar_ketua" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">
+                        <option value="">-- Pilih Banjar --</option>
+                        @foreach($banjar as $b)
+                        <option value="{{ $b->id_data_banjar }}" {{ old('id_banjar_ketua', $isEdit ? $pura->id_banjar_ketua : '') == $b->id_data_banjar ? 'selected' : '' }}>{{ $b->nama_banjar }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div x-show="ketuaBanjarMode === 'manual'" x-cloak>
+                    <input type="text" name="banjar_ketua_manual" value="{{ old('banjar_ketua_manual', $isEdit ? $pura->banjar_ketua_manual : '') }}" placeholder="Nama banjar (jika di luar desa)"
+                           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">
+                </div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <!-- Pemangku -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nama Pemangku</label>
+                    <input type="text" name="nama_pemangku" value="{{ old('nama_pemangku', $isEdit ? $pura->nama_pemangku : '') }}"
+                           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">No. Telepon Pemangku</label>
+                    <input type="text" name="no_telp_pemangku" value="{{ old('no_telp_pemangku', $isEdit ? $pura->no_telp_pemangku : '') }}" placeholder="08xx..."
+                           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">
+                </div>
+            </div>
+            <div>
+                <div class="flex items-center gap-3 mb-1">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Banjar Pemangku</label>
+                    <button type="button" @click="pemangkuBanjarMode = pemangkuBanjarMode === 'select' ? 'manual' : 'select'" class="text-[10px] font-bold text-primary-light hover:underline">
+                        <span x-text="pemangkuBanjarMode === 'select' ? 'Input Manual' : 'Pilih dari Daftar'"></span>
+                    </button>
+                </div>
+                <div x-show="pemangkuBanjarMode === 'select'">
+                    <select name="id_banjar_pemangku" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">
+                        <option value="">-- Pilih Banjar --</option>
+                        @foreach($banjar as $b)
+                        <option value="{{ $b->id_data_banjar }}" {{ old('id_banjar_pemangku', $isEdit ? $pura->id_banjar_pemangku : '') == $b->id_data_banjar ? 'selected' : '' }}>{{ $b->nama_banjar }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div x-show="pemangkuBanjarMode === 'manual'" x-cloak>
+                    <input type="text" name="banjar_pemangku_manual" value="{{ old('banjar_pemangku_manual', $isEdit ? $pura->banjar_pemangku_manual : '') }}" placeholder="Nama banjar (jika di luar desa)"
+                           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-4 focus:ring-primary-light/10">
+                </div>
             </div>
         </div>
 

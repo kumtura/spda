@@ -5,15 +5,17 @@
 <div id="admin-page-container" class="space-y-6" x-data="{ 
     showModal: false,
     isEdit: false,
-    userId: '', userName: '', userEmail: '', userPassword: '', userPhone: '', userLevel: '', userBanjar: '',
+    userId: '', userName: '', userEmail: '', userPassword: '', userPhone: '', userLevel: '', userBanjar: '', userPura: '',
     objekWisataList: [],
     selectedObjekWisata: [],
     loadingObjek: false,
-    openAdd() { this.isEdit = false; this.userId = ''; this.userName = ''; this.userEmail = ''; this.userPassword = ''; this.userPhone = ''; this.userLevel = ''; this.userBanjar = ''; this.objekWisataList = []; this.selectedObjekWisata = []; this.showModal = true; },
+    assignedPuraIds: @json($assignedPuraIds ?? []),
+    openAdd() { this.isEdit = false; this.userId = ''; this.userName = ''; this.userEmail = ''; this.userPassword = ''; this.userPhone = ''; this.userLevel = ''; this.userBanjar = ''; this.userPura = ''; this.objekWisataList = []; this.selectedObjekWisata = []; this.showModal = true; },
     openEdit(id) {
         fetch('{{ url('administrator/ambil_user') }}/' + id).then(r => r.json()).then(data => {
             this.isEdit = true; this.userId = data.id; this.userName = data.name; this.userEmail = data.email;
             this.userPassword = ''; this.userLevel = String(data.id_level); this.userPhone = data.no_wa; this.userBanjar = data.id_banjar || '';
+            this.userPura = data.id_pura || '';
             this.selectedObjekWisata = data.assigned_objek_ids || [];
             if (this.userLevel == '5' && this.userBanjar) { this.fetchObjekWisata(this.userBanjar); }
             this.showModal = true;
@@ -128,6 +130,22 @@
                                 @foreach($banjar as $b)<option value="{{ $b->id_data_banjar }}">{{ $b->nama_banjar }}</option>@endforeach
                             </select>
                         </div>
+                    </div>
+
+                    {{-- Pura Assignment (Level 6 / Admin Pura) --}}
+                    <div x-show="userLevel == 6" x-transition class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Pura yang Ditugaskan</label>
+                        <select name="purainput_edit" x-model="userPura" :required="userLevel == 6" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                            <option value="">Pilih Pura</option>
+                            @foreach($pura ?? [] as $p)
+                            <option value="{{ $p->id_pura }}" 
+                                x-bind:disabled="!isEdit && assignedPuraIds.includes({{ $p->id_pura }}) || (isEdit && assignedPuraIds.includes({{ $p->id_pura }}) && userPura != {{ $p->id_pura }})"
+                                x-bind:class="(!isEdit && assignedPuraIds.includes({{ $p->id_pura }})) || (isEdit && assignedPuraIds.includes({{ $p->id_pura }}) && userPura != {{ $p->id_pura }}) ? 'text-slate-300' : ''">
+                                {{ $p->nama_pura }}
+                            </option>
+                            @endforeach
+                        </select>
+                        <p class="text-[9px] text-slate-400 px-1">Pura yang sudah memiliki admin tidak akan muncul sebagai pilihan.</p>
                     </div>
 
                     {{-- Objek Wisata Multi-Select (Level 5 / Ticket Counter) --}}

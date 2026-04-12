@@ -242,9 +242,13 @@ class UserController extends BaseController
          $list->aktif="1";
 
          if ($curr_level == 1 || $curr_level == 4) {
-             // Bendesa/Admin can set Level and Banjar (usually for creating Kelian)
+             // Bendesa/Admin can set Level and Banjar
              $list->id_level=$request->input('levelinput_edit');
              $list->id_banjar=$request->input('banjarinput_edit');
+             // Admin Pura (level 6) - assign pura
+             if ($request->input('levelinput_edit') == 6) {
+                 $list->id_pura = $request->input('purainput_edit');
+             }
          } else if ($curr_level == 2) {
              // Kelian can only create Unit Usaha (Level 3) for their own Banjar
              $list->id_level=3;
@@ -279,6 +283,7 @@ class UserController extends BaseController
              ->pluck('id_objek_wisata')
              ->map(fn($v) => (int)$v)
              ->toArray();
+         $arr['id_pura'] = $data->id_pura;
 
 		 echo json_encode($arr);
     }
@@ -290,7 +295,8 @@ class UserController extends BaseController
                 'email' =>  $request->input('emailinput_edit'),
                 'id_level' =>  $request->input('levelinput_edit'),
                 'id_banjar' =>  $request->input('banjarinput_edit'),
-                'no_wa' =>  $request->input('nowainput_edit')
+                'no_wa' =>  $request->input('nowainput_edit'),
+                'id_pura' =>  $request->input('levelinput_edit') == 6 ? $request->input('purainput_edit') : null
         ));
 
         // Handle ticket counter assignments (Level 5)

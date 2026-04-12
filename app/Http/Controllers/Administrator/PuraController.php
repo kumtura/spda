@@ -45,9 +45,11 @@ class PuraController extends Controller
         ]);
 
         $data = $request->only([
-            'nama_pura', 'lokasi', 'latitude', 'longitude',
-            'nama_ketua_pura', 'no_telp_ketua', 'id_data_banjar',
-            'nama_pemangku', 'wuku_odalan', 'odalan_terdekat', 'deskripsi'
+            'nama_pura', 'lokasi', 'latitude', 'longitude', 'google_maps_url',
+            'nama_ketua_pura', 'no_telp_ketua', 'id_banjar_ketua', 'banjar_ketua_manual',
+            'id_data_banjar',
+            'nama_pemangku', 'no_telp_pemangku', 'id_banjar_pemangku', 'banjar_pemangku_manual',
+            'wuku_odalan', 'odalan_terdekat', 'deskripsi'
         ]);
 
         // Upload gambar utama
@@ -102,9 +104,11 @@ class PuraController extends Controller
         ]);
 
         $data = $request->only([
-            'nama_pura', 'lokasi', 'latitude', 'longitude',
-            'nama_ketua_pura', 'no_telp_ketua', 'id_data_banjar',
-            'nama_pemangku', 'wuku_odalan', 'odalan_terdekat', 'deskripsi'
+            'nama_pura', 'lokasi', 'latitude', 'longitude', 'google_maps_url',
+            'nama_ketua_pura', 'no_telp_ketua', 'id_banjar_ketua', 'banjar_ketua_manual',
+            'id_data_banjar',
+            'nama_pemangku', 'no_telp_pemangku', 'id_banjar_pemangku', 'banjar_pemangku_manual',
+            'wuku_odalan', 'odalan_terdekat', 'deskripsi'
         ]);
 
         if ($request->hasFile('gambar_pura')) {
@@ -194,9 +198,15 @@ class PuraController extends Controller
 
         $qris = QrisPura::where('id_pura', $id)->where('is_active', '1')->first();
 
+        // Admin Pura (penanggung jawab) - user with level 6 assigned to this pura
+        $adminPura = \App\Models\User::where('id_level', 6)->where('id_pura', $id)->first();
+
+        // Banjar list for pengurus display
+        $banjarList = Banjar::where('aktif', '1')->pluck('nama_banjar', 'id_data_banjar');
+
         return view('admin.pages.pura.detail', compact(
             'pura', 'gallery', 'punia', 'totalPunia', 'totalOnline',
-            'totalManual', 'puniaHariIni', 'qris'
+            'totalManual', 'puniaHariIni', 'qris', 'adminPura', 'banjarList'
         ));
     }
 

@@ -2,11 +2,14 @@
 
 @section('isi_menu')
 <div class="space-y-6" x-data="{ 
-    showSetorModal: false, 
-    showTarikModal: false,
-    activeTab: 'semua',
+    showModal: false,
+    jenisAlur: '',
     filterJenis: '{{ $filterJenis }}',
     filterBanjar: '{{ $filterBanjar }}',
+    openModal(alur) {
+        this.jenisAlur = alur;
+        this.showModal = true;
+    },
     applyFilter() {
         let url = '{{ url('administrator/setor_punia') }}';
         let params = [];
@@ -14,6 +17,33 @@
         if(this.filterBanjar) params.push('banjar=' + this.filterBanjar);
         if(params.length > 0) url += '?' + params.join('&');
         window.location = url;
+    },
+    getAlurLabel(alur) {
+        const labels = {
+            'penagih_ke_banjar': 'Penagih → Banjar',
+            'banjar_ke_desa': 'Banjar → Desa',
+            'desa_tarik_pg': 'Desa Tarik PG',
+            'desa_ke_banjar': 'Desa → Banjar'
+        };
+        return labels[alur] || alur;
+    },
+    getModalTitle(alur) {
+        const titles = {
+            'penagih_ke_banjar': 'Setor Cash Penagih ke Banjar',
+            'banjar_ke_desa': 'Setor Bagian Desa dari Banjar',
+            'desa_tarik_pg': 'Tarik Dana dari Payment Gateway',
+            'desa_ke_banjar': 'Setor Bagian Banjar dari Desa'
+        };
+        return titles[alur] || '';
+    },
+    getModalDesc(alur) {
+        const descs = {
+            'penagih_ke_banjar': 'Penagih menyerahkan uang tunai hasil penagihan punia ke kas banjar.',
+            'banjar_ke_desa': 'Banjar menyetorkan bagian persentase Desa Adat dari punia cash yang terkumpul.',
+            'desa_tarik_pg': 'Desa Adat menarik dana dari akun Payment Gateway (Xendit) ke rekening bank.',
+            'desa_ke_banjar': 'Desa Adat menyerahkan bagian persentase banjar dari punia online yang sudah ditarik.'
+        };
+        return descs[alur] || '';
     }
 }">
 
@@ -21,15 +51,7 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-black text-slate-800 tracking-tight">Setor & Tarik Punia</h1>
-            <p class="text-slate-500 font-medium text-sm">Kelola penyetoran uang cash dan penarikan dana dari payment gateway.</p>
-        </div>
-        <div class="flex items-center gap-2">
-            <button @click="showSetorModal = true" class="flex items-center gap-2 bg-primary-light hover:bg-blue-600 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md shadow-blue-100 transition-all">
-                <i class="bi bi-cash-coin"></i> Setor Cash
-            </button>
-            <button @click="showTarikModal = true" class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md transition-all">
-                <i class="bi bi-bank"></i> Tarik Online
-            </button>
+            <p class="text-slate-500 font-medium text-sm">Kelola alur kas punia antara penagih, banjar, dan desa adat.</p>
         </div>
     </div>
 
@@ -42,92 +64,111 @@
     </div>
     @endif
 
-    <!-- Tracking Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Cash Tracking -->
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div class="bg-blue-50 border-b border-blue-100 px-5 py-4">
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 bg-primary-light text-white rounded-xl flex items-center justify-center shadow-md shadow-blue-100">
-                        <i class="bi bi-cash-stack text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-black text-slate-800 tracking-tight">Kas Cash (Tunai)</h3>
-                        <p class="text-[10px] text-blue-600/70 font-medium">Dari pembayaran cash kelian banjar</p>
-                    </div>
-                </div>
+    <!-- 4 Flow Action Buttons -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <button @click="openModal('penagih_ke_banjar')" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:border-primary-light hover:shadow-md transition-all group text-left">
+            <div class="h-10 w-10 bg-blue-50 text-primary-light rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary-light group-hover:text-white transition-all">
+                <i class="bi bi-person-check text-lg"></i>
             </div>
-            <div class="p-5 space-y-3">
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-slate-50 rounded-xl p-3">
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Cash Tamiu</p>
-                        <p class="text-sm font-bold text-slate-800">Rp {{ number_format($totalCashTamiu, 0, ',', '.') }}</p>
-                    </div>
-                    <div class="bg-slate-50 rounded-xl p-3">
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Cash Usaha</p>
-                        <p class="text-sm font-bold text-slate-800">Rp {{ number_format($totalCashUsaha, 0, ',', '.') }}</p>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between bg-blue-50 rounded-xl p-3 border border-blue-100">
-                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Sudah Disetor</span>
-                    <span class="text-sm font-black text-blue-700">Rp {{ number_format($totalSudahSetorCash, 0, ',', '.') }}</span>
-                </div>
-                <div class="flex items-center justify-between bg-slate-50 rounded-xl p-3 border border-slate-200">
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Belum Disetor</span>
-                    <span class="text-lg font-black text-slate-800">Rp {{ number_format($cashBelumSetor, 0, ',', '.') }}</span>
-                </div>
+            <p class="text-[10px] font-black text-slate-700 uppercase tracking-widest">Penagih → Banjar</p>
+            <p class="text-[9px] text-slate-400 mt-1">Setor cash penagihan</p>
+        </button>
+        <button @click="openModal('banjar_ke_desa')" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:border-primary-light hover:shadow-md transition-all group text-left">
+            <div class="h-10 w-10 bg-blue-50 text-primary-light rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary-light group-hover:text-white transition-all">
+                <i class="bi bi-arrow-right-circle text-lg"></i>
+            </div>
+            <p class="text-[10px] font-black text-slate-700 uppercase tracking-widest">Banjar → Desa</p>
+            <p class="text-[9px] text-slate-400 mt-1">Setor bagian desa</p>
+        </button>
+        <button @click="openModal('desa_tarik_pg')" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:border-primary-light hover:shadow-md transition-all group text-left">
+            <div class="h-10 w-10 bg-blue-50 text-primary-light rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary-light group-hover:text-white transition-all">
+                <i class="bi bi-bank text-lg"></i>
+            </div>
+            <p class="text-[10px] font-black text-slate-700 uppercase tracking-widest">Desa Tarik PG</p>
+            <p class="text-[9px] text-slate-400 mt-1">Tarik dari Xendit</p>
+        </button>
+        <button @click="openModal('desa_ke_banjar')" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:border-primary-light hover:shadow-md transition-all group text-left">
+            <div class="h-10 w-10 bg-blue-50 text-primary-light rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary-light group-hover:text-white transition-all">
+                <i class="bi bi-arrow-left-circle text-lg"></i>
+            </div>
+            <p class="text-[10px] font-black text-slate-700 uppercase tracking-widest">Desa → Banjar</p>
+            <p class="text-[9px] text-slate-400 mt-1">Setor bagian banjar</p>
+        </button>
+    </div>
+
+    <!-- Saldo Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Saldo Desa -->
+        <div class="bg-primary-light rounded-2xl p-5 text-white shadow-md shadow-blue-100">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="bi bi-bank2 text-lg text-white/70"></i>
+                <p class="text-[10px] font-black text-white/80 uppercase tracking-widest">Saldo Kas Desa Adat</p>
+            </div>
+            <p class="text-2xl font-black tracking-tight mb-2">Rp {{ number_format($saldoDesa->saldo_cash + $saldoDesa->saldo_online, 0, ',', '.') }}</p>
+            <div class="flex gap-4 text-[9px] text-white/60 font-medium">
+                <span>Cash: Rp {{ number_format($saldoDesa->saldo_cash, 0, ',', '.') }}</span>
+                <span>Online: Rp {{ number_format($saldoDesa->saldo_online, 0, ',', '.') }}</span>
             </div>
         </div>
 
-        <!-- Online Tracking -->
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div class="bg-blue-50 border-b border-blue-100 px-5 py-4">
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 bg-primary-light text-white rounded-xl flex items-center justify-center shadow-md shadow-blue-100">
-                        <i class="bi bi-globe text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-black text-slate-800 tracking-tight">Kas Online (Payment Gateway)</h3>
-                        <p class="text-[10px] text-blue-600/70 font-medium">Dari pembayaran QRIS / Xendit</p>
-                    </div>
-                </div>
+        <!-- Total Saldo Banjar -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="bi bi-buildings text-lg text-primary-light"></i>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Saldo Semua Banjar</p>
             </div>
-            <div class="p-5 space-y-3">
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-slate-50 rounded-xl p-3">
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Online Tamiu</p>
-                        <p class="text-sm font-bold text-slate-800">Rp {{ number_format($totalOnlineTamiu, 0, ',', '.') }}</p>
-                    </div>
-                    <div class="bg-slate-50 rounded-xl p-3">
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Online Usaha</p>
-                        <p class="text-sm font-bold text-slate-800">Rp {{ number_format($totalOnlineUsaha, 0, ',', '.') }}</p>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between bg-blue-50 rounded-xl p-3 border border-blue-100">
-                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Sudah Ditarik</span>
-                    <span class="text-sm font-black text-blue-700">Rp {{ number_format($totalSudahTarikOnline, 0, ',', '.') }}</span>
-                </div>
-                <div class="flex items-center justify-between bg-slate-50 rounded-xl p-3 border border-slate-200">
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Belum Ditarik</span>
-                    <span class="text-lg font-black text-slate-800">Rp {{ number_format($onlineBelumTarik, 0, ',', '.') }}</span>
-                </div>
+            <p class="text-2xl font-black text-slate-800 tracking-tight mb-2">Rp {{ number_format($totalSaldoBanjar, 0, ',', '.') }}</p>
+            <span class="text-[9px] text-slate-400 font-medium">{{ count($banjarSaldos) }} banjar terdaftar</span>
+        </div>
+
+        <!-- Pending -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="bi bi-clock text-lg text-primary-light"></i>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Menunggu Verifikasi</p>
             </div>
+            <p class="text-2xl font-black text-primary-light tracking-tight mb-2">Rp {{ number_format($totalPending, 0, ',', '.') }}</p>
+            <span class="text-[9px] text-slate-400 font-medium">Diterima: Rp {{ number_format($totalSetorDiterima, 0, ',', '.') }}</span>
         </div>
     </div>
 
-    <!-- Summary Bar -->
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div class="bg-primary-light rounded-2xl p-5 text-white shadow-md shadow-blue-100">
-            <p class="text-[10px] font-black text-white/80 uppercase tracking-widest mb-1.5">Total Sudah Diterima</p>
-            <p class="text-xl font-black tracking-tight">Rp {{ number_format($totalSetorDiterima, 0, ',', '.') }}</p>
+    <!-- Saldo Per Banjar -->
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
+            <div class="h-8 w-8 bg-blue-50 text-primary-light rounded-lg flex items-center justify-center">
+                <i class="bi bi-buildings text-sm"></i>
+            </div>
+            <h3 class="text-sm font-black text-slate-800 tracking-tight">Saldo Per Banjar</h3>
         </div>
-        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Menunggu Verifikasi</p>
-            <p class="text-xl font-black text-primary-light tracking-tight">Rp {{ number_format($totalPending, 0, ',', '.') }}</p>
-        </div>
-        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm col-span-2 md:col-span-1">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Total Belum Diproses</p>
-            <p class="text-xl font-black text-slate-800 tracking-tight">Rp {{ number_format($cashBelumSetor + $onlineBelumTarik, 0, ',', '.') }}</p>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/50">
+                        <th class="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Banjar</th>
+                        <th class="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Saldo Cash</th>
+                        <th class="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Saldo Online</th>
+                        <th class="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Saldo</th>
+                        <th class="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Hutang ke Desa</th>
+                        <th class="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Hak dari Desa</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach($banjarSaldos as $bs)
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-5 py-3 text-xs font-bold text-slate-700">{{ $bs['banjar']->nama_banjar }}</td>
+                        <td class="px-5 py-3 text-right text-xs font-bold text-slate-600">Rp {{ number_format($bs['saldo']->saldo_cash, 0, ',', '.') }}</td>
+                        <td class="px-5 py-3 text-right text-xs font-bold text-slate-600">Rp {{ number_format($bs['saldo']->saldo_online, 0, ',', '.') }}</td>
+                        <td class="px-5 py-3 text-right text-sm font-black text-primary-light">Rp {{ number_format($bs['saldo']->total_saldo, 0, ',', '.') }}</td>
+                        <td class="px-5 py-3 text-right text-xs font-bold {{ $bs['hutang_ke_desa'] > 0 ? 'text-rose-500' : 'text-slate-300' }}">
+                            {{ $bs['hutang_ke_desa'] > 0 ? 'Rp ' . number_format($bs['hutang_ke_desa'], 0, ',', '.') : '-' }}
+                        </td>
+                        <td class="px-5 py-3 text-right text-xs font-bold {{ $bs['hak_dari_desa'] > 0 ? 'text-emerald-500' : 'text-slate-300' }}">
+                            {{ $bs['hak_dari_desa'] > 0 ? 'Rp ' . number_format($bs['hak_dari_desa'], 0, ',', '.') : '-' }}
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -135,9 +176,11 @@
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div class="flex flex-wrap items-center gap-3">
             <select x-model="filterJenis" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
-                <option value="">Semua Jenis</option>
-                <option value="setor_cash">Setor Cash</option>
-                <option value="tarik_online">Tarik Online</option>
+                <option value="">Semua Alur</option>
+                <option value="penagih_ke_banjar">Penagih → Banjar</option>
+                <option value="banjar_ke_desa">Banjar → Desa</option>
+                <option value="desa_tarik_pg">Desa Tarik PG</option>
+                <option value="desa_ke_banjar">Desa → Banjar</option>
             </select>
             <select x-model="filterBanjar" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
                 <option value="">Semua Banjar</option>
@@ -168,13 +211,13 @@
                     <tr class="bg-slate-50/50">
                         <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-12">No</th>
                         <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tanggal</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Jenis</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sumber</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Banjar</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Keterangan</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Alur</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Dari / Ke</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Penyerah</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Penerima (TTD)</th>
                         <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
                         <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Nominal</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right w-32">Aksi</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right w-28">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -183,19 +226,39 @@
                         <td class="px-5 py-4 text-xs font-medium text-slate-400">{{ $i + 1 }}</td>
                         <td class="px-5 py-4 text-xs font-bold text-slate-600">{{ $r->tanggal_setor->format('d M Y') }}</td>
                         <td class="px-5 py-4">
-                            @if($r->jenis_setor === 'setor_cash')
-                            <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-lg bg-blue-50 text-primary-light border border-blue-100">Setor Cash</span>
-                            @else
-                            <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-100">Tarik Online</span>
+                            @php
+                                $alurLabels = [
+                                    'penagih_ke_banjar' => ['Penagih → Banjar', 'bi-person-check'],
+                                    'banjar_ke_desa' => ['Banjar → Desa', 'bi-arrow-right-circle'],
+                                    'desa_tarik_pg' => ['Desa Tarik PG', 'bi-bank'],
+                                    'desa_ke_banjar' => ['Desa → Banjar', 'bi-arrow-left-circle'],
+                                ];
+                                $label = $alurLabels[$r->jenis_alur] ?? [$r->jenis_alur ?? $r->jenis_setor, 'bi-arrow-right'];
+                            @endphp
+                            <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-lg bg-blue-50 text-primary-light border border-blue-100 inline-flex items-center gap-1">
+                                <i class="{{ $label[1] }} text-[8px]"></i> {{ $label[0] }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 text-[10px] text-slate-600">
+                            @if($r->banjar)
+                                <span class="font-bold">{{ $r->banjar->nama_banjar }}</span>
+                            @endif
+                            @if($r->banjarTujuan)
+                                → <span class="font-bold">{{ $r->banjarTujuan->nama_banjar }}</span>
                             @endif
                         </td>
                         <td class="px-5 py-4">
-                            <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                                {{ ucfirst($r->sumber_punia) }}
-                            </span>
+                            <span class="text-[10px] font-medium text-slate-600">{{ $r->nama_penyerah ?: '-' }}</span>
+                            @if($r->jabatan_penyerah)
+                            <br><span class="text-[9px] text-slate-400">{{ $r->jabatan_penyerah }}</span>
+                            @endif
                         </td>
-                        <td class="px-5 py-4 text-xs font-medium text-slate-600">{{ $r->banjar->nama_banjar ?? '-' }}</td>
-                        <td class="px-5 py-4 text-[10px] text-slate-500 max-w-[200px] truncate">{{ $r->keterangan }}</td>
+                        <td class="px-5 py-4">
+                            <span class="text-[10px] font-medium text-slate-600">{{ $r->nama_penerima_ttd ?: '-' }}</span>
+                            @if($r->jabatan_penerima)
+                            <br><span class="text-[9px] text-slate-400">{{ $r->jabatan_penerima }}</span>
+                            @endif
+                        </td>
                         <td class="px-5 py-4 text-center">
                             @if($r->status === 'diterima')
                             <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-600">Diterima</span>
@@ -206,9 +269,7 @@
                             @endif
                         </td>
                         <td class="px-5 py-4 text-right">
-                            <span class="text-sm font-bold text-primary-light">
-                                Rp {{ number_format($r->nominal, 0, ',', '.') }}
-                            </span>
+                            <span class="text-sm font-bold text-primary-light">Rp {{ number_format($r->nominal, 0, ',', '.') }}</span>
                         </td>
                         <td class="px-5 py-4 text-right">
                             <div class="flex items-center justify-end gap-1">
@@ -216,29 +277,18 @@
                                 <form action="{{ url('administrator/setor_punia/verify/'.$r->id_setor_punia) }}" method="POST" class="inline">
                                     @csrf
                                     <input type="hidden" name="action" value="diterima">
-                                    <button type="submit" onclick="return confirm('Verifikasi dan terima setoran ini?')" 
-                                            class="h-8 w-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center hover:bg-emerald-100 transition-all" title="Terima">
-                                        <i class="bi bi-check-lg text-sm"></i>
-                                    </button>
+                                    <button type="submit" onclick="return confirm('Verifikasi dan terima?')" class="h-7 w-7 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center hover:bg-emerald-100 transition-all" title="Terima"><i class="bi bi-check-lg text-xs"></i></button>
                                 </form>
                                 <form action="{{ url('administrator/setor_punia/verify/'.$r->id_setor_punia) }}" method="POST" class="inline">
                                     @csrf
                                     <input type="hidden" name="action" value="ditolak">
-                                    <button type="submit" onclick="return confirm('Tolak setoran ini?')" 
-                                            class="h-8 w-8 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center hover:bg-rose-100 transition-all" title="Tolak">
-                                        <i class="bi bi-x-lg text-xs"></i>
-                                    </button>
+                                    <button type="submit" onclick="return confirm('Tolak?')" class="h-7 w-7 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center hover:bg-rose-100 transition-all" title="Tolak"><i class="bi bi-x-lg text-[9px]"></i></button>
                                 </form>
                                 @endif
-                                @if($r->bukti)
-                                <a href="{{ asset('bukti_keuangan/'.$r->bukti) }}" target="_blank" class="h-8 w-8 bg-blue-50 text-primary-light rounded-lg flex items-center justify-center hover:bg-blue-100 transition-all" title="Lihat Bukti">
-                                    <i class="bi bi-image text-sm"></i>
-                                </a>
+                                @if($r->bukti || $r->tanda_tangan)
+                                <a href="{{ asset('bukti_keuangan/'.($r->bukti ?: $r->tanda_tangan)) }}" target="_blank" class="h-7 w-7 bg-blue-50 text-primary-light rounded-lg flex items-center justify-center hover:bg-blue-100 transition-all" title="Lihat Bukti"><i class="bi bi-image text-xs"></i></a>
                                 @endif
-                                <a href="{{ url('administrator/setor_punia/hapus/'.$r->id_setor_punia) }}" onclick="return confirm('Hapus record ini?')"
-                                   class="h-8 w-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all" title="Hapus">
-                                    <i class="bi bi-trash text-xs"></i>
-                                </a>
+                                <a href="{{ url('administrator/setor_punia/hapus/'.$r->id_setor_punia) }}" onclick="return confirm('Hapus?')" class="h-7 w-7 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all" title="Hapus"><i class="bi bi-trash text-[9px]"></i></a>
                             </div>
                         </td>
                     </tr>
@@ -257,32 +307,32 @@
         </div>
     </div>
 
-    <!-- Modal: Setor Cash -->
+    <!-- Universal Modal -->
     <template x-teleport="body">
-        <div x-show="showSetorModal" x-cloak
+        <div x-show="showModal" x-cloak
              class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md px-4 py-8">
-            <div class="bg-white w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl border border-slate-200" @click.away="showSetorModal = false">
+            <div class="bg-white w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl border border-slate-200" @click.away="showModal = false">
                 <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-blue-50/50">
                     <div class="flex items-center gap-4">
                         <div class="h-12 w-12 bg-primary-light text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-100">
                             <i class="bi bi-cash-coin text-2xl"></i>
                         </div>
                         <div>
-                            <span class="text-[9px] font-black text-primary-light uppercase tracking-widest block">Catat Penyetoran</span>
-                            <h3 class="text-lg font-black text-slate-800 tracking-tight">Setor Cash ke Kas Desa</h3>
+                            <span class="text-[9px] font-black text-primary-light uppercase tracking-widest block">Catat Setoran</span>
+                            <h3 class="text-lg font-black text-slate-800 tracking-tight" x-text="getModalTitle(jenisAlur)"></h3>
                         </div>
                     </div>
-                    <button @click="showSetorModal = false" class="h-8 w-8 bg-slate-100 hover:bg-blue-100 text-slate-400 hover:text-primary-light rounded-lg flex items-center justify-center transition-all">
+                    <button @click="showModal = false" class="h-8 w-8 bg-slate-100 hover:bg-blue-100 text-slate-400 hover:text-primary-light rounded-lg flex items-center justify-center transition-all">
                         <i class="bi bi-x-lg text-sm"></i>
                     </button>
                 </div>
                 <form action="{{ url('administrator/setor_punia/store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
                     @csrf
-                    <input type="hidden" name="jenis_setor" value="setor_cash">
-                    
+                    <input type="hidden" name="jenis_alur" :value="jenisAlur">
+
                     <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-700">
                         <i class="bi bi-info-circle mr-1"></i>
-                        Catat penyetoran uang tunai yang dikumpulkan oleh kelian dari pembayaran punia warga ke kas Desa Adat.
+                        <span x-text="getModalDesc(jenisAlur)"></span>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -291,125 +341,97 @@
                             <input type="number" name="nominal" required min="1" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="0">
                         </div>
                         <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Tanggal Setor *</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Tanggal *</label>
                             <input type="date" name="tanggal_setor" required value="{{ date('Y-m-d') }}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5">
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Sumber Punia</label>
-                            <select name="sumber_punia" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5">
-                                <option value="campuran">Campuran</option>
-                                <option value="tamiu">Krama Tamiu</option>
-                                <option value="usaha">Unit Usaha</option>
-                                <option value="umum">Umum / Lainnya</option>
-                            </select>
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Banjar Asal</label>
-                            <select name="id_data_banjar" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5">
-                                <option value="">— Semua / Umum —</option>
-                                @foreach($banjarList as $b)
-                                <option value="{{ $b->id_data_banjar }}">{{ $b->nama_banjar }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Penerima Setoran</label>
-                        <input type="text" name="penerima" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="Nama bendahara / penerima">
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Keterangan *</label>
-                        <textarea name="keterangan" rows="2" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="Setor punia bulan April 2026 dari kelian banjar..."></textarea>
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Bukti Setor (Opsional)</label>
-                        <input type="file" name="bukti" accept="image/*,.pdf" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs">
-                    </div>
-                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                        <button type="button" @click="showSetorModal = false" class="px-6 py-2.5 font-black text-[10px] uppercase text-slate-400">Batal</button>
-                        <button type="submit" class="px-8 py-2.5 bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-100 hover:bg-blue-600 transition-all">Simpan Setoran</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </template>
 
-    <!-- Modal: Tarik Online -->
-    <template x-teleport="body">
-        <div x-show="showTarikModal" x-cloak
-             class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md px-4 py-8">
-            <div class="bg-white w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl border border-slate-200" @click.away="showTarikModal = false">
-                <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-blue-50/50">
-                    <div class="flex items-center gap-4">
-                        <div class="h-12 w-12 bg-primary-light text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-100">
-                            <i class="bi bi-bank text-2xl"></i>
-                        </div>
-                        <div>
-                            <span class="text-[9px] font-black text-primary-light uppercase tracking-widest block">Catat Penarikan</span>
-                            <h3 class="text-lg font-black text-slate-800 tracking-tight">Tarik Dana dari Payment Gateway</h3>
-                        </div>
-                    </div>
-                    <button @click="showTarikModal = false" class="h-8 w-8 bg-slate-100 hover:bg-blue-100 text-slate-400 hover:text-primary-light rounded-lg flex items-center justify-center transition-all">
-                        <i class="bi bi-x-lg text-sm"></i>
-                    </button>
-                </div>
-                <form action="{{ url('administrator/setor_punia/store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
-                    @csrf
-                    <input type="hidden" name="jenis_setor" value="tarik_online">
-
-                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-700">
-                        <i class="bi bi-info-circle mr-1"></i>
-                        Catat penarikan dana dari akun payment gateway (Xendit) ke rekening Desa Adat. Pastikan jumlah sesuai dengan yang ditarik.
+                    <!-- Banjar Asal (for penagih_ke_banjar, banjar_ke_desa) -->
+                    <div x-show="jenisAlur === 'penagih_ke_banjar' || jenisAlur === 'banjar_ke_desa'" class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Banjar Asal *</label>
+                        <select name="id_data_banjar" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5">
+                            <option value="">— Pilih Banjar —</option>
+                            @foreach($banjarList as $b)
+                            <option value="{{ $b->id_data_banjar }}">{{ $b->nama_banjar }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
+                    <!-- Banjar Tujuan (for desa_ke_banjar) -->
+                    <div x-show="jenisAlur === 'desa_ke_banjar'" class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Banjar Tujuan *</label>
+                        <select name="id_data_banjar_tujuan" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5">
+                            <option value="">— Pilih Banjar —</option>
+                            @foreach($banjarList as $b)
+                            <option value="{{ $b->id_data_banjar }}">{{ $b->nama_banjar }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Sumber Punia -->
+                    <div x-show="jenisAlur !== 'desa_tarik_pg'" class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Sumber Punia</label>
+                        <select name="sumber_punia" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5">
+                            <option value="campuran">Campuran</option>
+                            <option value="tamiu">Krama Tamiu</option>
+                            <option value="usaha">Unit Usaha</option>
+                            <option value="umum">Umum / Lainnya</option>
+                        </select>
+                    </div>
+
+                    <!-- Penyerah & Penerima TTD -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nominal (Rp) *</label>
-                            <input type="number" name="nominal" required min="1" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="0">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Penyerah *</label>
+                            <input type="text" name="nama_penyerah" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="Nama yang menyerahkan">
                         </div>
                         <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Tanggal Penarikan *</label>
-                            <input type="date" name="tanggal_setor" required value="{{ date('Y-m-d') }}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Jabatan Penyerah</label>
+                            <input type="text" name="jabatan_penyerah" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="Penagih / Kelian / dll">
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Sumber Punia</label>
-                            <select name="sumber_punia" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5">
-                                <option value="campuran">Campuran</option>
-                                <option value="tamiu">Krama Tamiu</option>
-                                <option value="usaha">Unit Usaha</option>
-                                <option value="umum">Umum / Lainnya</option>
-                            </select>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Penerima (TTD) *</label>
+                            <input type="text" name="nama_penerima_ttd" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="Nama yang menandatangani">
                         </div>
                         <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Penerima / Atas Nama *</label>
-                            <input type="text" name="penerima" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="Nama penerima penarikan">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Jabatan Penerima</label>
+                            <input type="text" name="jabatan_penerima" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="Bendahara / Kelian Adat / dll">
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <!-- Bank info for desa_tarik_pg -->
+                    <div x-show="jenisAlur === 'desa_tarik_pg'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Bank Tujuan</label>
-                            <input type="text" name="nama_bank" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="BCA, BNI, BRI, dll">
+                            <input type="text" name="nama_bank" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="BCA, BNI, BRI">
                         </div>
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">No. Rekening</label>
-                            <input type="text" name="no_rekening" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="Nomor rekening tujuan">
+                            <input type="text" name="no_rekening" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="Nomor rekening">
                         </div>
                     </div>
+
                     <div class="space-y-1.5">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Keterangan *</label>
-                        <textarea name="keterangan" rows="2" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="Penarikan dana Xendit bulan..."></textarea>
+                        <textarea name="keterangan" rows="2" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5" placeholder="Keterangan setoran..."></textarea>
                     </div>
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Bukti Penarikan (Opsional)</label>
-                        <input type="file" name="bukti" accept="image/*,.pdf" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Bukti Setor</label>
+                            <input type="file" name="bukti" accept="image/*,.pdf" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Foto Tanda Tangan</label>
+                            <input type="file" name="tanda_tangan" accept="image/*" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs">
+                        </div>
                     </div>
+
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                        <button type="button" @click="showTarikModal = false" class="px-6 py-2.5 font-black text-[10px] uppercase text-slate-400">Batal</button>
-                        <button type="submit" class="px-8 py-2.5 bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-100 hover:bg-blue-600 transition-all">Simpan Penarikan</button>
+                        <button type="button" @click="showModal = false" class="px-6 py-2.5 font-black text-[10px] uppercase text-slate-400">Batal</button>
+                        <button type="submit" class="px-8 py-2.5 bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-100 hover:bg-blue-600 transition-all">Simpan</button>
                     </div>
                 </form>
             </div>

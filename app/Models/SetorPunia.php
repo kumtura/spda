@@ -12,12 +12,19 @@ class SetorPunia extends Model
     protected $fillable = [
         'id_keuangan',
         'jenis_setor',
+        'jenis_alur',
         'sumber_punia',
         'id_data_banjar',
         'nominal',
         'tanggal_setor',
         'keterangan',
         'penerima',
+        'nama_penyerah',
+        'jabatan_penyerah',
+        'nama_penerima_ttd',
+        'jabatan_penerima',
+        'tanda_tangan',
+        'id_data_banjar_tujuan',
         'nama_bank',
         'no_rekening',
         'bukti',
@@ -53,5 +60,10 @@ class SetorPunia extends Model
     public function verifier()
     {
         return $this->belongsTo(User::class, 'verified_by', 'id');
+    }
+
+    public function banjarTujuan()
+    {
+        return $this->belongsTo(Banjar::class, 'id_data_banjar_tujuan', 'id_data_banjar');
     }
 }

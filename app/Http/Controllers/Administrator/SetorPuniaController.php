@@ -13,6 +13,9 @@ use App\Models\Keuangan;
 use App\Models\Banjar;
 use App\Models\Danapunia;
 use App\Models\PuniaPendatang;
+use App\Models\SaldoKas;
+use App\Models\RiwayatBagiHasil;
+use App\Services\BagiHasilService;
 
 class SetorPuniaController extends BaseController
 {
@@ -22,15 +25,32 @@ class SetorPuniaController extends BaseController
         $filterBanjar = $request->get('banjar', '');
         $filterJenis = $request->get('jenis', '');
 
-        // === TRACKING: Hitung kas yang belum disetor ===
+        // === SALDO KAS: Desa Adat ===
+        $saldoDesa = SaldoKas::getOrCreate(null);
 
-        // Total cash dari Punia Pendatang (tamiu)
-        $qCashTamiu = PuniaPendatang::where('aktif', '1')
+        // === SALDO KAS: Per Banjar ===
+        $banjarSaldos = [];
+        foreach ($banjarList as $b) {
+            $saldo = SaldoKas::getOrCreate($b->id_data_banjar);
+            $hutangKeDesa = BagiHasilService::getHutangBanjarKeDesa($b->id_data_banjar);
+            $hakDariBanjar = BagiHasilService::getHutangDesaKeBanjar($b->id_data_banjar);
+            $banjarSaldos[] = [
+                'banjar' => $b,
+                'saldo' => $saldo,
+                'hutang_ke_desa' => $hutangKeDesa,
+                'hak_dari_desa' => $hakDariBanjar,
+            ];
+        }
+
+        // Total saldo all banjars
+        $totalSaldoBanjar = SaldoKas::whereNotNull('id_data_banjar')->sum(DB::raw('saldo_cash + saldo_online'));
+
+        // === TRACKING: Legacy cash/online totals (backward compat) ===
+        $totalCashTamiu = PuniaPendatang::where('aktif', '1')
             ->where('status_pembayaran', 'lunas')
-            ->where('metode_pembayaran', 'cash');
-        $totalCashTamiu = (clone $qCashTamiu)->sum('nominal');
+            ->where('metode_pembayaran', 'cash')
+            ->sum('nominal');
 
-        // Total cash dari Punia Usaha
         $totalCashUsaha = Danapunia::where('aktif', '1')
             ->where('status_pembayaran', 'completed')
             ->where(function($q) {
@@ -42,7 +62,6 @@ class SetorPuniaController extends BaseController
 
         $totalCashAll = $totalCashTamiu + $totalCashUsaha;
 
-        // Total online/QRIS dari Punia Pendatang
         $totalOnlineTamiu = PuniaPendatang::where('aktif', '1')
             ->where('status_pembayaran', 'lunas')
             ->where(function($q) {
@@ -52,7 +71,6 @@ class SetorPuniaController extends BaseController
             })
             ->sum('nominal');
 
-        // Total online dari Punia Usaha
         $totalOnlineUsaha = Danapunia::where('aktif', '1')
             ->where('status_pembayaran', 'completed')
             ->where(function($q) {
@@ -64,48 +82,31 @@ class SetorPuniaController extends BaseController
 
         $totalOnlineAll = $totalOnlineTamiu + $totalOnlineUsaha;
 
-        // Total sudah disetor cash
-        $totalSudahSetorCash = SetorPunia::where('aktif', 1)
-            ->where('jenis_setor', 'setor_cash')
-            ->where('status', 'diterima')
-            ->sum('nominal');
-
-        // Total sudah ditarik online
-        $totalSudahTarikOnline = SetorPunia::where('aktif', 1)
-            ->where('jenis_setor', 'tarik_online')
-            ->where('status', 'diterima')
-            ->sum('nominal');
-
-        // Saldo belum disetor
-        $cashBelumSetor = $totalCashAll - $totalSudahSetorCash;
-        if ($cashBelumSetor < 0) $cashBelumSetor = 0;
-
-        $onlineBelumTarik = $totalOnlineAll - $totalSudahTarikOnline;
-        if ($onlineBelumTarik < 0) $onlineBelumTarik = 0;
-
         // === RIWAYAT SETOR/TARIK ===
-        $query = SetorPunia::with(['banjar', 'user', 'verifier'])
+        $query = SetorPunia::with(['banjar', 'banjarTujuan', 'user', 'verifier'])
             ->where('aktif', 1);
 
         if ($filterBanjar) {
-            $query->where('id_data_banjar', $filterBanjar);
+            $query->where(function($q) use ($filterBanjar) {
+                $q->where('id_data_banjar', $filterBanjar)
+                  ->orWhere('id_data_banjar_tujuan', $filterBanjar);
+            });
         }
         if ($filterJenis) {
-            $query->where('jenis_setor', $filterJenis);
+            $query->where('jenis_alur', $filterJenis);
         }
 
         $riwayat = $query->orderBy('tanggal_setor', 'desc')->get();
 
-        // Totals for display
+        // Summary totals
         $totalSetorDiterima = SetorPunia::where('aktif', 1)->where('status', 'diterima')->sum('nominal');
         $totalPending = SetorPunia::where('aktif', 1)->where('status', 'pending')->sum('nominal');
 
         return view('admin.pages.setor_punia.index', compact(
             'banjarList', 'filterBanjar', 'filterJenis',
+            'saldoDesa', 'banjarSaldos', 'totalSaldoBanjar',
             'totalCashTamiu', 'totalCashUsaha', 'totalCashAll',
             'totalOnlineTamiu', 'totalOnlineUsaha', 'totalOnlineAll',
-            'totalSudahSetorCash', 'totalSudahTarikOnline',
-            'cashBelumSetor', 'onlineBelumTarik',
             'riwayat', 'totalSetorDiterima', 'totalPending'
         ));
     }
@@ -113,20 +114,26 @@ class SetorPuniaController extends BaseController
     public function store(Request $request)
     {
         $request->validate([
-            'jenis_setor' => 'required|in:setor_cash,tarik_online',
+            'jenis_alur' => 'required|in:penagih_ke_banjar,banjar_ke_desa,desa_tarik_pg,desa_ke_banjar',
             'nominal' => 'required|numeric|min:1',
             'tanggal_setor' => 'required|date',
             'keterangan' => 'required|string|max:500',
         ]);
 
         $data = [
-            'jenis_setor' => $request->jenis_setor,
+            'jenis_setor' => in_array($request->jenis_alur, ['penagih_ke_banjar', 'banjar_ke_desa']) ? 'setor_cash' : 'tarik_online',
+            'jenis_alur' => $request->jenis_alur,
             'sumber_punia' => $request->sumber_punia ?? 'campuran',
             'id_data_banjar' => $request->id_data_banjar,
+            'id_data_banjar_tujuan' => $request->id_data_banjar_tujuan,
             'nominal' => $request->nominal,
             'tanggal_setor' => $request->tanggal_setor,
             'keterangan' => $request->keterangan,
             'penerima' => $request->penerima,
+            'nama_penyerah' => $request->nama_penyerah,
+            'jabatan_penyerah' => $request->jabatan_penyerah,
+            'nama_penerima_ttd' => $request->nama_penerima_ttd,
+            'jabatan_penerima' => $request->jabatan_penerima,
             'nama_bank' => $request->nama_bank,
             'no_rekening' => $request->no_rekening,
             'status' => 'pending',
@@ -134,12 +141,20 @@ class SetorPuniaController extends BaseController
             'aktif' => 1,
         ];
 
-        // Handle file upload
+        // Handle bukti upload
         if ($request->hasFile('bukti')) {
             $file = $request->file('bukti');
             $filename = time() . '_setor_' . str_replace(' ', '_', $file->getClientOriginalName());
             $file->move(public_path('bukti_keuangan'), $filename);
             $data['bukti'] = $filename;
+        }
+
+        // Handle tanda tangan upload
+        if ($request->hasFile('tanda_tangan')) {
+            $file = $request->file('tanda_tangan');
+            $filename = time() . '_ttd_' . str_replace(' ', '_', $file->getClientOriginalName());
+            $file->move(public_path('bukti_keuangan'), $filename);
+            $data['tanda_tangan'] = $filename;
         }
 
         SetorPunia::create($data);
@@ -160,20 +175,25 @@ class SetorPuniaController extends BaseController
         $setor->verified_at = now();
         $setor->catatan_verifikasi = $request->catatan;
 
-        // Jika diterima, buat record di tb_keuangan juga
-        if ($request->action === 'diterima') {
-            $jenisKeuangan = $setor->jenis_setor === 'setor_cash' ? 'pemasukan' : 'tarik';
-            
-            // For setor_cash: it's "pemasukan" to kas desa (cash deposited)
-            // Actually, the original pemasukan is already tracked. This is an internal transfer.
-            // Let's record it as a separate tracking without duplicating pemasukan.
-            // We'll use jenis = 'setor_punia' in keuangan for audit trail
-            
-            // Actually, since tb_keuangan only has enum('pengeluaran','tarik'), 
-            // and this is a "setor" (deposit), we should add 'setor_punia' to the enum
-            // OR just keep the relation without creating keuangan record
-            // Let's keep it simple - the SetorPunia table IS the tracking. 
-            // We don't need to duplicate into tb_keuangan.
+        // If accepted, process the saldo transfer
+        if ($request->action === 'diterima' && $setor->jenis_alur) {
+            switch ($setor->jenis_alur) {
+                case 'penagih_ke_banjar':
+                    // Cash already added to banjar saldo via BagiHasilService::splitPayment
+                    // This is just confirming the deposit was received
+                    break;
+                case 'banjar_ke_desa':
+                    BagiHasilService::setorBanjarKeDesa($setor->id_data_banjar, $setor->nominal);
+                    break;
+                case 'desa_tarik_pg':
+                    BagiHasilService::desaTarikPG($setor->nominal);
+                    break;
+                case 'desa_ke_banjar':
+                    if ($setor->id_data_banjar_tujuan) {
+                        BagiHasilService::setorDesaKeBanjar($setor->id_data_banjar_tujuan, $setor->nominal);
+                    }
+                    break;
+            }
         }
 
         $setor->save();

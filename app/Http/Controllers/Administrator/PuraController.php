@@ -18,7 +18,7 @@ class PuraController extends Controller
 
     public function index()
     {
-        $pura = Pura::where('aktif', '1')
+        $pura = Pura::where('tb_pura.aktif', '1')
             ->leftJoin('tb_data_banjar', 'tb_pura.id_data_banjar', '=', 'tb_data_banjar.id_data_banjar')
             ->select('tb_pura.*', 'tb_data_banjar.nama_banjar')
             ->orderBy('tb_pura.id_pura', 'desc')

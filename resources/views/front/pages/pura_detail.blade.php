@@ -3,12 +3,12 @@
 @section('content')
 <div class="bg-white min-h-screen pb-24">
     <!-- Hero Image -->
-    <div class="relative h-56 bg-amber-100">
+    <div class="relative h-56 bg-slate-100">
         @if($pura->gambar_pura)
-        <img src="{{ asset($pura->gambar_pura) }}" class="w-full h-full object-cover" alt="{{ $pura->nama_pura }}" onerror="this.parentElement.classList.add('flex','items-center','justify-center'); this.outerHTML='<i class=\'bi bi-building text-amber-300 text-5xl\'></i>'">
+        <img src="{{ asset($pura->gambar_pura) }}" class="w-full h-full object-cover" alt="{{ $pura->nama_pura }}" onerror="this.parentElement.classList.add('flex','items-center','justify-center'); this.outerHTML='<i class=\'bi bi-building text-slate-300 text-5xl\'></i>'">
         @else
         <div class="w-full h-full flex items-center justify-center">
-            <i class="bi bi-building text-amber-300 text-5xl"></i>
+            <i class="bi bi-building text-slate-300 text-5xl"></i>
         </div>
         @endif
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
@@ -38,7 +38,7 @@
                 </div>
                 <div>
                     <p class="text-[9px] text-slate-400 uppercase tracking-widest mb-0.5">Wuku Odalan</p>
-                    <p class="text-xs font-bold text-amber-600">{{ $pura->wuku_odalan ?? '-' }}</p>
+                    <p class="text-xs font-bold text-[#00a6eb]">{{ $pura->wuku_odalan ?? '-' }}</p>
                 </div>
                 <div>
                     <p class="text-[9px] text-slate-400 uppercase tracking-widest mb-0.5">Odalan Terdekat</p>
@@ -66,7 +66,7 @@
         @endif
 
         <!-- Punia Stats -->
-        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-5 text-white relative overflow-hidden">
+        <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] rounded-2xl p-5 text-white relative overflow-hidden">
             <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
             <div class="relative z-10">
                 <p class="text-[9px] text-white/60 uppercase tracking-widest">Total Punia Terkumpul</p>

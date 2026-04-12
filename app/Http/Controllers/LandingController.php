@@ -1626,7 +1626,7 @@ class LandingController extends Controller
     public function pura_list()
     {
         $village = $this->getVillageData();
-        $pura = \App\Models\Pura::where('aktif', '1')
+        $pura = \App\Models\Pura::where('tb_pura.aktif', '1')
             ->leftJoin('tb_data_banjar', 'tb_pura.id_data_banjar', '=', 'tb_data_banjar.id_data_banjar')
             ->select('tb_pura.*', 'tb_data_banjar.nama_banjar')
             ->orderBy('tb_pura.nama_pura')

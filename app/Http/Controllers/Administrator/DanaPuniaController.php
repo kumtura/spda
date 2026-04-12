@@ -10,6 +10,8 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\User;
 use App\Models\Banjar;
 use App\Models\Danapunia;
+use App\Models\Pendatang;
+use App\Models\PuniaPendatang;
 
 use DB;
 use File;
@@ -61,6 +63,49 @@ class DanaPuniaController extends BaseController
 
             //echo $datalist;
              return view('admin.pages.data_punia_wajib.table' ,compact('datalist'));
+        }
+
+        public function list_datapunia_pendatang(Request $request) {
+            $month = date("n");
+            $year = date("Y");
+            return $this->list_datapunia_pendatang_param($request, $month, $year);
+        }
+
+        public function list_datapunia_pendatang_param(Request $request, $month, $year) {
+            $monthKey = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
+            
+            $query = Pendatang::with('banjar')->where('aktif', '1')->where('status', 'aktif');
+            
+            if ($request->filled('banjar')) {
+                $query->where('id_data_banjar', $request->banjar);
+            }
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nama', 'LIKE', '%'.$search.'%')
+                      ->orWhere('nik', 'LIKE', '%'.$search.'%');
+                });
+            }
+
+            $pendatangList = $query->orderBy('nama', 'asc')->get();
+            
+            foreach($pendatangList as $p) {
+                // Get payment for this specific month/year
+                $payment = PuniaPendatang::where('id_pendatang', $p->id_pendatang)
+                    ->where('jenis_punia', 'rutin')
+                    ->where('bulan_tahun', 'LIKE', $monthKey . '%')
+                    ->where('status_pembayaran', 'lunas')
+                    ->where('aktif', '1')
+                    ->first();
+                    
+                $p->payment_status = $payment ? 'lunas' : 'belum';
+                $p->payment_data = $payment;
+            }
+
+            $banjarList = Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
+
+            return view('admin.pages.data_punia_pendatang.table', compact('pendatangList', 'month', 'year', 'banjarList'));
         }
 
         public function download_pdf_danapunia(Request $request){

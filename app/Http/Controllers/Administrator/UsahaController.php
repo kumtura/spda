@@ -53,6 +53,28 @@ class UsahaController extends BaseController
             //$datalist = Banjar::get_databanjar($request);
             //echo $datalist;
         }
+
+        public function setting()
+        {
+            return view('admin.pages.data_usaha.setting');
+        }
+
+        public function updateSetting(Request $request)
+        {
+            $request->validate([
+                'punia_usaha_global' => 'required|numeric|min:0'
+            ]);
+
+            $settingsPath = storage_path('app/settings.json');
+            $settings = json_decode(file_get_contents($settingsPath), true);
+            $settings['punia_usaha_global'] = $request->punia_usaha_global;
+            $settings['punia_usaha_ke_desa'] = $request->has('punia_usaha_ke_desa') ? true : false;
+            $settings['punia_usaha_tipe_ke_desa'] = $request->input('punia_usaha_tipe_ke_desa', 'persentase');
+            $settings['punia_usaha_nilai_ke_desa'] = (float) $request->input('punia_usaha_nilai_ke_desa', 0);
+            file_put_contents($settingsPath, json_encode($settings, JSON_PRETTY_PRINT));
+
+            return redirect()->back()->with('success', 'Pengaturan punia usaha berhasil diupdate');
+        }
         
         public function get_detailUsaha(Request $request , $index){
             $rows = Usaha::get_detailUsaha($index);

@@ -87,6 +87,9 @@ class PendatangController extends Controller
         $settingsPath = storage_path('app/settings.json');
         $settings = json_decode(file_get_contents($settingsPath), true);
         $settings['punia_pendatang_global'] = $request->punia_pendatang_global;
+        $settings['punia_pendatang_ke_desa'] = $request->has('punia_pendatang_ke_desa') ? true : false;
+        $settings['punia_pendatang_tipe_ke_desa'] = $request->input('punia_pendatang_tipe_ke_desa', 'persentase');
+        $settings['punia_pendatang_nilai_ke_desa'] = (float) $request->input('punia_pendatang_nilai_ke_desa', 0);
         file_put_contents($settingsPath, json_encode($settings, JSON_PRETTY_PRINT));
         
         return redirect()->back()->with('success', 'Pengaturan punia global berhasil diupdate');

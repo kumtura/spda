@@ -30,6 +30,11 @@ class RedirectAuthenticatedFromPublic
                 return redirect('/administrator/home');
             }
             
+            // Level 6 = Admin Punia -> redirect to kelian home (same banjar-based view)
+            if ($level == '6') {
+                return redirect('/administrator/home');
+            }
+            
             // Level 1 = Bendesa Adat -> allow access to public pages
             // Level 4 = Admin Sistem -> allow access to public pages
         }

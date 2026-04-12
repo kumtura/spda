@@ -55,7 +55,10 @@
     <!-- Top Action Bar -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-            <a href="{{ url('administrator/data_usaha') }}" class="h-10 w-10 flex items-center justify-center bg-white rounded-xl shadow-sm border border-slate-200 text-slate-400 hover:text-primary-light transition-colors">
+            @php
+                $backUrl = request('from') === 'punia_usaha' ? url('administrator/datapunia_usaha') : url('administrator/data_usaha');
+            @endphp
+            <a href="{{ $backUrl }}" class="h-10 w-10 flex items-center justify-center bg-white rounded-xl shadow-sm border border-slate-200 text-slate-400 hover:text-primary-light transition-colors">
                 <i class="bi bi-arrow-left text-lg"></i>
             </a>
             <div>

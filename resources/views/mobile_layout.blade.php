@@ -40,7 +40,7 @@
             </div>
             <div class="flex items-center gap-2">
                 @php
-                    $roleLabel = Session::get('level') == '2' ? 'Kelian' : (Session::get('level') == '3' ? 'Usaha' : (Session::get('level') == '5' ? 'Counter' : 'Admin'));
+                    $roleLabel = Session::get('level') == '2' ? 'Kelian' : (Session::get('level') == '3' ? 'Usaha' : (Session::get('level') == '5' ? 'Counter' : (Session::get('level') == '7' ? 'Penagih' : 'Admin')));
                 @endphp
                 <span class="bg-white/20 backdrop-blur-md text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">{{ $roleLabel }}</span>
             </div>
@@ -109,6 +109,22 @@
                 <a href="{{ url('administrator/ticketcounter/tiket/transaksi') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/ticketcounter/tiket/transaksi*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
                     <i class="bi bi-receipt text-xl"></i>
                     <span class="text-[10px] font-semibold">Transaksi</span>
+                </a>
+            @endif
+
+            @if(Session::get('level') == "7")
+                <!-- Penagih Iuran Features -->
+                <a href="{{ url('administrator/penagih') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/penagih') && !Request::is('administrator/penagih/*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-house-door{{ Request::is('administrator/penagih') && !Request::is('administrator/penagih/*') ? '-fill' : '' }} text-xl"></i>
+                    <span class="text-[10px] font-semibold">Home</span>
+                </a>
+                <a href="{{ url('administrator/penagih/pendatang') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/penagih/pendatang*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-people text-xl"></i>
+                    <span class="text-[10px] font-semibold">Krama Tamiu</span>
+                </a>
+                <a href="{{ url('administrator/penagih/usaha') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/penagih/usaha*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-building text-xl"></i>
+                    <span class="text-[10px] font-semibold">Unit Usaha</span>
                 </a>
             @endif
 

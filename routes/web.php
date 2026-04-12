@@ -111,14 +111,14 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			'uses' => 'Administrator\DashboardController@indexhome',
 		]);
 
-		Route::get('/home', [DashboardController::class, 'indexhome'])->name('home')->middleware('role:1,2,3,4,5');
+		Route::get('/home', [DashboardController::class, 'indexhome'])->name('home')->middleware('role:1,2,3,4,5,6,7');
 
 		Route::get('/get_danapunia_range', [
 			'uses' => 'Administrator\DashboardController@get_danapunia_range',
 		]);
 
 		// Profile & General
-		Route::get('/userprofile', 'UserController@indexuser')->middleware('role:1,2,3,5');
+		Route::get('/userprofile', 'UserController@indexuser')->middleware('role:1,2,3,5,6,7');
         Route::post('update_user', 'UserController@updatepost_profile'); // For profile update
 
 		// Usaha Management
@@ -246,6 +246,24 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/kelian/pendatang/acara/toggle/{id}', 'Administrator\PendatangController@toggleAcara');
         });
 
+        // Penagih Iuran (Level 7) - Mobile
+        Route::group(['middleware' => 'role:7'], function() {
+            Route::get('/penagih', 'Administrator\PenagihController@index');
+            
+            // Pendatang/Krama Tamiu
+            Route::get('/penagih/pendatang', 'Administrator\PenagihController@pendatang');
+            Route::get('/penagih/pendatang/detail/{id}', 'Administrator\PenagihController@pendatangDetail');
+            Route::get('/penagih/pendatang/kartu-punia/{id}', 'Administrator\PenagihController@kartuPunia');
+            Route::post('/penagih/pendatang/kartu-punia/bayar', 'Administrator\PenagihController@bayarKartuPunia');
+            Route::post('/penagih/pendatang/punia/bayar/{id}', 'Administrator\PenagihController@bayarPuniaPendatang');
+            Route::get('/penagih/pendatang/generate-tagihan/{id}', 'Administrator\PenagihController@generateTagihan');
+            
+            // Unit Usaha
+            Route::get('/penagih/usaha', 'Administrator\PenagihController@usaha');
+            Route::get('/penagih/usaha/detail/{id}', 'Administrator\PenagihController@usahaDetail');
+            Route::post('/penagih/usaha/bayar-manual', 'Administrator\PenagihController@usahaBayarManual');
+        });
+
 		// Karyawan / Tenaga Kerja
 		Route::get('/data_tenagakerja','Administrator\KaryawanController@index');
 		Route::get('/data_tenagakerja_aktif','Administrator\KaryawanController@indexAktif');
@@ -262,7 +280,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 		Route::post('/upload_gambar_karyawan/{index}','Administrator\KaryawanController@upload_gambar_karyawan');
 
 		// Dana Punia & Sumbangan
-		Route::group(['middleware' => 'role:1,2'], function() {
+		Route::group(['middleware' => 'role:1,2,6'], function() {
 			// Verifikasi Pembayaran Manual
 			Route::get('/verifikasi_pembayaran', [DashboardController::class, 'verifikasi_pembayaran'])->name('verifikasi_pembayaran');
 			Route::post('/verifikasi_pembayaran/approve', [DashboardController::class, 'verifikasi_approve'])->name('verifikasi.approve');
@@ -332,6 +350,9 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 			Route::get('/alokasi_punia/hapus/{id}','Administrator\AlokasiPuniaController@destroy');
 			
 			Route::get('/data_usaha','Administrator\UsahaController@ambil_listUsaha');
+			Route::get('/data_usaha/setting', 'Administrator\UsahaController@setting');
+			Route::post('/data_usaha/setting/update', 'Administrator\UsahaController@updateSetting');
+			Route::get('/data_usaha/detail/{id}', 'Administrator\UsahaController@get_detailUsaha');
 			
 			Route::get('/databanjar','Administrator\BanjarController@index');
 			Route::get('ambil_listbanjar','Administrator\BanjarController@ambil_listbanjar');

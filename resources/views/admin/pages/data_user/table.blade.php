@@ -116,12 +116,14 @@
                                 <option value="2">Kelian Adat</option><option value="3">Unit Usaha</option>
                                 @if(Session::get('level') == '1' || Session::get('level') == '4')
                                 <option value="5">Ticket Counter</option>
+                                <option value="6">Admin Punia</option>
+                                <option value="7">Penagih Iuran</option>
                                 @endif
                             </select>
                         </div>
-                        <div class="space-y-1.5" x-show="userLevel == 2 || userLevel == 3 || userLevel == 5" x-transition>
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Banjar</label>
-                            <select name="banjarinput_edit" x-model="userBanjar" :required="userLevel == 2 || userLevel == 3 || userLevel == 5" @change="if(userLevel == 5) fetchObjekWisata($event.target.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                        <div class="space-y-1.5" x-show="userLevel == 2 || userLevel == 3 || userLevel == 5 || userLevel == 6 || userLevel == 7" x-transition>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1" x-text="userLevel == 7 ? 'Banjar (Wilayah Penagihan)' : 'Banjar'"></label>
+                            <select name="banjarinput_edit" x-model="userBanjar" :required="userLevel == 2 || userLevel == 3 || userLevel == 5 || userLevel == 6 || userLevel == 7" @change="if(userLevel == 5) fetchObjekWisata($event.target.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
                                 <option value="">Pilih</option>
                                 @foreach($banjar as $b)<option value="{{ $b->id_data_banjar }}">{{ $b->nama_banjar }}</option>@endforeach
                             </select>
@@ -190,6 +192,8 @@
                     if(data.toLowerCase().includes('kelian')) c='bg-amber-50 text-amber-600 border border-amber-100'; 
                     if(data.toLowerCase().includes('usaha')) c='bg-rose-50 text-rose-600 border border-rose-100'; 
                     if(data.toLowerCase().includes('ticket counter')) c='bg-purple-50 text-purple-600 border border-purple-100'; 
+                    if(data.toLowerCase().includes('admin punia')) c='bg-cyan-50 text-cyan-600 border border-cyan-100'; 
+                    if(data.toLowerCase().includes('penagih')) c='bg-orange-50 text-orange-600 border border-orange-100'; 
                     return '<span class="text-[9px] font-bold px-2.5 py-1 rounded bg-slate-50 border uppercase tracking-widest ' + c + '">' + data + '</span>'; 
                 } },
                 { "data": 'nama_banjar', "className": "px-6 py-4", "render": function(data) { 

@@ -37,10 +37,16 @@
             <h1 class="text-2xl font-black text-slate-800 tracking-tight">Data Unit Usaha</h1>
             <p class="text-slate-500 font-medium text-sm">Kelola seluruh unit usaha dan mitra dalam ekosistem Dana Punia.</p>
         </div>
-        <button @click="openAdd()" class="flex items-center justify-center gap-2 bg-primary-light hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-100 transition-all transform hover:-translate-y-0.5">
-            <i class="bi bi-plus-lg text-lg"></i>
-            Tambah Usaha
-        </button>
+        <div class="flex items-center gap-3">
+            <a href="{{ url('administrator/data_usaha/setting') }}" class="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-md hover:border-primary-light hover:text-primary-light transition-all">
+                <i class="bi bi-gear text-lg"></i>
+                Atur Punia Global
+            </a>
+            <button @click="openAdd()" class="flex items-center justify-center gap-2 bg-primary-light hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-100 transition-all transform hover:-translate-y-0.5">
+                <i class="bi bi-plus-lg text-lg"></i>
+                Tambah Usaha
+            </button>
+        </div>
     </div>
 
     <!-- Stats Row -->

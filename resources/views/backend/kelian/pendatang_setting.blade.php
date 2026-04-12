@@ -1,7 +1,11 @@
 @extends('mobile_layout')
 
 @section('isi_menu')
-<div class="bg-white pb-24">
+<div class="bg-white pb-24" x-data="{ 
+    keDesa: {{ json_encode($settings['punia_pendatang_ke_desa'] ?? false) }},
+    tipeKeDesa: '{{ $settings['punia_pendatang_tipe_ke_desa'] ?? 'persentase' }}',
+    nilaiKeDesa: {{ $settings['punia_pendatang_nilai_ke_desa'] ?? 0 }}
+}">
     <!-- Header -->
     <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-6 pb-8 text-white relative overflow-hidden">
         <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
@@ -66,6 +70,61 @@
                                placeholder="0">
                     </div>
                     <p class="text-[9px] text-slate-400 mt-1">Nominal punia yang harus dibayar setiap bulan oleh pendatang</p>
+                </div>
+            </div>
+
+            <!-- Pengaturan Bagi Hasil ke Desa -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800 mb-1">Bagi Hasil ke Desa</h3>
+                    <p class="text-[10px] text-slate-500">Atur pembagian dana punia pendatang ke kas desa</p>
+                </div>
+
+                <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="punia_pendatang_ke_desa" value="1" x-model="keDesa" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#00a6eb]/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a6eb]"></div>
+                    </label>
+                    <div>
+                        <p class="text-xs font-bold text-slate-700">Aktifkan Bagi Hasil</p>
+                        <p class="text-[9px] text-slate-400">Sebagian punia akan dialokasikan ke kas desa</p>
+                    </div>
+                </div>
+
+                <div x-show="keDesa" x-transition class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">Tipe Perhitungan</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-all text-center"
+                                   :class="tipeKeDesa === 'persentase' ? 'bg-blue-50 border-blue-300' : 'bg-slate-50 border-slate-200'">
+                                <input type="radio" name="punia_pendatang_tipe_ke_desa" value="persentase" x-model="tipeKeDesa" class="w-4 h-4 text-[#00a6eb] focus:ring-[#00a6eb]">
+                                <span class="text-xs font-bold text-slate-700">Persentase (%)</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-all text-center"
+                                   :class="tipeKeDesa === 'fix' ? 'bg-blue-50 border-blue-300' : 'bg-slate-50 border-slate-200'">
+                                <input type="radio" name="punia_pendatang_tipe_ke_desa" value="fix" x-model="tipeKeDesa" class="w-4 h-4 text-[#00a6eb] focus:ring-[#00a6eb]">
+                                <span class="text-xs font-bold text-slate-700">Nominal Fix (Rp)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2" x-text="tipeKeDesa === 'persentase' ? 'Persentase ke Desa (%)' : 'Nominal Fix ke Desa (Rp)'"></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500" x-text="tipeKeDesa === 'persentase' ? '%' : 'Rp'"></span>
+                            <input type="number" name="punia_pendatang_nilai_ke_desa" x-model="nilaiKeDesa"
+                                   :min="0" :max="tipeKeDesa === 'persentase' ? 100 : 999999999" :step="tipeKeDesa === 'persentase' ? 0.5 : 1000"
+                                   class="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a6eb]"
+                                   placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                        <div class="flex items-start gap-2">
+                            <i class="bi bi-exclamation-triangle text-amber-600 text-sm shrink-0 mt-0.5"></i>
+                            <p class="text-[10px] text-slate-600">Perubahan ini berlaku untuk pembayaran baru. Data lama tidak terpengaruh.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             

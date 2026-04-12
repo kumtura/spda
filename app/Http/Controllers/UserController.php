@@ -196,6 +196,12 @@ class UserController extends BaseController
             else if($lvl == 5){
                 $level = "Ticket Counter";
             }
+            else if($lvl == 6){
+                $level = "Admin Punia";
+            }
+            else if($lvl == 7){
+                $level = "Penagih Iuran";
+            }
     		else{
     			$level = "Guest";
     		}

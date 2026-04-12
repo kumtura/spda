@@ -12,14 +12,13 @@ return new class extends Migration
         if (!Schema::hasTable('tb_saldo_kas')) {
             Schema::create('tb_saldo_kas', function (Blueprint $table) {
                 $table->id('id_saldo_kas');
-                $table->unsignedBigInteger('id_data_banjar')->nullable(); // NULL = Kas Desa Adat
+                $table->integer('id_data_banjar')->nullable(); // NULL = Kas Desa Adat
                 $table->decimal('saldo_cash', 15, 2)->default(0);
                 $table->decimal('saldo_online', 15, 2)->default(0);
                 $table->decimal('total_masuk', 15, 2)->default(0);
                 $table->decimal('total_keluar', 15, 2)->default(0);
                 $table->timestamps();
 
-                $table->foreign('id_data_banjar')->references('id_data_banjar')->on('tb_data_banjar')->nullOnDelete();
                 $table->unique('id_data_banjar'); // satu record per banjar + 1 untuk desa
             });
         }
@@ -29,8 +28,8 @@ return new class extends Migration
             Schema::create('tb_riwayat_bagi_hasil', function (Blueprint $table) {
                 $table->id('id_riwayat');
                 $table->enum('jenis_punia', ['usaha', 'tamiu']);
-                $table->unsignedBigInteger('id_pembayaran'); // id dari tb_dana_punia / tb_punia_pendatang
-                $table->unsignedBigInteger('id_data_banjar');
+                $table->integer('id_pembayaran'); // id dari tb_dana_punia / tb_punia_pendatang
+                $table->integer('id_data_banjar');
                 $table->decimal('nominal_total', 15, 2);
                 $table->decimal('persen_desa', 5, 2);
                 $table->decimal('persen_banjar', 5, 2);
@@ -43,7 +42,7 @@ return new class extends Migration
                 $table->boolean('aktif')->default(1);
                 $table->timestamps();
 
-                $table->foreign('id_data_banjar')->references('id_data_banjar')->on('tb_data_banjar');
+                $table->index('id_data_banjar');
             });
         }
 
@@ -61,7 +60,7 @@ return new class extends Migration
                 $table->string('nama_penerima_ttd', 255)->nullable()->after('jabatan_penyerah');
                 $table->string('jabatan_penerima', 255)->nullable()->after('nama_penerima_ttd');
                 $table->string('tanda_tangan', 255)->nullable()->after('jabatan_penerima'); // file path ttd
-                $table->unsignedBigInteger('id_data_banjar_tujuan')->nullable()->after('tanda_tangan');
+                $table->integer('id_data_banjar_tujuan')->nullable()->after('tanda_tangan');
             });
         }
     }

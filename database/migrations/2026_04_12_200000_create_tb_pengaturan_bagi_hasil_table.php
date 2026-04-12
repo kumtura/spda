@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('tb_pengaturan_bagi_hasil', function (Blueprint $table) {
             $table->id('id_pengaturan');
             $table->enum('jenis_punia', ['usaha', 'tamiu']);
-            $table->unsignedBigInteger('id_data_banjar')->nullable(); // NULL = global semua banjar
+            $table->integer('id_data_banjar')->nullable(); // NULL = global semua banjar
             $table->decimal('persen_desa', 5, 2)->default(100.00);
             $table->decimal('persen_banjar', 5, 2)->default(0.00);
             $table->date('berlaku_sejak');
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->boolean('aktif')->default(1);
             $table->timestamps();
 
-            $table->foreign('id_data_banjar')->references('id_data_banjar')->on('tb_data_banjar')->nullOnDelete();
+            $table->index('id_data_banjar');
         });
     }
 

@@ -14,12 +14,12 @@ return new class extends Migration
 
         Schema::create('tb_setor_punia', function (Blueprint $table) {
             $table->id('id_setor_punia');
-            $table->unsignedBigInteger('id_keuangan')->nullable(); // relasi ke tb_keuangan saat diproses
+            $table->integer('id_keuangan')->nullable(); // relasi ke tb_keuangan saat diproses
             $table->enum('jenis_setor', ['setor_cash', 'tarik_online']); 
             // setor_cash = kelian menyetor uang cash yang dikumpulkan ke kas desa
             // tarik_online = penarikan dana dari payment gateway (Xendit) ke rekening desa
             $table->enum('sumber_punia', ['tamiu', 'usaha', 'campuran', 'umum'])->default('campuran');
-            $table->unsignedBigInteger('id_data_banjar')->nullable(); // banjar asal (untuk setor cash kelian)
+            $table->integer('id_data_banjar')->nullable(); // banjar asal (untuk setor cash kelian)
             $table->decimal('nominal', 15, 2);
             $table->date('tanggal_setor');
             $table->string('keterangan')->nullable();
@@ -35,8 +35,8 @@ return new class extends Migration
             $table->boolean('aktif')->default(1);
             $table->timestamps();
 
-            $table->foreign('id_keuangan')->references('id_keuangan')->on('tb_keuangan')->nullOnDelete();
-            $table->foreign('id_data_banjar')->references('id_data_banjar')->on('tb_data_banjar')->nullOnDelete();
+            $table->index('id_keuangan');
+            $table->index('id_data_banjar');
         });
     }
 

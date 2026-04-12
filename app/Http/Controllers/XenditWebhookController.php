@@ -88,6 +88,33 @@ class XenditWebhookController extends Controller
             return response()->json(['status' => 'success']);
         }
         
+        // Handle Punia Pura
+        if ($prefix === 'PP') {
+            $id_pura = $parts[1];
+            // For punia pura, find the record by xendit_id pattern
+            $puniaPura = \App\Models\PuniaPura::where('xendit_id', 'like', 'PP-' . $id_pura . '-%')
+                ->where('status_pembayaran', 'pending')
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            if ($puniaPura) {
+                $success_statuses = ['PAID', 'SETTLED', 'COMPLETED', 'SUCCEEDED'];
+                if (in_array(strtoupper($status), $success_statuses)) {
+                    $puniaPura->update([
+                        'status_pembayaran' => 'completed',
+                        'tanggal_pembayaran' => now()->toDateString(),
+                        'aktif' => '1'
+                    ]);
+                    Log::info("Xendit Webhook: Punia Pura #{$puniaPura->id_punia_pura} COMPLETED.");
+                }
+            } else {
+                Log::warning("Xendit Webhook: Punia Pura record NOT FOUND for {$external_id}");
+            }
+
+            Log::info('--- XENDIT WEBHOOK END ---');
+            return response()->json(['status' => 'success']);
+        }
+
         // Handle Punia/Donasi
         $id_numeric = $parts[1];
         $type = str_contains($prefix, 'PN') ? 'punia' : 'donasi';

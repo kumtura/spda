@@ -1549,4 +1549,118 @@ class LandingController extends Controller
         return redirect()->route('public.krama_tamiu')->with('success', 'Pendaftaran berhasil! Data Anda akan diverifikasi oleh Kelian Banjar.');
     }
 
+    // ==================== PURA (TEMPLE) ====================
+
+    public function pura_list()
+    {
+        $village = $this->getVillageData();
+        $pura = \App\Models\Pura::where('aktif', '1')
+            ->leftJoin('tb_data_banjar', 'tb_pura.id_data_banjar', '=', 'tb_data_banjar.id_data_banjar')
+            ->select('tb_pura.*', 'tb_data_banjar.nama_banjar')
+            ->orderBy('tb_pura.nama_pura')
+            ->get();
+
+        // Add total punia for each pura
+        foreach ($pura as $p) {
+            $p->total_punia = \App\Models\PuniaPura::where('id_pura', $p->id_pura)
+                ->where('status_pembayaran', 'completed')
+                ->where('aktif', '1')
+                ->where('nominal', '>', 0)
+                ->sum('nominal');
+        }
+
+        return view('front.pages.pura_list', compact('village', 'pura'));
+    }
+
+    public function pura_detail($id)
+    {
+        $village = $this->getVillageData();
+        $pura = \App\Models\Pura::where('tb_pura.id_pura', $id)
+            ->where('tb_pura.aktif', '1')
+            ->leftJoin('tb_data_banjar', 'tb_pura.id_data_banjar', '=', 'tb_data_banjar.id_data_banjar')
+            ->select('tb_pura.*', 'tb_data_banjar.nama_banjar')
+            ->firstOrFail();
+
+        $gallery = \App\Models\GalleryPura::where('id_pura', $id)->where('aktif', '1')->orderBy('urutan')->get();
+
+        $totalPunia = \App\Models\PuniaPura::where('id_pura', $id)
+            ->where('status_pembayaran', 'completed')
+            ->where('aktif', '1')
+            ->where('nominal', '>', 0)
+            ->sum('nominal');
+
+        $qris = \App\Models\QrisPura::where('id_pura', $id)->where('is_active', '1')->first();
+
+        $recentPunia = \App\Models\PuniaPura::where('id_pura', $id)
+            ->where('status_pembayaran', 'completed')
+            ->where('aktif', '1')
+            ->where('nominal', '>', 0)
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
+        return view('front.pages.pura_detail', compact('village', 'pura', 'gallery', 'totalPunia', 'qris', 'recentPunia'));
+    }
+
+    public function pura_punia_form($id)
+    {
+        $village = $this->getVillageData();
+        $pura = \App\Models\Pura::where('id_pura', $id)->where('aktif', '1')->firstOrFail();
+        $paymentChannels = \App\Models\PaymentChannel::where('is_active', true)->get();
+        $qris = \App\Models\QrisPura::where('id_pura', $id)->where('is_active', '1')->first();
+
+        return view('front.pages.pura_punia', compact('village', 'pura', 'paymentChannels', 'qris'));
+    }
+
+    public function pura_punia_submit(Request $request)
+    {
+        $request->validate([
+            'id_pura' => 'required|exists:tb_pura,id_pura',
+            'nominal' => 'required|numeric|min:1000',
+            'metode' => 'required|in:xendit,qris_bpd',
+        ]);
+
+        $pura = \App\Models\Pura::findOrFail($request->id_pura);
+
+        $punia = \App\Models\PuniaPura::create([
+            'id_pura' => $request->id_pura,
+            'nama_donatur' => $request->is_anonymous ? null : $request->nama_donatur,
+            'email' => $request->email,
+            'no_wa' => $request->no_wa,
+            'is_anonymous' => $request->has('is_anonymous'),
+            'nominal' => $request->nominal,
+            'metode_pembayaran' => $request->metode,
+            'status_pembayaran' => 'pending',
+            'keterangan' => $request->keterangan,
+            'aktif' => '1'
+        ]);
+
+        if ($request->metode === 'xendit') {
+            // Redirect to payment method selection
+            $order_id = 'PP-' . $punia->id_punia_pura;
+            $punia->update(['xendit_id' => $order_id]);
+
+            return redirect()->route('public.payment_methods', [
+                'order_id' => $order_id,
+                'amount' => $request->nominal,
+                'type' => 'punia_pura',
+            ]);
+        }
+
+        // For QRIS BPD: show static QR code page
+        $qris = \App\Models\QrisPura::where('id_pura', $request->id_pura)->where('is_active', '1')->first();
+        if (!$qris) {
+            $punia->delete();
+            return redirect()->back()->with('error', 'QRIS BPD Bali belum tersedia untuk pura ini');
+        }
+
+        $punia->update([
+            'status_pembayaran' => 'completed',
+            'tanggal_pembayaran' => now()->toDateString(),
+        ]);
+
+        return redirect()->route('public.pura.detail', $pura->id_pura)
+            ->with('success', 'Terima kasih atas punia Anda! Silakan scan QRIS BPD Bali di lokasi pura.');
+    }
+
 }

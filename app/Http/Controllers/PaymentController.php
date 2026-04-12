@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Danapunia;
+use App\Models\PuniaPura;
 use App\Models\Sumbangan;
 use App\Services\XenditService;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ public function initiate(Request $request)
         $request->validate([
             'amount' => 'required|numeric',
             'order_id' => 'required|string',
-            'type' => 'required|in:punia,donasi',
+            'type' => 'required|in:punia,donasi,punia_pura',
             'method' => 'required|string'
         ]);
 
@@ -40,7 +41,13 @@ public function initiate(Request $request)
         }
 
         // Cari record di database
-        $record = ($type === 'punia') ? Danapunia::find($id_numeric) : Sumbangan::find($id_numeric);
+        if ($type === 'punia_pura') {
+            $record = PuniaPura::find($id_numeric);
+        } elseif ($type === 'punia') {
+            $record = Danapunia::find($id_numeric);
+        } else {
+            $record = Sumbangan::find($id_numeric);
+        }
 
         if (!$record) {
             return redirect()->back()->with('error', 'Data transaksi tidak ditemukan.');
@@ -114,7 +121,14 @@ public function initiate(Request $request)
         $amount = $request->amount;
         $id_numeric = explode('-', $order_id)[1];
 
-        $record = ($type === 'punia') ? Danapunia::find($id_numeric) : Sumbangan::find($id_numeric);
+        $record = null;
+        if ($type === 'punia_pura') {
+            $record = PuniaPura::find($id_numeric);
+        } elseif ($type === 'punia') {
+            $record = Danapunia::find($id_numeric);
+        } else {
+            $record = Sumbangan::find($id_numeric);
+        }
         if (!$record) return response()->json(['status' => 'error', 'message' => 'Record not found'], 404);
 
         $payment_data = json_decode($record->payment_data, true);
@@ -153,7 +167,9 @@ public function initiate(Request $request)
         $id_numeric = explode('-', $order_id)[1];
 
         $record = null;
-        if ($type === 'punia') {
+        if ($type === 'punia_pura') {
+            $record = PuniaPura::find($id_numeric);
+        } elseif ($type === 'punia') {
             $record = Danapunia::find($id_numeric);
         } else {
             $record = Sumbangan::find($id_numeric);
@@ -183,16 +199,22 @@ public function initiate(Request $request)
     public function checkStatus($order_id)
     {
         $id_numeric = explode('-', $order_id)[1];
-        $type = str_contains($order_id, 'PN-') ? 'punia' : 'donasi';
-
-        $record = ($type === 'punia') ? Danapunia::find($id_numeric) : Sumbangan::find($id_numeric);
+        
+        $record = null;
+        if (str_contains($order_id, 'PP-')) {
+            $record = PuniaPura::find($id_numeric);
+        } elseif (str_contains($order_id, 'PN-')) {
+            $record = Danapunia::find($id_numeric);
+        } else {
+            $record = Sumbangan::find($id_numeric);
+        }
 
         if (!$record) {
             return response()->json(['status' => 'not_found'], 404);
         }
 
         return response()->json([
-            'status' => $record->status_pembayaran, // e.g., 'pending', 'completed'
+            'status' => $record->status_pembayaran,
         ]);
     }
 }

@@ -104,11 +104,11 @@
             </div>
             <span class="text-[10px] text-slate-500 font-bold text-center">Krama Tamiu</span>
         </a>
-        <a href="{{ route('public.loker') }}" class="flex flex-col items-center gap-2 group">
+        <a href="{{ route('public.pura') }}" class="flex flex-col items-center gap-2 group">
             <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">
-                <i class="bi bi-briefcase text-2xl text-[#00a6eb]"></i>
+                <i class="bi bi-building text-2xl text-[#00a6eb]"></i>
             </div>
-            <span class="text-[10px] text-slate-500 font-bold">Lowongan</span>
+            <span class="text-[10px] text-slate-500 font-bold">Pura</span>
         </a>
         <a href="{{ route('public.unit_usaha') }}" class="flex flex-col items-center gap-2 group">
             <div class="h-12 w-12 rounded-full border border-slate-100 shadow-sm flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">

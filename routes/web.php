@@ -72,6 +72,12 @@ Route::get('/wisata/tiket/success', [LandingController::class, 'wisata_tiket_suc
 Route::get('/wisata/tiket/download/{kode}', [LandingController::class, 'wisata_tiket_download'])->name('public.wisata.tiket.download');
 Route::get('/wisata/check-availability', [LandingController::class, 'wisata_check_availability'])->name('public.wisata.check_availability');
 
+// Pura (Temple) Public Routes
+Route::get('/pura', [LandingController::class, 'pura_list'])->name('public.pura')->middleware('public.redirect');
+Route::get('/pura/{id}', [LandingController::class, 'pura_detail'])->name('public.pura.detail')->middleware('public.redirect');
+Route::get('/pura/{id}/punia', [LandingController::class, 'pura_punia_form'])->name('public.pura.punia')->middleware('public.redirect');
+Route::post('/pura/punia/submit', [LandingController::class, 'pura_punia_submit'])->name('public.pura.punia.submit');
+
 Route::middleware(['guest'])->group(function () {
     Route::get('/register_usaha', function () {
         $banjar = App\Models\Banjar::where('aktif', '1')->get();
@@ -281,6 +287,21 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 
 		// Dana Punia & Sumbangan
 		Route::group(['middleware' => 'role:1,2,6'], function() {
+			// Punia Pura (Temple Donation Management)
+			Route::get('/puniapura', 'Administrator\PuraController@index');
+			Route::get('/puniapura/create', 'Administrator\PuraController@create');
+			Route::post('/puniapura/store', 'Administrator\PuraController@store');
+			Route::get('/puniapura/edit/{id}', 'Administrator\PuraController@edit');
+			Route::put('/puniapura/update/{id}', 'Administrator\PuraController@update');
+			Route::get('/puniapura/delete/{id}', 'Administrator\PuraController@destroy');
+			Route::get('/puniapura/detail/{id}', 'Administrator\PuraController@detail');
+			Route::get('/puniapura/gallery/delete/{id}', 'Administrator\PuraController@deleteGallery');
+			Route::get('/puniapura/qris/{id}', 'Administrator\PuraController@qrisForm');
+			Route::post('/puniapura/qris/{id}', 'Administrator\PuraController@qrisSave');
+			Route::get('/puniapura/qris/download/{id}', 'Administrator\PuraController@qrisDownload');
+			Route::post('/puniapura/tarik/{id}', 'Administrator\PuraController@tarikPunia');
+			Route::get('/puniapura/generate-qris-xendit/{id}', 'Administrator\PuraController@generateQrisXendit');
+
 			// Verifikasi Pembayaran Manual
 			Route::get('/verifikasi_pembayaran', [DashboardController::class, 'verifikasi_pembayaran'])->name('verifikasi_pembayaran');
 			Route::post('/verifikasi_pembayaran/approve', [DashboardController::class, 'verifikasi_approve'])->name('verifikasi.approve');

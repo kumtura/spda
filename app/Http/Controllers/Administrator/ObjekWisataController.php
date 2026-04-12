@@ -25,7 +25,8 @@ class ObjekWisataController extends Controller
             }
         };
 
-        $query = ObjekWisata::with(['banjar', 'tiket' => function($q) use ($dateFilter) {
+        $query = ObjekWisata::where('aktif', '1')
+            ->with(['banjar', 'tiket' => function($q) use ($dateFilter) {
                 $dateFilter($q);
                 $q->with('details.kategoriTiket')->orderBy('created_at', 'desc');
             }])
@@ -335,10 +336,11 @@ class ObjekWisataController extends Controller
     public function index_kelian()
     {
         if (auth()->user()->id_level == config('myconfig.level.bendesa', 1)) {
-            $objekWisata = ObjekWisata::orderBy('created_at', 'desc')->get();
+            $objekWisata = ObjekWisata::where('aktif', '1')->orderBy('created_at', 'desc')->get();
         } else {
             $idBanjar = auth()->user()->id_banjar ?? 0;
-            $objekWisata = ObjekWisata::where('id_data_banjar', $idBanjar)
+            $objekWisata = ObjekWisata::where('aktif', '1')
+                ->where('id_data_banjar', $idBanjar)
                 ->orderBy('created_at', 'desc')
                 ->get();
         }

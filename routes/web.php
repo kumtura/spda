@@ -312,6 +312,13 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/setor_punia/verify/{id}', 'Administrator\SetorPuniaController@verify');
             Route::get('/setor_punia/hapus/{id}', 'Administrator\SetorPuniaController@destroy');
 
+			// Pengaturan Bagi Hasil Routes
+            Route::get('/pengaturan_bagi_hasil', 'Administrator\PengaturanBagiHasilController@index');
+            Route::post('/pengaturan_bagi_hasil/global', 'Administrator\PengaturanBagiHasilController@storeGlobal');
+            Route::post('/pengaturan_bagi_hasil/banjar', 'Administrator\PengaturanBagiHasilController@storeBanjar');
+            Route::post('/pengaturan_bagi_hasil/terapkan_semua', 'Administrator\PengaturanBagiHasilController@terapkanSemua');
+            Route::get('/pengaturan_bagi_hasil/hapus/{id}', 'Administrator\PengaturanBagiHasilController@hapusOverride');
+
 			// Kategori Punia Routes
 			Route::get('/kategori_punia','Administrator\KategoriPuniaController@index');
 			Route::post('/kategori_punia/post','Administrator\KategoriPuniaController@store');

@@ -243,4 +243,9 @@ class Sumbangan extends Model
     {
         return $this->belongsTo(\App\Models\ProgramDonasi::class, 'id_program_donasi', 'id_program_donasi');
     }
+
+    public static function get_totalSumbangan(){
+        $total = Sumbangan::where('aktif', '1')->sum('nominal');
+        return $total ?? 0;
+    }
 }

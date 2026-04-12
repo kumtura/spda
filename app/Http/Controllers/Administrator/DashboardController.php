@@ -14,6 +14,7 @@ use App\Models\Usaha;
 use App\Models\Detail_Usaha;
 use App\Models\Penanggung_Jawab;
 use App\Models\Karyawan;
+use App\Models\Sumbangan;
 
 use DB;
 use File;
@@ -42,10 +43,11 @@ class DashboardController extends BaseController
         $jml_karyawan = Karyawan::get_jmltenaga($request);
 
         $totalpunia = Danapunia::get_totalPunia($request);
+        $totalsumbangan = Sumbangan::get_totalSumbangan();
         
         if($level == "1" || $level == "4") {
             // Bendesa Adat & Admin Sistem use the Desktop Dashboard
-            return view('admin.pages.home',compact('usaha','totalpunia','jml_karyawan'));
+            return view('admin.pages.home',compact('usaha','totalpunia','jml_karyawan','totalsumbangan'));
         } else if ($level == "2") {
             // Kelian Adat uses the Mobile Dashboard with filtered data
             $kelianBanjar = Auth::user()->banjar;
@@ -92,7 +94,7 @@ class DashboardController extends BaseController
         }
 
         // Fallback to desktop home if level not specified
-        return view('admin.pages.home',compact('usaha','totalpunia','jml_karyawan'));
+        return view('admin.pages.home',compact('usaha','totalpunia','jml_karyawan','totalsumbangan'));
     }
     
     public function get_danapunia_range(){

@@ -6,7 +6,7 @@
     stats: {
         investor: {{ count($usaha) }},
         tenagakerja: {{ $jml_karyawan }},
-        sumbangan: 0,
+        sumbangan: '{{ format_rupiah($totalsumbangan) }}',
         iuran: '{{ format_rupiah($totalpunia) }}'
     }
 }">

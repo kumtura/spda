@@ -98,7 +98,9 @@ class Karyawan extends Model
     }
 
     public static function get_jmltenaga($request){
-        $data = Karyawan::where("aktif","1")->orderBy("id_tenaga_kerja" , "desc")->count();
+        $data = \App\Models\Jadwal_Interview::where('status_diterima', '1')
+            ->where('aktif', '1')
+            ->count();
 
         return $data;
     }

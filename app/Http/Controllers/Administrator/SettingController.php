@@ -21,13 +21,24 @@ class SettingController extends Controller
 
     public function update_village(Request $request)
     {
-        $data = [
-            'name' => $request->village_name,
-            'bendesa' => $request->bendesa_name,
-            'address' => $request->village_address,
-        ];
+        $request->validate([
+            'village_name' => 'required|string|max:255',
+            'bendesa_name' => 'required|string|max:255',
+            'village_address' => 'required|string',
+        ]);
 
-        File::put(storage_path('app/settings.json'), json_encode($data));
+        $settingsPath = storage_path('app/settings.json');
+        $settings = [];
+        if (File::exists($settingsPath)) {
+            $settings = json_decode(File::get($settingsPath), true) ?? [];
+        }
+
+        // Merge — jangan timpa seluruh file
+        $settings['name']    = $request->village_name;
+        $settings['bendesa'] = $request->bendesa_name;
+        $settings['address'] = $request->village_address;
+
+        File::put($settingsPath, json_encode($settings, JSON_PRETTY_PRINT));
 
         return redirect()->back()->with('success', 'Identitas Desa berhasil diperbarui!');
     }
@@ -38,23 +49,19 @@ class SettingController extends Controller
             'logo' => 'required|image|mimes:jpeg,png,jpg,svg|max:2048',
         ]);
 
-        if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
-            $fileName = 'logo.png'; // Overwrite standard logo
-            
-            // Simpan ke storage/app/public/logos (atau public/storage/logos)
-            $destinationPath = public_path('storage/logos');
-            
-            if (!File::isDirectory($destinationPath)) {
-                File::makeDirectory($destinationPath, 0777, true, true);
-            }
-            
-            $file->move($destinationPath, $fileName);
+        $file = $request->file('logo');
+        $destinationPath = public_path('storage/logos');
 
-            return redirect()->back()->with('success', 'Logo berhasil diperbarui!');
+        if (!File::isDirectory($destinationPath)) {
+            File::makeDirectory($destinationPath, 0777, true, true);
         }
 
-        return redirect()->back()->with('error', 'Gagal mengunggah logo.');
+        try {
+            $file->move($destinationPath, 'logo.png');
+            return redirect()->back()->with('success', 'Logo berhasil diperbarui!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengunggah logo: ' . $e->getMessage());
+        }
     }
     public function update_hero_slide_metadata(Request $request)
     {
@@ -82,43 +89,59 @@ class SettingController extends Controller
             'hero_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
-        if ($request->hasFile('hero_image')) {
-            $file = $request->file('hero_image');
-            $fileName = time() . str_shuffle("abcdefghijklmnopqrstuvwxyz") . '.' . $file->getClientOriginalExtension();
-            
-            $destinationPath = public_path('GambarSlides');
-            if (!File::isDirectory($destinationPath)) {
-                File::makeDirectory($destinationPath, 0777, true, true);
-            }
+        $file = $request->file('hero_image');
+        $fileName = time() . str_shuffle("abcdefghijklmnopqrstuvwxyz") . '.' . $file->getClientOriginalExtension();
+
+        $destinationPath = public_path('GambarSlides');
+        if (!File::isDirectory($destinationPath)) {
+            File::makeDirectory($destinationPath, 0777, true, true);
+        }
+
+        try {
             $file->move($destinationPath, $fileName);
 
-            // Save to tb_gambar_home
             $slide = new \App\Models\Gambar\Slides\Slides;
-            $slide->image_name = $fileName;
-            $slide->title = 'Hero Slide';
-            $slide->deskripsi = '';
-            $slide->alt = 'Hero Slide';
-            $slide->url_path = '/GambarSlides/' . $fileName;
-            $slide->aktif = '1';
+            $slide->image_name            = $fileName;
+            $slide->image_name_mobile     = $fileName;
+            $slide->title                 = $request->input('title', 'Hero Slide');
+            $slide->deskripsi             = $request->input('deskripsi', '');
+            $slide->alt                   = $request->input('title', 'Hero Slide');
+            $slide->url_path              = '/GambarSlides/' . $fileName;
+            $slide->image_pathname_mobile = '/GambarSlides/' . $fileName;
+            $slide->urutan                = 1;
+            $slide->posisi_gambar         = 1;
+            $slide->aktif                 = '1';
             $slide->save();
 
             return redirect()->back()->with('success', 'Slide Hero berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengunggah slide: ' . $e->getMessage());
         }
-
-        return redirect()->back()->with('error', 'Gagal mengunggah slide.');
     }
 
     public function delete_hero_slide(Request $request)
     {
+        $request->validate([
+            'id' => 'required|exists:tb_gambar_home,id_gambar_home',
+        ]);
+
         $slide = \App\Models\Gambar\Slides\Slides::find($request->id);
-        if ($slide) {
-            // Delete physical file
-            $filePath = public_path('GambarSlides/' . $slide->image_name);
-            if (File::exists($filePath)) {
-                File::delete($filePath);
-            }
-            $slide->delete();
+        if (!$slide) {
+            return redirect()->back()->with('error', 'Slide tidak ditemukan.');
         }
+
+        // Hapus file fisik jika ada
+        foreach ([$slide->image_name, $slide->image_name_mobile] as $img) {
+            if ($img) {
+                $filePath = public_path('GambarSlides/' . $img);
+                if (File::exists($filePath)) {
+                    File::delete($filePath);
+                }
+            }
+        }
+
+        $slide->delete();
+
         return redirect()->back()->with('success', 'Slide berhasil dihapus.');
     }
 
@@ -151,7 +174,7 @@ class SettingController extends Controller
         $settings['bank_bri_number'] = $request->bank_bri_number;
         $settings['bank_bri_name'] = $request->bank_bri_name;
 
-        File::put($settingsPath, json_encode($settings));
+        File::put($settingsPath, json_encode($settings, JSON_PRETTY_PRINT));
 
         return redirect()->back()->with('success', 'Rekening bank berhasil diperbarui!');
     }
@@ -185,7 +208,7 @@ class SettingController extends Controller
         $settings['waha_session'] = $request->waha_session ?: 'default';
         $settings['waha_enabled'] = $request->has('waha_enabled');
 
-        File::put($settingsPath, json_encode($settings));
+        File::put($settingsPath, json_encode($settings, JSON_PRETTY_PRINT));
 
         return redirect()->back()->with('success', 'Pengaturan WAHA berhasil diperbarui!');
     }

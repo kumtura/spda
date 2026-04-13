@@ -48,7 +48,7 @@
                 ['key' => 'sejarah',  'label' => 'Sejarah',  'icon' => 'bi-book'],
                 ['key' => 'pengurus', 'label' => 'Pengurus', 'icon' => 'bi-person-badge'],
                 ['key' => 'lembaga',  'label' => 'Lembaga',  'icon' => 'bi-building-check'],
-                ['key' => 'bumdes',   'label' => 'BUMDes',   'icon' => 'bi-shop'],
+                ['key' => 'bupda',    'label' => 'BUPDA',    'icon' => 'bi-shop'],
             ] as $t)
             <button @click="tab = '{{ $t['key'] }}'"
                     :class="tab === '{{ $t['key'] }}' ? 'bg-white text-[#00a6eb] shadow-sm' : 'text-slate-400'"
@@ -146,40 +146,110 @@
             @endif
         </div>
 
-        {{-- ── TAB: BUMDES ── --}}
-        <div x-show="tab === 'bumdes'" x-transition>
-            @if(count($bumdes) > 0)
-            <div class="space-y-3">
-                @foreach($bumdes as $b)
+        {{-- ── TAB: BUPDA ── --}}
+        <div x-show="tab === 'bupda'" x-transition>
+            @if(!empty($bupda['nama']))
+            <div class="space-y-4">
+                {{-- Info --}}
                 <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
                     <div class="flex items-start gap-4">
                         <div class="h-14 w-14 rounded-2xl bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center border border-slate-200">
-                            @if(!empty($b['logo']))
-                                <img src="{{ asset('storage/tentang_desa/bumdes/' . $b['logo']) }}" class="h-full w-full object-cover" alt="{{ $b['nama_bumdes'] }}">
-                            @else
-                                <i class="bi bi-shop text-2xl text-slate-300"></i>
-                            @endif
+                            <i class="bi bi-shop text-2xl text-slate-300"></i>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-black text-slate-800 leading-tight">{{ $b['nama_bumdes'] }}</p>
-                            @if(!empty($b['ketua']))
-                            <p class="text-[10px] text-[#00a6eb] font-bold mt-0.5">Ketua: {{ $b['ketua'] }}</p>
+                            <p class="text-sm font-black text-slate-800 leading-tight">{{ $bupda['nama'] }}</p>
+                            @if(!empty($bupda['tahun_berdiri']))
+                            <p class="text-[10px] text-slate-400 mt-0.5"><i class="bi bi-calendar3 mr-1"></i>Berdiri {{ $bupda['tahun_berdiri'] }}</p>
                             @endif
-                            @if(!empty($b['tahun_berdiri']))
-                            <p class="text-[10px] text-slate-400 mt-0.5"><i class="bi bi-calendar3 mr-1"></i>Berdiri {{ $b['tahun_berdiri'] }}</p>
-                            @endif
-                            @if(!empty($b['deskripsi']))
-                            <p class="text-[10px] text-slate-500 mt-1.5 leading-relaxed line-clamp-2">{{ $b['deskripsi'] }}</p>
+                            @if(!empty($bupda['deskripsi']))
+                            <p class="text-[10px] text-slate-500 mt-1.5 leading-relaxed">{{ $bupda['deskripsi'] }}</p>
                             @endif
                         </div>
                     </div>
                 </div>
-                @endforeach
+
+                {{-- Foto Struktur --}}
+                @if(!empty($bupda['foto_struktur']))
+                <div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Struktur Organisasi</p>
+                    <div class="rounded-2xl overflow-hidden border border-slate-100">
+                        <img src="{{ asset('storage/tentang_desa/bupda/' . $bupda['foto_struktur']) }}" class="w-full object-contain" alt="Struktur BUPDA">
+                    </div>
+                </div>
+                @endif
+
+                {{-- Tim --}}
+                @if(!empty($bupda['tim']) && count($bupda['tim']) > 0)
+                <div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Tim BUPDA</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        @foreach($bupda['tim'] as $anggota)
+                        <div class="bg-white border border-slate-100 rounded-xl p-3 text-center shadow-sm">
+                            <div class="h-12 w-12 rounded-xl bg-slate-100 overflow-hidden mx-auto mb-2 flex items-center justify-center">
+                                @if(!empty($anggota['foto']))
+                                    <img src="{{ asset('storage/tentang_desa/bupda/' . $anggota['foto']) }}" class="h-full w-full object-cover" alt="{{ $anggota['nama'] }}">
+                                @else
+                                    <i class="bi bi-person-fill text-xl text-slate-300"></i>
+                                @endif
+                            </div>
+                            <p class="text-[10px] font-black text-slate-800 leading-tight">{{ $anggota['nama'] }}</p>
+                            <p class="text-[9px] text-[#00a6eb] font-bold mt-0.5">{{ $anggota['jabatan'] }}</p>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                {{-- Program --}}
+                @if(!empty($bupda['program']) && count($bupda['program']) > 0)
+                <div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Program BUPDA</p>
+                    <div class="space-y-3">
+                        @foreach($bupda['program'] as $prog)
+                        <div class="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+                            @if(!empty($prog['foto']))
+                            <div class="h-32 bg-slate-100 overflow-hidden">
+                                <img src="{{ asset('storage/tentang_desa/bupda/' . $prog['foto']) }}" class="w-full h-full object-cover" alt="{{ $prog['nama_program'] }}">
+                            </div>
+                            @endif
+                            <div class="p-3">
+                                <p class="text-xs font-black text-slate-800">{{ $prog['nama_program'] }}</p>
+                                @if(!empty($prog['keterangan']))
+                                <p class="text-[10px] text-slate-500 mt-1 leading-relaxed">{{ $prog['keterangan'] }}</p>
+                                @endif
+                                <div class="flex flex-wrap gap-2 mt-2 text-[9px] text-slate-400">
+                                    @if(!empty($prog['lokasi']))<span><i class="bi bi-geo-alt mr-0.5 text-[#00a6eb]"></i>{{ $prog['lokasi'] }}</span>@endif
+                                    @if(!empty($prog['no_kontak']))<span><i class="bi bi-telephone mr-0.5 text-[#00a6eb]"></i>{{ $prog['no_kontak'] }}</span>@endif
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                {{-- Dokumentasi --}}
+                @if(!empty($bupda['dokumentasi']) && count($bupda['dokumentasi']) > 0)
+                <div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Dokumentasi Kegiatan</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach($bupda['dokumentasi'] as $dok)
+                        <div class="rounded-xl overflow-hidden border border-slate-100 shadow-sm">
+                            <div class="h-28 bg-slate-100 overflow-hidden">
+                                <img src="{{ asset('storage/tentang_desa/bupda/' . $dok['foto']) }}" class="w-full h-full object-cover" alt="{{ $dok['judul'] }}">
+                            </div>
+                            <p class="text-[9px] font-bold text-slate-600 p-2 leading-tight line-clamp-2">{{ $dok['judul'] }}</p>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
             </div>
             @else
             <div class="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 text-center">
                 <i class="bi bi-shop text-3xl text-slate-300 block mb-2"></i>
-                <p class="text-xs font-bold text-slate-400">Belum ada data BUMDes.</p>
+                <p class="text-xs font-bold text-slate-400">Belum ada data BUPDA.</p>
+                <p class="text-[10px] text-slate-300 mt-1">Admin dapat menambahkan melalui panel administrator.</p>
             </div>
             @endif
         </div>

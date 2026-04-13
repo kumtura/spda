@@ -260,7 +260,7 @@
                   <li><a href="{{ url('administrator/tentang-desa/sejarah') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/tentang-desa/sejarah*') ? 'text-white bg-white/5' : '' }}">Sejarah Desa Adat</a></li>
                   <li><a href="{{ url('administrator/tentang-desa/pengurus') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/tentang-desa/pengurus*') ? 'text-white bg-white/5' : '' }}">Pengurus Desa Adat</a></li>
                   <li><a href="{{ url('administrator/tentang-desa/lembaga') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/tentang-desa/lembaga*') ? 'text-white bg-white/5' : '' }}">Lembaga Desa Adat</a></li>
-                  <li><a href="{{ url('administrator/tentang-desa/bumdes') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/tentang-desa/bumdes*') ? 'text-white bg-white/5' : '' }}">Badan Usaha Milik Desa</a></li>
+                  <li><a href="{{ url('administrator/tentang-desa/bupda') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/tentang-desa/bupda*') ? 'text-white bg-white/5' : '' }}">BUPDA Desa Adat</a></li>
             </ul>
           </li>
           @endif

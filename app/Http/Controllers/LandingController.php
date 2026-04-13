@@ -99,11 +99,11 @@ class LandingController extends Controller
         $sejarah     = $village['sejarah_desa'] ?? '';
         $pengurus    = $village['pengurus_desa'] ?? [];
         $lembaga     = $village['lembaga_desa'] ?? [];
-        $bumdes      = $village['bumdes_desa'] ?? [];
+        $bupda       = $village['bupda_desa'] ?? [];
 
         return view('front.pages.tentang_desa', compact(
             'village', 'totalPura', 'totalBanjar', 'totalKramaTamiu', 'totalUsaha',
-            'pura', 'banjar', 'sejarah', 'pengurus', 'lembaga', 'bumdes'
+            'pura', 'banjar', 'sejarah', 'pengurus', 'lembaga', 'bupda'
         ));
     }
 

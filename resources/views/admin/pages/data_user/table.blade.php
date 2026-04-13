@@ -233,8 +233,19 @@
     }
     window.dispatchDelete = (id) => {
         if(confirm('Hapus pengguna ini? Semua data terkait (usaha, loker) juga akan dihapus.')) {
-            fetch('{{ url('administrator/hapususer') }}?id=' + id)
-                .then(() => location.reload());
+            fetch('{{ url('administrator/hapususer') }}?id=' + id, {
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.text())
+            .then(res => {
+                if(res.trim() === 'success') {
+                    window.tableRef.ajax.reload();
+                } else {
+                    alert('Gagal menghapus pengguna. Silakan coba lagi.');
+                }
+            })
+            .catch(() => alert('Terjadi kesalahan. Silakan coba lagi.'));
         }
     }
     window.saveUser = () => {

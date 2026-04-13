@@ -321,6 +321,10 @@ class UserController extends BaseController
 
     public function destroy(Request $request){
         $userId = $request->input('id');
+
+        if (!$userId) {
+            return response('error', 400);
+        }
         
         // Deactivate ticket counter assignments
         TicketCounterAssignment::where('id_user', $userId)->update(['aktif' => '0']);
@@ -338,7 +342,7 @@ class UserController extends BaseController
         // Delete the user itself
         User::where('id', '=', $userId)->delete();
         
-        echo "success";
+        return response('success', 200);
     }
 
     public function getObjekWisataByBanjar($id_banjar)

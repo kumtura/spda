@@ -4,7 +4,8 @@
         openGambar: false, 
         openGbrHome: false,
         openBlog: false,
-        openTenaga: false
+        openTenaga: false,
+        openTentangDesa: false
     }"
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
     class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform bg-white border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" 
@@ -80,6 +81,21 @@
 
          <li class="pt-4 mt-4 border-t border-white/20">
             <span class="px-2 text-xs font-semibold text-yellow-500 uppercase tracking-wider">Secondary Master</span>
+         </li>
+
+         <!-- Tentang Desa Dropdown -->
+         <li>
+            <button type="button" @click="openTentangDesa = !openTentangDesa" class="flex items-center w-full p-2 text-base text-white transition duration-75 rounded-lg group hover:bg-white/10">
+                  <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
+                  <span class="flex-1 ms-3 text-left">Tentang Desa</span>
+                  <svg class="w-3 h-3 transition-transform" :class="openTentangDesa ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 10 6"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/></svg>
+            </button>
+            <ul x-show="openTentangDesa" x-transition class="py-2 space-y-2">
+                  <li><a href="{{ url('administrator/tentang-desa/sejarah') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10 text-sm">Sejarah Desa Adat</a></li>
+                  <li><a href="{{ url('administrator/tentang-desa/pengurus') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10 text-sm">Pengurus Desa Adat</a></li>
+                  <li><a href="{{ url('administrator/tentang-desa/lembaga') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10 text-sm">Lembaga Desa Adat</a></li>
+                  <li><a href="{{ url('administrator/tentang-desa/bumdes') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10 text-sm">Badan Usaha Milik Desa</a></li>
+            </ul>
          </li>
 
          <!-- Data Usaha -->

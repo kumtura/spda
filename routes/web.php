@@ -535,6 +535,22 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::put('/settings/api/update/{id}', 'Administrator\ApiSettingController@update')->name('settings.api.update');
             Route::delete('/settings/api/delete/{id}', 'Administrator\ApiSettingController@destroy')->name('settings.api.destroy');
             Route::get('/settings/api/logs', 'Administrator\ApiSettingController@logs')->name('settings.api.logs');
+
+            // Tentang Desa
+            Route::get('/tentang-desa/sejarah', 'Administrator\TentangDesaController@sejarah')->name('tentang_desa.sejarah');
+            Route::post('/tentang-desa/sejarah/update', 'Administrator\TentangDesaController@sejarahUpdate')->name('tentang_desa.sejarah.update');
+
+            Route::get('/tentang-desa/pengurus', 'Administrator\TentangDesaController@pengurus')->name('tentang_desa.pengurus');
+            Route::post('/tentang-desa/pengurus/store', 'Administrator\TentangDesaController@pengurusStore')->name('tentang_desa.pengurus.store');
+            Route::post('/tentang-desa/pengurus/delete', 'Administrator\TentangDesaController@pengurusDelete')->name('tentang_desa.pengurus.delete');
+
+            Route::get('/tentang-desa/lembaga', 'Administrator\TentangDesaController@lembaga')->name('tentang_desa.lembaga');
+            Route::post('/tentang-desa/lembaga/store', 'Administrator\TentangDesaController@lembagaStore')->name('tentang_desa.lembaga.store');
+            Route::post('/tentang-desa/lembaga/delete', 'Administrator\TentangDesaController@lembagaDelete')->name('tentang_desa.lembaga.delete');
+
+            Route::get('/tentang-desa/bumdes', 'Administrator\TentangDesaController@bumdes')->name('tentang_desa.bumdes');
+            Route::post('/tentang-desa/bumdes/store', 'Administrator\TentangDesaController@bumdesStore')->name('tentang_desa.bumdes.store');
+            Route::post('/tentang-desa/bumdes/delete', 'Administrator\TentangDesaController@bumdesDelete')->name('tentang_desa.bumdes.delete');
         });
 
 		// Misc / Legacy

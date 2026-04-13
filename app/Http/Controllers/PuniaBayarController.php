@@ -20,7 +20,7 @@ class PuniaBayarController extends Controller
         $usaha = Usaha::join('tb_detail_usaha', 'tb_detail_usaha.id_usaha', 'tb_usaha.id_usaha')
             ->leftJoin('tb_penanggung_jawab', 'tb_penanggung_jawab.id_usaha', 'tb_usaha.id_usaha')
             ->where('tb_usaha.id_usaha', $id_usaha)
-            ->where('tb_usaha.aktif', '1')
+            ->where('tb_usaha.aktif_status', '1')
             ->select('tb_usaha.id_usaha', 'tb_usaha.nama_usaha', 'tb_detail_usaha.minimal_bayar',
                      'tb_penanggung_jawab.nama as nama_pj', 'tb_penanggung_jawab.no_wa as no_wa_pj')
             ->first();

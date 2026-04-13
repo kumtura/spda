@@ -101,7 +101,6 @@ class UsahaApiController extends BaseApiController
             ->pluck('id_usaha');
 
         $belumBayar = Usaha::with(['detail', 'kategori'])
-            ->where('aktif', '1')
             ->where('aktif_status', '1')
             ->whereNotIn('id_usaha', $sudahBayar)
             ->get();

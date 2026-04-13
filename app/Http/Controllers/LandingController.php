@@ -87,7 +87,7 @@ class LandingController extends Controller
         $totalPura = \App\Models\Pura::where('aktif', '1')->count();
         $totalBanjar = \App\Models\Banjar::where('aktif', '1')->count();
         $totalKramaTamiu = \App\Models\Pendatang::where('aktif', '1')->where('status', 'aktif')->count();
-        $totalUsaha = \App\Models\Usaha::where('aktif', '1')->count();
+        $totalUsaha = \App\Models\Usaha::where('aktif_status', '1')->count();
         $pura = \App\Models\Pura::where('aktif', '1')
             ->leftJoin('tb_data_banjar', 'tb_pura.id_data_banjar', '=', 'tb_data_banjar.id_data_banjar')
             ->select('tb_pura.*', 'tb_data_banjar.nama_banjar')

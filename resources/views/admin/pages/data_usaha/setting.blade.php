@@ -4,7 +4,7 @@
 @php
     $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
     $puniaUsahaGlobal = $settings['punia_usaha_global'] ?? 0;
-    $totalUsaha = App\Models\Usaha::where('aktif', '1')->where('aktif_status', '1')->count();
+    $totalUsaha = App\Models\Usaha::where('aktif_status', '1')->count();
 @endphp
 
 <div class="space-y-6" x-data="{ 

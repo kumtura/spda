@@ -6,7 +6,8 @@
         openBlog: false,
         openTenaga: false,
         openAgenda: {{ Request::is('administrator/agenda*') || Request::is('administrator/kategori_agenda*') ? 'true' : 'false' }},
-        openTicketCounter: {{ Request::is('administrator/staff_counter*') || Request::is('administrator/ticket_counter_data*') ? 'true' : 'false' }}
+        openTicketCounter: {{ Request::is('administrator/staff_counter*') || Request::is('administrator/ticket_counter_data*') ? 'true' : 'false' }},
+        openTentangDesa: {{ Request::is('administrator/tentang-desa*') ? 'true' : 'false' }}
     }"
     :class="mobileSidebarOpen ? 'translate-x-0' : (sidebarOpen ? 'max-lg:-translate-x-full translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20')"
     class="fixed top-0 left-0 z-50 w-64 h-screen transition-all duration-300 sidebar-gradient border-r border-white/10 overflow-y-auto no-scrollbar shadow-2xl" 
@@ -245,6 +246,24 @@
                   <li><a href="{{ url('administrator/data_tenagakerja_interview') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/data_tenagakerja_interview*') ? 'text-white bg-white/5' : '' }}">Wawancara</a></li>
             </ul>
           </li>
+
+          <!-- Tentang Desa Dropdown -->
+          @if(Session::get('level') == "1" || Session::get('level') == "4")
+          <li>
+            <button type="button" @click="openTentangDesa = !openTentangDesa" 
+                    class="flex items-center w-full p-2.5 text-white transition duration-75 rounded-xl group hover:bg-white/10">
+                  <i class="bi bi-journal-text w-5 h-5 text-white flex items-center justify-center"></i>
+                  <span class="flex-1 ms-3 text-left text-sm font-semibold tracking-tight" x-show="sidebarOpen">Tentang Desa</span>
+                  <i class="bi bi-chevron-down w-3 h-3 transition-transform duration-300" :class="openTentangDesa ? 'rotate-180' : ''" x-show="sidebarOpen"></i>
+            </button>
+            <ul x-show="openTentangDesa && sidebarOpen" x-transition x-cloak class="py-2 space-y-1 ml-4 border-l border-white/10 pl-2">
+                  <li><a href="{{ url('administrator/tentang-desa/sejarah') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/tentang-desa/sejarah*') ? 'text-white bg-white/5' : '' }}">Sejarah Desa Adat</a></li>
+                  <li><a href="{{ url('administrator/tentang-desa/pengurus') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/tentang-desa/pengurus*') ? 'text-white bg-white/5' : '' }}">Pengurus Desa Adat</a></li>
+                  <li><a href="{{ url('administrator/tentang-desa/lembaga') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/tentang-desa/lembaga*') ? 'text-white bg-white/5' : '' }}">Lembaga Desa Adat</a></li>
+                  <li><a href="{{ url('administrator/tentang-desa/bumdes') }}" class="flex items-center w-full p-2 text-white/70 hover:text-white transition duration-75 rounded-lg text-xs font-semibold hover:bg-white/5 {{ Request::is('administrator/tentang-desa/bumdes*') ? 'text-white bg-white/5' : '' }}">Badan Usaha Milik Desa</a></li>
+            </ul>
+          </li>
+          @endif
           
           <li class="pt-4 mt-4 border-t border-white/20"></li>
 

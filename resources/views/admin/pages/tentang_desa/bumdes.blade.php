@@ -46,7 +46,7 @@
             <p class="text-xs text-slate-500 leading-relaxed mb-4 line-clamp-3">{{ $bumdes['deskripsi'] }}</p>
             @endif
             <div class="flex justify-end pt-3 border-t border-slate-100">
-                <form action="{{ route('tentang_desa.bumdes.delete') }}" method="POST" onsubmit="return confirm('Hapus BUMDes ini?')">
+                <form action="{{ url('administrator/tentang-desa/bumdes/delete') }}" method="POST" onsubmit="return confirm('Hapus BUMDes ini?')">
                     @csrf
                     <input type="hidden" name="id" value="{{ $bumdes['id'] }}">
                     <button type="submit" class="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-600 transition-colors">
@@ -72,7 +72,7 @@
                     <h3 class="text-lg font-black text-slate-800">Tambah BUMDes</h3>
                     <button @click="showModal = false" class="text-slate-400 hover:text-rose-500"><i class="bi bi-x-lg"></i></button>
                 </div>
-                <form action="{{ route('tentang_desa.bumdes.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                <form action="{{ url('administrator/tentang-desa/bumdes/store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
                     @csrf
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Nama BUMDes <span class="text-rose-500">*</span></label>

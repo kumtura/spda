@@ -17,7 +17,7 @@
     @endif
 
     <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
-        <form action="{{ route('tentang_desa.sejarah.update') }}" method="POST">
+        <form action="{{ url('administrator/tentang-desa/sejarah/update') }}" method="POST">
             @csrf
             <div class="space-y-4">
                 <div>

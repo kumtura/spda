@@ -43,7 +43,7 @@
             <p class="text-xs text-slate-500 leading-relaxed line-clamp-3">{{ $lembaga['deskripsi'] }}</p>
             @endif
             <div class="flex justify-end pt-2 border-t border-slate-100">
-                <form action="{{ route('tentang_desa.lembaga.delete') }}" method="POST" onsubmit="return confirm('Hapus lembaga ini?')">
+                <form action="{{ url('administrator/tentang-desa/lembaga/delete') }}" method="POST" onsubmit="return confirm('Hapus lembaga ini?')">
                     @csrf
                     <input type="hidden" name="id" value="{{ $lembaga['id'] }}">
                     <button type="submit" class="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-600 transition-colors">
@@ -69,7 +69,7 @@
                     <h3 class="text-lg font-black text-slate-800">Tambah Lembaga</h3>
                     <button @click="showModal = false" class="text-slate-400 hover:text-rose-500"><i class="bi bi-x-lg"></i></button>
                 </div>
-                <form action="{{ route('tentang_desa.lembaga.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                <form action="{{ url('administrator/tentang-desa/lembaga/store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
                     @csrf
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Nama Lembaga <span class="text-rose-500">*</span></label>

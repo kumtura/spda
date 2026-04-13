@@ -39,7 +39,7 @@
                     <p class="text-[10px] text-slate-400 mt-0.5"><i class="bi bi-telephone mr-1"></i>{{ $pengurus['no_hp'] }}</p>
                     @endif
                 </div>
-                <form action="{{ route('tentang_desa.pengurus.delete') }}" method="POST" onsubmit="return confirm('Hapus pengurus ini?')">
+                <form action="{{ url('administrator/tentang-desa/pengurus/delete') }}" method="POST" onsubmit="return confirm('Hapus pengurus ini?')">
                     @csrf
                     <input type="hidden" name="id" value="{{ $pengurus['id'] }}">
                     <button type="submit" class="h-9 w-9 flex items-center justify-center bg-white border border-rose-200 text-rose-400 rounded-xl hover:bg-rose-50 transition-colors">
@@ -65,7 +65,7 @@
                     <h3 class="text-lg font-black text-slate-800">Tambah Pengurus</h3>
                     <button @click="showModal = false" class="text-slate-400 hover:text-rose-500"><i class="bi bi-x-lg"></i></button>
                 </div>
-                <form action="{{ route('tentang_desa.pengurus.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                <form action="{{ url('administrator/tentang-desa/pengurus/store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
                     @csrf
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap <span class="text-rose-500">*</span></label>

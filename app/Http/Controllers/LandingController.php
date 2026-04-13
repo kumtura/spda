@@ -95,7 +95,16 @@ class LandingController extends Controller
             ->get();
         $banjar = \App\Models\Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
 
-        return view('front.pages.tentang_desa', compact('village', 'totalPura', 'totalBanjar', 'totalKramaTamiu', 'totalUsaha', 'pura', 'banjar'));
+        // Data dari settings.json
+        $sejarah     = $village['sejarah_desa'] ?? '';
+        $pengurus    = $village['pengurus_desa'] ?? [];
+        $lembaga     = $village['lembaga_desa'] ?? [];
+        $bumdes      = $village['bumdes_desa'] ?? [];
+
+        return view('front.pages.tentang_desa', compact(
+            'village', 'totalPura', 'totalBanjar', 'totalKramaTamiu', 'totalUsaha',
+            'pura', 'banjar', 'sejarah', 'pengurus', 'lembaga', 'bumdes'
+        ));
     }
 
 

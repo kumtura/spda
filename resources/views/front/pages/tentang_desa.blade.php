@@ -2,84 +2,248 @@
 
 @section('content')
 <div class="bg-white min-h-screen pb-24">
-    <!-- Header -->
-    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-5 pt-12 pb-8 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
-        <a href="{{ route('public.home') }}" class="inline-flex items-center gap-1.5 text-white/70 hover:text-white transition-colors mb-3">
+
+    {{-- ── HEADER ── --}}
+    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-5 pt-12 pb-10 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24"></div>
+        <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-16 -mb-16"></div>
+        <a href="{{ route('public.home') }}" class="inline-flex items-center gap-1.5 text-white/70 hover:text-white transition-colors mb-4">
             <i class="bi bi-arrow-left text-sm"></i>
-            <span class="text-[10px] font-bold">Beranda</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Beranda</span>
         </a>
         <h1 class="text-2xl font-black text-white tracking-tight relative z-10">Tentang Desa</h1>
-        <p class="text-xs text-white/70 mt-1 relative z-10">{{ $village['name'] ?? 'Desa Adat' }}</p>
+        <p class="text-xs text-white/70 mt-1 relative z-10 font-semibold">{{ $village['name'] ?? 'Desa Adat' }}</p>
     </div>
 
-    <div class="px-5 -mt-4 space-y-4 relative z-10">
-        <!-- Stats -->
-        <div class="grid grid-cols-2 gap-2">
-            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
-                <p class="text-[9px] text-slate-400 uppercase font-bold">Banjar</p>
-                <p class="text-lg font-black text-slate-800">{{ $totalBanjar }}</p>
+    {{-- ── STATS CARDS ── --}}
+    <div class="px-4 -mt-5 relative z-10">
+        <div class="grid grid-cols-4 gap-2">
+            <div class="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm text-center">
+                <i class="bi bi-houses text-[#00a6eb] text-lg block mb-1"></i>
+                <p class="text-lg font-black text-slate-800 leading-none">{{ $totalBanjar }}</p>
+                <p class="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Banjar</p>
             </div>
-            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
-                <p class="text-[9px] text-slate-400 uppercase font-bold">Pura</p>
-                <p class="text-lg font-black text-slate-800">{{ $totalPura }}</p>
+            <div class="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm text-center">
+                <i class="bi bi-building text-[#00a6eb] text-lg block mb-1"></i>
+                <p class="text-lg font-black text-slate-800 leading-none">{{ $totalPura }}</p>
+                <p class="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Pura</p>
             </div>
-            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
-                <p class="text-[9px] text-slate-400 uppercase font-bold">Krama Tamiu</p>
-                <p class="text-lg font-black text-slate-800">{{ $totalKramaTamiu }}</p>
+            <div class="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm text-center">
+                <i class="bi bi-people text-[#00a6eb] text-lg block mb-1"></i>
+                <p class="text-lg font-black text-slate-800 leading-none">{{ $totalKramaTamiu }}</p>
+                <p class="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Tamiu</p>
             </div>
-            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
-                <p class="text-[9px] text-slate-400 uppercase font-bold">Unit Usaha</p>
-                <p class="text-lg font-black text-slate-800">{{ $totalUsaha }}</p>
+            <div class="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm text-center">
+                <i class="bi bi-briefcase text-[#00a6eb] text-lg block mb-1"></i>
+                <p class="text-lg font-black text-slate-800 leading-none">{{ $totalUsaha }}</p>
+                <p class="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Usaha</p>
             </div>
         </div>
+    </div>
 
-        <!-- Daftar Banjar -->
-        <div>
-            <h3 class="text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Daftar Banjar</h3>
-            <div class="space-y-2">
-                @forelse($banjar as $b)
-                <div class="bg-white rounded-xl border border-slate-100 p-3.5">
-                    <div class="flex items-center gap-3">
-                        <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
-                            <i class="bi bi-house-door text-slate-400 text-sm"></i>
-                        </div>
-                        <p class="text-xs font-bold text-slate-800">{{ $b->nama_banjar }}</p>
+    {{-- ── TAB NAVIGATION ── --}}
+    <div class="px-4 mt-5" x-data="{ tab: 'sejarah' }">
+        <div class="flex gap-1 bg-slate-100 rounded-2xl p-1 mb-5 overflow-x-auto no-scrollbar">
+            @foreach([
+                ['key' => 'sejarah',  'label' => 'Sejarah',  'icon' => 'bi-book'],
+                ['key' => 'pengurus', 'label' => 'Pengurus', 'icon' => 'bi-person-badge'],
+                ['key' => 'lembaga',  'label' => 'Lembaga',  'icon' => 'bi-building-check'],
+                ['key' => 'bumdes',   'label' => 'BUMDes',   'icon' => 'bi-shop'],
+            ] as $t)
+            <button @click="tab = '{{ $t['key'] }}'"
+                    :class="tab === '{{ $t['key'] }}' ? 'bg-white text-[#00a6eb] shadow-sm' : 'text-slate-400'"
+                    class="flex-1 min-w-[70px] flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all">
+                <i class="bi {{ $t['icon'] }} text-base"></i>
+                {{ $t['label'] }}
+            </button>
+            @endforeach
+        </div>
+
+        {{-- ── TAB: SEJARAH ── --}}
+        <div x-show="tab === 'sejarah'" x-transition>
+            @if($sejarah)
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="h-8 w-8 bg-[#00a6eb]/10 rounded-xl flex items-center justify-center">
+                        <i class="bi bi-book-half text-[#00a6eb]"></i>
+                    </div>
+                    <h3 class="text-sm font-black text-slate-800">Sejarah Desa Adat</h3>
+                </div>
+                <div class="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{{ $sejarah }}</div>
+            </div>
+            @else
+            <div class="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 text-center">
+                <i class="bi bi-book text-3xl text-slate-300 block mb-2"></i>
+                <p class="text-xs font-bold text-slate-400">Belum ada konten sejarah.</p>
+                <p class="text-[10px] text-slate-300 mt-1">Admin dapat menambahkan melalui panel administrator.</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- ── TAB: PENGURUS ── --}}
+        <div x-show="tab === 'pengurus'" x-transition>
+            @if(count($pengurus) > 0)
+            <div class="space-y-3">
+                @foreach($pengurus as $p)
+                <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex items-center gap-4">
+                    <div class="h-14 w-14 rounded-2xl bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center border border-slate-200">
+                        @if(!empty($p['foto']))
+                            <img src="{{ asset('storage/tentang_desa/pengurus/' . $p['foto']) }}" class="h-full w-full object-cover" alt="{{ $p['nama'] }}">
+                        @else
+                            <i class="bi bi-person-fill text-2xl text-slate-300"></i>
+                        @endif
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-black text-slate-800 leading-tight">{{ $p['nama'] }}</p>
+                        <span class="inline-block mt-1 bg-[#00a6eb]/10 text-[#00a6eb] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">{{ $p['jabatan'] }}</span>
+                        @if(!empty($p['no_hp']))
+                        <p class="text-[10px] text-slate-400 mt-1"><i class="bi bi-telephone mr-1"></i>{{ $p['no_hp'] }}</p>
+                        @endif
                     </div>
                 </div>
-                @empty
-                <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-4 text-center">
-                    <p class="text-xs text-slate-400">Belum ada data banjar</p>
-                </div>
-                @endforelse
+                @endforeach
             </div>
+            @else
+            <div class="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 text-center">
+                <i class="bi bi-people text-3xl text-slate-300 block mb-2"></i>
+                <p class="text-xs font-bold text-slate-400">Belum ada data pengurus.</p>
+            </div>
+            @endif
         </div>
 
-        <!-- Daftar Pura -->
-        <div>
-            <h3 class="text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Daftar Pura</h3>
-            <div class="space-y-2">
-                @forelse($pura as $item)
-                <div class="bg-white rounded-xl border border-slate-100 p-3.5">
-                    <div class="flex items-center gap-3">
-                        <div class="h-9 w-9 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
-                            <i class="bi bi-building text-slate-400 text-sm"></i>
+        {{-- ── TAB: LEMBAGA ── --}}
+        <div x-show="tab === 'lembaga'" x-transition>
+            @if(count($lembaga) > 0)
+            <div class="space-y-3">
+                @foreach($lembaga as $l)
+                <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                    <div class="flex items-start gap-4">
+                        <div class="h-14 w-14 rounded-2xl bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center border border-slate-200">
+                            @if(!empty($l['logo']))
+                                <img src="{{ asset('storage/tentang_desa/lembaga/' . $l['logo']) }}" class="h-full w-full object-cover" alt="{{ $l['nama_lembaga'] }}">
+                            @else
+                                <i class="bi bi-building text-2xl text-slate-300"></i>
+                            @endif
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-black text-slate-800 leading-tight">{{ $l['nama_lembaga'] }}</p>
+                            @if(!empty($l['ketua']))
+                            <p class="text-[10px] text-[#00a6eb] font-bold mt-0.5">Ketua: {{ $l['ketua'] }}</p>
+                            @endif
+                            @if(!empty($l['deskripsi']))
+                            <p class="text-[10px] text-slate-500 mt-1.5 leading-relaxed line-clamp-2">{{ $l['deskripsi'] }}</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <div class="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 text-center">
+                <i class="bi bi-building text-3xl text-slate-300 block mb-2"></i>
+                <p class="text-xs font-bold text-slate-400">Belum ada data lembaga.</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- ── TAB: BUMDES ── --}}
+        <div x-show="tab === 'bumdes'" x-transition>
+            @if(count($bumdes) > 0)
+            <div class="space-y-3">
+                @foreach($bumdes as $b)
+                <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                    <div class="flex items-start gap-4">
+                        <div class="h-14 w-14 rounded-2xl bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center border border-slate-200">
+                            @if(!empty($b['logo']))
+                                <img src="{{ asset('storage/tentang_desa/bumdes/' . $b['logo']) }}" class="h-full w-full object-cover" alt="{{ $b['nama_bumdes'] }}">
+                            @else
+                                <i class="bi bi-shop text-2xl text-slate-300"></i>
+                            @endif
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-black text-slate-800 leading-tight">{{ $b['nama_bumdes'] }}</p>
+                            @if(!empty($b['ketua']))
+                            <p class="text-[10px] text-[#00a6eb] font-bold mt-0.5">Ketua: {{ $b['ketua'] }}</p>
+                            @endif
+                            @if(!empty($b['tahun_berdiri']))
+                            <p class="text-[10px] text-slate-400 mt-0.5"><i class="bi bi-calendar3 mr-1"></i>Berdiri {{ $b['tahun_berdiri'] }}</p>
+                            @endif
+                            @if(!empty($b['deskripsi']))
+                            <p class="text-[10px] text-slate-500 mt-1.5 leading-relaxed line-clamp-2">{{ $b['deskripsi'] }}</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <div class="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 text-center">
+                <i class="bi bi-shop text-3xl text-slate-300 block mb-2"></i>
+                <p class="text-xs font-bold text-slate-400">Belum ada data BUMDes.</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- ── DAFTAR BANJAR & PURA (selalu tampil di bawah tab) ── --}}
+        <div class="mt-6 space-y-5">
+            {{-- Banjar --}}
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="h-7 w-7 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-houses text-[#00a6eb] text-sm"></i>
+                    </div>
+                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest">Daftar Banjar</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    @forelse($banjar as $bj)
+                    <div class="bg-white border border-slate-100 rounded-xl p-3 flex items-center gap-2.5 shadow-sm">
+                        <div class="h-8 w-8 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center shrink-0">
+                            <i class="bi bi-house-door text-[#00a6eb] text-sm"></i>
+                        </div>
+                        <p class="text-[11px] font-bold text-slate-700 leading-tight">{{ $bj->nama_banjar }}</p>
+                    </div>
+                    @empty
+                    <div class="col-span-2 bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4 text-center">
+                        <p class="text-xs text-slate-400">Belum ada data banjar</p>
+                    </div>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- Pura --}}
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="h-7 w-7 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-building text-[#00a6eb] text-sm"></i>
+                    </div>
+                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest">Daftar Pura</h3>
+                </div>
+                <div class="space-y-2">
+                    @forelse($pura as $item)
+                    <div class="bg-white border border-slate-100 rounded-xl p-3.5 flex items-center gap-3 shadow-sm">
+                        <div class="h-9 w-9 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center shrink-0">
+                            <i class="bi bi-building text-[#00a6eb] text-sm"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-bold text-slate-800">{{ $item->nama_pura }}</p>
-                            <p class="text-[10px] text-slate-400">
-                                <i class="bi bi-geo-alt"></i> Banjar {{ $item->nama_banjar ?? '-' }}
+                            <p class="text-[10px] text-slate-400 mt-0.5">
+                                <i class="bi bi-geo-alt mr-0.5"></i>Banjar {{ $item->nama_banjar ?? '-' }}
                             </p>
                         </div>
                     </div>
+                    @empty
+                    <div class="bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4 text-center">
+                        <p class="text-xs text-slate-400">Belum ada data pura</p>
+                    </div>
+                    @endforelse
                 </div>
-                @empty
-                <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-4 text-center">
-                    <p class="text-xs text-slate-400">Belum ada data pura</p>
-                </div>
-                @endforelse
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
 @endsection

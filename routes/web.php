@@ -545,6 +545,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/tentang-desa/pengurus/delete', 'Administrator\TentangDesaController@pengurusDelete')->name('tentang_desa.pengurus.delete');
 
             Route::get('/tentang-desa/lembaga', 'Administrator\TentangDesaController@lembaga')->name('tentang_desa.lembaga');
+            Route::get('/tentang-desa/lembaga/create', 'Administrator\TentangDesaController@lembagaCreate')->name('tentang_desa.lembaga.create');
             Route::post('/tentang-desa/lembaga/store', 'Administrator\TentangDesaController@lembagaStore')->name('tentang_desa.lembaga.store');
             Route::post('/tentang-desa/lembaga/delete', 'Administrator\TentangDesaController@lembagaDelete')->name('tentang_desa.lembaga.delete');
 

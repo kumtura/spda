@@ -117,25 +117,66 @@ class TentangDesaController extends Controller
         return view('admin.pages.tentang_desa.lembaga', compact('lembagaList'));
     }
 
+    public function lembagaCreate()
+    {
+        return view('admin.pages.tentang_desa.lembaga_create');
+    }
+
     public function lembagaStore(Request $request)
     {
         $request->validate([
-            'nama_lembaga' => 'required|string|max:255',
-            'deskripsi'    => 'nullable|string',
-            'ketua'        => 'nullable|string|max:255',
-            'logo'         => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'nama_lembaga'       => 'required|string|max:255',
+            'deskripsi'          => 'nullable|string',
+            'ketua'              => 'nullable|string|max:255',
+            'logo'               => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'gallery.*'          => 'nullable|image|mimes:jpeg,png,jpg|max:3072',
+            'pengurus.*.nama'    => 'required|string|max:255',
+            'pengurus.*.keterangan' => 'nullable|string|max:500',
+            'pengurus.*.no_telp' => 'nullable|string|max:30',
         ]);
 
         $settings = $this->getSettings();
         $list = $settings['lembaga_desa'] ?? [];
+        $dest = public_path('storage/tentang_desa/lembaga');
+        if (!File::isDirectory($dest)) File::makeDirectory($dest, 0777, true, true);
 
+        // Logo
         $logoName = null;
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             $logoName = 'lembaga_' . time() . '_' . str_shuffle('abcdefghij') . '.' . $file->getClientOriginalExtension();
-            $dest = public_path('storage/tentang_desa/lembaga');
-            if (!File::isDirectory($dest)) File::makeDirectory($dest, 0777, true, true);
             $file->move($dest, $logoName);
+        }
+
+        // Gallery
+        $galleryFiles = [];
+        if ($request->hasFile('gallery')) {
+            foreach ($request->file('gallery') as $i => $file) {
+                $gName = 'lembaga_gal_' . time() . '_' . $i . '_' . str_shuffle('abcde') . '.' . $file->getClientOriginalExtension();
+                $file->move($dest, $gName);
+                $galleryFiles[] = $gName;
+            }
+        }
+
+        // Pengurus
+        $pengurusList = [];
+        if ($request->has('pengurus')) {
+            foreach ($request->pengurus as $i => $p) {
+                if (empty($p['nama'])) continue;
+                $fotoName = null;
+                if (isset($request->file('pengurus')[$i]['foto']) && $request->file('pengurus')[$i]['foto']) {
+                    $fotoFile = $request->file('pengurus')[$i]['foto'];
+                    $fotoName = 'lembaga_pngg_' . time() . '_' . $i . '.' . $fotoFile->getClientOriginalExtension();
+                    $fotoFile->move($dest, $fotoName);
+                }
+                $pengurusList[] = [
+                    'id'          => uniqid(),
+                    'nama'        => $p['nama'],
+                    'keterangan'  => $p['keterangan'] ?? '',
+                    'no_telp'     => $p['no_telp'] ?? '',
+                    'foto'        => $fotoName,
+                ];
+            }
         }
 
         $list[] = [
@@ -144,12 +185,14 @@ class TentangDesaController extends Controller
             'deskripsi'    => $request->deskripsi ?? '',
             'ketua'        => $request->ketua ?? '',
             'logo'         => $logoName,
+            'gallery'      => $galleryFiles,
+            'pengurus'     => $pengurusList,
         ];
 
         $settings['lembaga_desa'] = $list;
         $this->saveSettings($settings);
 
-        return redirect()->back()->with('success', 'Lembaga berhasil ditambahkan!');
+        return redirect(url('administrator/tentang-desa/lembaga'))->with('success', 'Lembaga berhasil ditambahkan!');
     }
 
     public function lembagaDelete(Request $request)

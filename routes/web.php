@@ -550,15 +550,19 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 
             Route::get('/tentang-desa/lembaga', 'Administrator\TentangDesaController@lembaga')->name('tentang_desa.lembaga');
             Route::get('/tentang-desa/lembaga/create', 'Administrator\TentangDesaController@lembagaCreate')->name('tentang_desa.lembaga.create');
+            Route::get('/tentang-desa/lembaga/{id}/edit', 'Administrator\TentangDesaController@lembagaEdit')->name('tentang_desa.lembaga.edit');
             Route::post('/tentang-desa/lembaga/store', 'Administrator\TentangDesaController@lembagaStore')->name('tentang_desa.lembaga.store');
+            Route::post('/tentang-desa/lembaga/{id}/update', 'Administrator\TentangDesaController@lembagaUpdate')->name('tentang_desa.lembaga.update');
             Route::post('/tentang-desa/lembaga/delete', 'Administrator\TentangDesaController@lembagaDelete')->name('tentang_desa.lembaga.delete');
 
             Route::get('/tentang-desa/bupda', 'Administrator\TentangDesaController@bupda')->name('tentang_desa.bupda');
             Route::post('/tentang-desa/bupda/update-info', 'Administrator\TentangDesaController@bupdaUpdateInfo')->name('tentang_desa.bupda.update_info');
             Route::post('/tentang-desa/bupda/upload-struktur', 'Administrator\TentangDesaController@bupdaUploadStruktur')->name('tentang_desa.bupda.upload_struktur');
             Route::post('/tentang-desa/bupda/tim/store', 'Administrator\TentangDesaController@bupdaTimStore')->name('tentang_desa.bupda.tim.store');
+            Route::post('/tentang-desa/bupda/tim/update', 'Administrator\TentangDesaController@bupdaTimUpdate')->name('tentang_desa.bupda.tim.update');
             Route::post('/tentang-desa/bupda/tim/delete', 'Administrator\TentangDesaController@bupdaTimDelete')->name('tentang_desa.bupda.tim.delete');
             Route::post('/tentang-desa/bupda/program/store', 'Administrator\TentangDesaController@bupdaProgramStore')->name('tentang_desa.bupda.program.store');
+            Route::post('/tentang-desa/bupda/program/update', 'Administrator\TentangDesaController@bupdaProgramUpdate')->name('tentang_desa.bupda.program.update');
             Route::post('/tentang-desa/bupda/program/delete', 'Administrator\TentangDesaController@bupdaProgramDelete')->name('tentang_desa.bupda.program.delete');
             Route::post('/tentang-desa/bupda/dokumentasi/store', 'Administrator\TentangDesaController@bupdaDokumentasiStore')->name('tentang_desa.bupda.dokumentasi.store');
             Route::post('/tentang-desa/bupda/dokumentasi/delete', 'Administrator\TentangDesaController@bupdaDokumentasiDelete')->name('tentang_desa.bupda.dokumentasi.delete');

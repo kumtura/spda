@@ -70,7 +70,11 @@
             </div>
             @endif
 
-            <div class="mt-auto px-5 py-3 border-t border-slate-100 flex justify-end">
+            <div class="mt-auto px-5 py-3 border-t border-slate-100 flex items-center justify-between">
+                <a href="{{ url('administrator/tentang-desa/lembaga/' . $lembaga['id'] . '/edit') }}"
+                   class="flex items-center gap-1.5 text-xs font-bold text-primary-light hover:text-primary-dark transition-colors">
+                    <i class="bi bi-pencil-square"></i> Edit
+                </a>
                 <form action="{{ url('administrator/tentang-desa/lembaga/delete') }}" method="POST" onsubmit="return confirm('Hapus lembaga ini?')">
                     @csrf
                     <input type="hidden" name="id" value="{{ $lembaga['id'] }}">

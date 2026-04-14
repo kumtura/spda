@@ -325,24 +325,28 @@ class UserController extends BaseController
         if (!$userId) {
             return response('error', 400);
         }
-        
-        // Deactivate ticket counter assignments
-        TicketCounterAssignment::where('id_user', $userId)->update(['aktif' => '0']);
-        
-        // Cascade delete: remove loker associated with usaha owned by this user
-        $usahaIds = \DB::table('tb_usaha')
-            ->join('tb_penanggung_jawab', 'tb_penanggung_jawab.id_penanggung_jawab', '=', 'tb_usaha.id_penanggung_jawab')
-            ->where('tb_penanggung_jawab.id_user', $userId)
-            ->pluck('tb_usaha.id_usaha');
-        
-        if ($usahaIds->count() > 0) {
-            \App\Models\Loker::whereIn('id_usaha', $usahaIds)->delete();
+
+        try {
+            // Deactivate ticket counter assignments
+            TicketCounterAssignment::where('id_user', $userId)->update(['aktif' => '0']);
+
+            // Cascade delete loker via usaha.user_id (kolom yang benar)
+            $usahaIds = \DB::table('tb_usaha')
+                ->where('user_id', $userId)
+                ->pluck('id_usaha');
+
+            if ($usahaIds->count() > 0) {
+                \App\Models\Loker::whereIn('id_usaha', $usahaIds)->delete();
+            }
+
+            // Delete the user itself
+            User::where('id', '=', $userId)->delete();
+
+            return response('success', 200);
+        } catch (\Exception $e) {
+            \Log::error('Delete user error: ' . $e->getMessage());
+            return response('error: ' . $e->getMessage(), 500);
         }
-        
-        // Delete the user itself
-        User::where('id', '=', $userId)->delete();
-        
-        return response('success', 200);
     }
 
     public function getObjekWisataByBanjar($id_banjar)

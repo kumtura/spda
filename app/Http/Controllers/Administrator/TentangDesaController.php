@@ -184,6 +184,90 @@ class TentangDesaController extends Controller
         return view('admin.pages.tentang_desa.lembaga_create');
     }
 
+    public function lembagaEdit(string $id)
+    {
+        $settings = $this->getSettings();
+        $list = $settings['lembaga_desa'] ?? [];
+        $lembaga = collect($list)->firstWhere('id', $id);
+        if (!$lembaga) abort(404);
+        return view('admin.pages.tentang_desa.lembaga_edit', compact('lembaga'));
+    }
+
+    public function lembagaUpdate(Request $request, string $id)
+    {
+        $request->validate([
+            'nama_lembaga'          => 'required|string|max:255',
+            'deskripsi'             => 'nullable|string',
+            'ketua'                 => 'nullable|string|max:255',
+            'logo'                  => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'gallery_new.*'         => 'nullable|image|mimes:jpeg,png,jpg|max:3072',
+            'pengurus.*.nama'       => 'required|string|max:255',
+            'pengurus.*.keterangan' => 'nullable|string|max:500',
+            'pengurus.*.no_telp'    => 'nullable|string|max:30',
+        ]);
+
+        $settings = $this->getSettings();
+        $list = $settings['lembaga_desa'] ?? [];
+        $dest = public_path('storage/tentang_desa/lembaga');
+        if (!File::isDirectory($dest)) File::makeDirectory($dest, 0777, true, true);
+
+        $list = array_map(function ($item) use ($id, $request, $dest) {
+            if ($item['id'] !== $id) return $item;
+
+            // Logo — keep existing if no new upload
+            if ($request->hasFile('logo')) {
+                $file = $request->file('logo');
+                $item['logo'] = 'lembaga_' . time() . '_' . str_shuffle('abcde') . '.' . $file->getClientOriginalExtension();
+                $file->move($dest, $item['logo']);
+            }
+
+            // Gallery — keep existing + append new
+            $existing = $request->input('gallery_keep', []);
+            $gallery = array_values(array_filter($existing));
+            if ($request->hasFile('gallery_new')) {
+                foreach ($request->file('gallery_new') as $i => $file) {
+                    $gName = 'lembaga_gal_' . time() . '_' . $i . '_' . str_shuffle('abcde') . '.' . $file->getClientOriginalExtension();
+                    $file->move($dest, $gName);
+                    $gallery[] = $gName;
+                }
+            }
+            $item['gallery'] = $gallery;
+
+            // Pengurus — rebuild list
+            $pengurusList = [];
+            if ($request->has('pengurus')) {
+                foreach ($request->pengurus as $i => $p) {
+                    if (empty($p['nama'])) continue;
+                    $fotoName = $p['foto_existing'] ?? null;
+                    if (isset($request->file('pengurus')[$i]['foto']) && $request->file('pengurus')[$i]['foto']) {
+                        $fotoFile = $request->file('pengurus')[$i]['foto'];
+                        $fotoName = 'lembaga_pngg_' . time() . '_' . $i . '.' . $fotoFile->getClientOriginalExtension();
+                        $fotoFile->move($dest, $fotoName);
+                    }
+                    $pengurusList[] = [
+                        'id'         => $p['id'] ?? uniqid(),
+                        'nama'       => $p['nama'],
+                        'keterangan' => $p['keterangan'] ?? '',
+                        'no_telp'    => $p['no_telp'] ?? '',
+                        'foto'       => $fotoName,
+                    ];
+                }
+            }
+
+            $item['nama_lembaga'] = $request->nama_lembaga;
+            $item['deskripsi']    = $request->deskripsi ?? '';
+            $item['ketua']        = $request->ketua ?? '';
+            $item['pengurus']     = $pengurusList;
+
+            return $item;
+        }, $list);
+
+        $settings['lembaga_desa'] = $list;
+        $this->saveSettings($settings);
+
+        return redirect(url('administrator/tentang-desa/lembaga'))->with('success', 'Lembaga berhasil diperbarui!');
+    }
+
     public function lembagaStore(Request $request)
     {
         $request->validate([
@@ -381,6 +465,37 @@ class TentangDesaController extends Controller
         return redirect()->back()->with('success', 'Anggota tim berhasil dihapus!');
     }
 
+    public function bupdaTimUpdate(Request $request)
+    {
+        $request->validate([
+            'id'      => 'required|string',
+            'nama'    => 'required|string|max:255',
+            'jabatan' => 'required|string|max:255',
+            'foto'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $settings = $this->getSettings();
+        $bupda = $settings['bupda_desa'] ?? [];
+        $dest = public_path('storage/tentang_desa/bupda');
+        if (!File::isDirectory($dest)) File::makeDirectory($dest, 0777, true, true);
+
+        $bupda['tim'] = array_map(function ($t) use ($request, $dest) {
+            if ($t['id'] !== $request->id) return $t;
+            $t['nama']    = $request->nama;
+            $t['jabatan'] = $request->jabatan;
+            if ($request->hasFile('foto')) {
+                $file = $request->file('foto');
+                $t['foto'] = 'bupda_tim_' . time() . '.' . $file->getClientOriginalExtension();
+                $file->move($dest, $t['foto']);
+            }
+            return $t;
+        }, $bupda['tim'] ?? []);
+
+        $settings['bupda_desa'] = $bupda;
+        $this->saveSettings($settings);
+        return redirect()->back()->with('success', 'Anggota tim berhasil diperbarui!');
+    }
+
     public function bupdaProgramStore(Request $request)
     {
         $request->validate([
@@ -432,6 +547,41 @@ class TentangDesaController extends Controller
         $this->saveSettings($settings);
 
         return redirect()->back()->with('success', 'Program berhasil dihapus!');
+    }
+
+    public function bupdaProgramUpdate(Request $request)
+    {
+        $request->validate([
+            'id'           => 'required|string',
+            'nama_program' => 'required|string|max:255',
+            'keterangan'   => 'nullable|string',
+            'lokasi'       => 'nullable|string|max:255',
+            'no_kontak'    => 'nullable|string|max:30',
+            'foto'         => 'nullable|image|mimes:jpeg,png,jpg|max:3072',
+        ]);
+
+        $settings = $this->getSettings();
+        $bupda = $settings['bupda_desa'] ?? [];
+        $dest = public_path('storage/tentang_desa/bupda');
+        if (!File::isDirectory($dest)) File::makeDirectory($dest, 0777, true, true);
+
+        $bupda['program'] = array_map(function ($p) use ($request, $dest) {
+            if ($p['id'] !== $request->id) return $p;
+            $p['nama_program'] = $request->nama_program;
+            $p['keterangan']   = $request->keterangan ?? '';
+            $p['lokasi']       = $request->lokasi ?? '';
+            $p['no_kontak']    = $request->no_kontak ?? '';
+            if ($request->hasFile('foto')) {
+                $file = $request->file('foto');
+                $p['foto'] = 'bupda_prog_' . time() . '.' . $file->getClientOriginalExtension();
+                $file->move($dest, $p['foto']);
+            }
+            return $p;
+        }, $bupda['program'] ?? []);
+
+        $settings['bupda_desa'] = $bupda;
+        $this->saveSettings($settings);
+        return redirect()->back()->with('success', 'Program berhasil diperbarui!');
     }
 
     public function bupdaDokumentasiStore(Request $request)

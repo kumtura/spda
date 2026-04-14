@@ -5,7 +5,19 @@
     tabActive: 'info',
     showTimModal: false,
     showProgramModal: false,
-    showDokModal: false
+    showDokModal: false,
+    showTimEditModal: false,
+    showProgramEditModal: false,
+    editTim: { id: '', nama: '', jabatan: '' },
+    editProgram: { id: '', nama_program: '', keterangan: '', lokasi: '', no_kontak: '' },
+    openEditTim(anggota) {
+        this.editTim = { id: anggota.id, nama: anggota.nama, jabatan: anggota.jabatan };
+        this.showTimEditModal = true;
+    },
+    openEditProgram(prog) {
+        this.editProgram = { id: prog.id, nama_program: prog.nama_program, keterangan: prog.keterangan, lokasi: prog.lokasi, no_kontak: prog.no_kontak };
+        this.showProgramEditModal = true;
+    }
 }">
 
     {{-- HEADER --}}
@@ -147,7 +159,12 @@
                 </div>
                 <p class="text-sm font-black text-slate-800">{{ $anggota['nama'] }}</p>
                 <span class="inline-block mt-1 bg-primary-light/10 text-primary-light text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">{{ $anggota['jabatan'] }}</span>
-                <div class="mt-4 pt-3 border-t border-slate-100">
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-center gap-4">
+                    <button type="button"
+                            @click="openEditTim({ id: '{{ $anggota['id'] }}', nama: '{{ addslashes($anggota['nama']) }}', jabatan: '{{ addslashes($anggota['jabatan']) }}' })"
+                            class="text-xs font-bold text-primary-light hover:text-primary-dark transition-colors">
+                        <i class="bi bi-pencil-square mr-1"></i>Edit
+                    </button>
                     <form action="{{ url('administrator/tentang-desa/bupda/tim/delete') }}" method="POST" onsubmit="return confirm('Hapus anggota ini?')">
                         @csrf
                         <input type="hidden" name="id" value="{{ $anggota['id'] }}">
@@ -236,7 +253,12 @@
                         <span class="flex items-center gap-1"><i class="bi bi-telephone text-primary-light"></i>{{ $prog['no_kontak'] }}</span>
                         @endif
                     </div>
-                    <div class="flex justify-end mt-4 pt-3 border-t border-slate-100">
+                    <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+                        <button type="button"
+                                @click="openEditProgram({ id: '{{ $prog['id'] }}', nama_program: '{{ addslashes($prog['nama_program']) }}', keterangan: '{{ addslashes($prog['keterangan'] ?? '') }}', lokasi: '{{ addslashes($prog['lokasi'] ?? '') }}', no_kontak: '{{ addslashes($prog['no_kontak'] ?? '') }}' })"
+                                class="text-xs font-bold text-primary-light hover:text-primary-dark transition-colors">
+                            <i class="bi bi-pencil-square mr-1"></i>Edit
+                        </button>
                         <form action="{{ url('administrator/tentang-desa/bupda/program/delete') }}" method="POST" onsubmit="return confirm('Hapus program ini?')">
                             @csrf
                             <input type="hidden" name="id" value="{{ $prog['id'] }}">
@@ -372,6 +394,82 @@
             </div>
         </template>
     </div>
+
+    {{-- Modal Edit Tim --}}
+    <template x-teleport="body">
+        <div x-show="showTimEditModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md px-4" x-transition x-cloak>
+            <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200" @click.away="showTimEditModal = false">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="text-lg font-black text-slate-800">Edit Anggota Tim</h3>
+                    <button @click="showTimEditModal = false" class="text-slate-400 hover:text-rose-500"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <form action="{{ url('administrator/tentang-desa/bupda/tim/update') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                    @csrf
+                    <input type="hidden" name="id" x-model="editTim.id">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap <span class="text-rose-500">*</span></label>
+                        <input type="text" name="nama" x-model="editTim.nama" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/10">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Jabatan <span class="text-rose-500">*</span></label>
+                        <input type="text" name="jabatan" x-model="editTim.jabatan" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/10">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Ganti Foto (Opsional)</label>
+                        <input type="file" name="foto" accept="image/png,image/jpeg,image/jpg"
+                            class="block w-full text-sm text-slate-500 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 file:mr-4 file:py-2.5 file:px-4 file:rounded-l-xl file:border-0 file:text-xs file:font-semibold file:bg-primary-light file:text-white">
+                    </div>
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" @click="showTimEditModal = false" class="px-5 py-2.5 text-slate-400 font-bold text-sm">Batal</button>
+                        <button type="submit" class="bg-primary-light hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl font-bold text-sm">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    {{-- Modal Edit Program --}}
+    <template x-teleport="body">
+        <div x-show="showProgramEditModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md px-4 py-8 overflow-y-auto" x-transition x-cloak>
+            <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 my-auto" @click.away="showProgramEditModal = false">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="text-lg font-black text-slate-800">Edit Program</h3>
+                    <button @click="showProgramEditModal = false" class="text-slate-400 hover:text-rose-500"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <form action="{{ url('administrator/tentang-desa/bupda/program/update') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                    @csrf
+                    <input type="hidden" name="id" x-model="editProgram.id">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Nama Program <span class="text-rose-500">*</span></label>
+                        <input type="text" name="nama_program" x-model="editProgram.nama_program" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/10">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Keterangan</label>
+                        <textarea name="keterangan" x-model="editProgram.keterangan" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/10 resize-none"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Lokasi</label>
+                            <input type="text" name="lokasi" x-model="editProgram.lokasi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/10">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">No. Kontak</label>
+                            <input type="text" name="no_kontak" x-model="editProgram.no_kontak" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/10">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Ganti Foto (Opsional)</label>
+                        <input type="file" name="foto" accept="image/png,image/jpeg,image/jpg"
+                            class="block w-full text-sm text-slate-500 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 file:mr-4 file:py-2.5 file:px-4 file:rounded-l-xl file:border-0 file:text-xs file:font-semibold file:bg-primary-light file:text-white">
+                    </div>
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" @click="showProgramEditModal = false" class="px-5 py-2.5 text-slate-400 font-bold text-sm">Batal</button>
+                        <button type="submit" class="bg-primary-light hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl font-bold text-sm">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
 
 </div>
 @endsection

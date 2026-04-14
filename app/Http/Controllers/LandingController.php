@@ -96,14 +96,27 @@ class LandingController extends Controller
         $banjar = \App\Models\Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
 
         // Data dari settings.json
+        $settings    = $village; // settings.json sudah di-load via getVillageData()
         $sejarah     = $village['sejarah_desa'] ?? '';
         $pengurus    = $village['pengurus_desa'] ?? [];
         $lembaga     = $village['lembaga_desa'] ?? [];
         $bupda       = $village['bupda_desa'] ?? [];
+        $produkHukum = $village['produk_hukum'] ?? [];
+        $videos      = $village['sejarah_videos'] ?? [];
+
+        // Bendesa
+        $bendesa = [
+            'nama'    => $village['bendesa_nama'] ?? ($village['bendesa'] ?? ''),
+            'sambutan'=> $village['bendesa_sambutan'] ?? '',
+            'no_telp' => $village['bendesa_no_telp'] ?? '',
+            'foto'    => $village['bendesa_foto'] ?? null,
+        ];
+        $fotoStrukturDesa = $village['foto_struktur_desa'] ?? null;
 
         return view('front.pages.tentang_desa', compact(
             'village', 'totalPura', 'totalBanjar', 'totalKramaTamiu', 'totalUsaha',
-            'pura', 'banjar', 'sejarah', 'pengurus', 'lembaga', 'bupda'
+            'pura', 'banjar', 'sejarah', 'pengurus', 'lembaga', 'bupda',
+            'produkHukum', 'videos', 'bendesa', 'fotoStrukturDesa'
         ));
     }
 

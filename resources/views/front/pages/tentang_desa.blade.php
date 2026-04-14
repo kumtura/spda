@@ -59,8 +59,8 @@
     </div>
     @endif
 
-    {{-- ── SAMBUTAN BENDESA (side-by-side layout) ── --}}
-    @if(!empty($bendesa['nama']) || !empty($bendesa['sambutan']))
+    {{-- ── BENDESA ADAT (side-by-side layout) ── --}}
+    @if(!empty($bendesa['nama']))
     <div class="px-4 mt-5">
         <div class="bg-gradient-to-br from-[#00a6eb]/5 to-white border border-[#00a6eb]/20 rounded-2xl overflow-hidden shadow-sm">
             <div class="flex flex-col md:flex-row">
@@ -78,23 +78,27 @@
                 </div>
                 {{-- Information Section (50% on desktop) --}}
                 <div class="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
-                    <p class="text-[9px] font-black text-[#00a6eb] uppercase tracking-widest mb-3">Kata Sambutan</p>
-                    @if(!empty($bendesa['nama']))
                     <h3 class="text-xl md:text-2xl font-black text-slate-800 leading-tight mb-2">{{ $bendesa['nama'] }}</h3>
                     <span class="inline-block bg-[#00a6eb] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mb-3">Bendesa Adat</span>
-                    @endif
                     @if(!empty($bendesa['no_telp']))
-                    <p class="text-sm text-slate-500 mb-4">
+                    <p class="text-sm text-slate-500">
                         <i class="bi bi-telephone mr-2 text-[#00a6eb]"></i>{{ $bendesa['no_telp'] }}
                     </p>
                     @endif
-                    @if(!empty($bendesa['sambutan']))
-                    <div class="text-sm text-slate-600 leading-relaxed italic border-l-4 border-[#00a6eb] pl-4">
-                        <i class="bi bi-quote text-[#00a6eb] text-2xl mr-1"></i>
-                        {!! nl2br(e(strip_tags($bendesa['sambutan']))) !!}
-                    </div>
-                    @endif
                 </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── KATA SAMBUTAN (full-width below Bendesa) ── --}}
+    @if(!empty($bendesa['sambutan']))
+    <div class="px-4 mt-5">
+        <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+            <p class="text-[9px] font-black text-[#00a6eb] uppercase tracking-widest mb-4">Kata Sambutan</p>
+            <div class="text-sm text-slate-600 leading-relaxed italic border-l-4 border-[#00a6eb] pl-4">
+                <i class="bi bi-quote text-[#00a6eb] text-2xl mr-1"></i>
+                {!! nl2br(e(strip_tags($bendesa['sambutan']))) !!}
             </div>
         </div>
     </div>
@@ -435,55 +439,6 @@
         </div>
     </div>
 
-    {{-- ── PURA DI DESA ADAT ── --}}
-    <div class="px-4 mt-8 mb-6">
-        <div class="flex items-center gap-2 mb-4">
-            <div class="h-8 w-8 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center">
-                <span class="text-lg">🕉️</span>
-            </div>
-            <h2 class="text-base font-black text-slate-800 uppercase tracking-widest">Pura di Desa Adat</h2>
-        </div>
-
-        @if(isset($puraList) && count($puraList) > 0)
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            @foreach($puraList as $pura)
-            <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div class="h-40 bg-slate-100 overflow-hidden relative">
-                    @if(!empty($pura->gambar_pura))
-                        <img src="{{ asset('storage/pura/' . $pura->gambar_pura) }}"
-                             class="w-full h-full object-cover"
-                             loading="lazy"
-                             alt="{{ $pura->nama_pura }}">
-                    @else
-                        <div class="w-full h-full flex items-center justify-center">
-                            <i class="bi bi-building text-4xl text-slate-300"></i>
-                        </div>
-                    @endif
-                    <div class="absolute top-3 right-3 h-10 w-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
-                        <span class="text-xl">🕉️</span>
-                    </div>
-                </div>
-                <div class="p-4">
-                    <h3 class="text-sm font-black text-slate-800 leading-tight mb-2">{{ $pura->nama_pura }}</h3>
-                    @if(!empty($pura->lokasi))
-                    <p class="text-xs text-slate-500 mb-3">
-                        <i class="bi bi-geo-alt mr-1 text-[#00a6eb]"></i>{{ $pura->lokasi }}
-                    </p>
-                    @endif
-                    <a href="{{ route('public.pura.punia', ['id' => $pura->id_pura]) }}"
-                       class="block w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white text-center text-sm font-bold py-2.5 rounded-xl transition-colors">
-                        <i class="bi bi-heart-fill mr-1"></i>Donasi
-                    </a>
-                </div>
-            </div>
-            @endforeach
-        </div>
-        @else
-        <div class="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 text-center">
-            <span class="text-3xl block mb-2">🕉️</span>
-            <p class="text-sm font-bold text-slate-400">Belum ada data pura</p>
-        </div>
-        @endif
     </div>
 </div>
 

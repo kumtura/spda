@@ -6,10 +6,10 @@
         <div>
             <p class="text-sm text-primary-light font-medium mb-1">
                 <i class="bi bi-arrow-left mr-1"></i>
-                <a href="{{ url('administrator/') }}">Dashboard</a> / Tentang Desa
+                <a href="{{ url('administrator/') }}">Dashboard</a> / Tentang Desa Adat
             </p>
             <h1 class="text-2xl font-black text-slate-800 tracking-tight">Lembaga Desa Adat</h1>
-            <p class="text-slate-500 font-medium text-sm">Kelola data lembaga yang ada di desa adat.</p>
+            <p class="text-slate-500 font-medium text-sm">Kelola data lembaga yang ada di Desa Adat.</p>
         </div>
         <a href="{{ url('administrator/tentang-desa/lembaga/create') }}"
            class="flex items-center gap-2 bg-primary-light hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-100 transition-all">

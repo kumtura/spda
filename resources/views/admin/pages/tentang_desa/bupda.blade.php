@@ -25,7 +25,7 @@
         <div>
             <p class="text-sm text-primary-light font-medium mb-1">
                 <i class="bi bi-arrow-left mr-1"></i>
-                <a href="{{ url('administrator/') }}">Dashboard</a> / Tentang Desa
+                <a href="{{ url('administrator/') }}">Dashboard</a> / Tentang Desa Adat
             </p>
             <h1 class="text-2xl font-black text-slate-800 tracking-tight">BUPDA Desa Adat</h1>
             <p class="text-slate-500 font-medium text-sm">Badan Usaha Padruwen Desa Adat — kelola informasi, tim, program, dan dokumentasi.</p>

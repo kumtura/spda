@@ -94,7 +94,7 @@
                   <li><a href="{{ url('administrator/tentang-desa/sejarah') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10 text-sm">Sejarah Desa Adat</a></li>
                   <li><a href="{{ url('administrator/tentang-desa/pengurus') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10 text-sm">Pengurus Desa Adat</a></li>
                   <li><a href="{{ url('administrator/tentang-desa/lembaga') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10 text-sm">Lembaga Desa Adat</a></li>
-                  <li><a href="{{ url('administrator/tentang-desa/bumdes') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10 text-sm">Badan Usaha Milik Desa</a></li>
+                  <li><a href="{{ url('administrator/tentang-desa/bumdes') }}" class="flex items-center w-full p-2 text-white transition duration-75 rounded-lg pl-11 group hover:bg-white/10 text-sm">BUPDA Desa Adat</a></li>
             </ul>
          </li>
 

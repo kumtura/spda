@@ -8,10 +8,10 @@
         <div>
             <p class="text-sm text-primary-light font-medium mb-1">
                 <i class="bi bi-arrow-left mr-1"></i>
-                <a href="{{ url('administrator/') }}">Dashboard</a> / Tentang Desa
+                <a href="{{ url('administrator/') }}">Dashboard</a> / Tentang Desa Adat
             </p>
             <h1 class="text-2xl font-black text-slate-800 tracking-tight">Sejarah & Pengurus Desa Adat</h1>
-            <p class="text-slate-500 font-medium text-sm">Kelola konten sejarah, pengurus, dan produk hukum desa adat.</p>
+            <p class="text-slate-500 font-medium text-sm">Kelola konten sejarah, pengurus, dan produk hukum Desa Adat.</p>
         </div>
     </div>
 
@@ -25,8 +25,8 @@
     {{-- TAB NAV --}}
     <div class="flex gap-1 bg-slate-100 rounded-2xl p-1">
         @foreach([
-            ['key'=>'sejarah',  'label'=>'Sejarah Desa',    'icon'=>'bi-book-half'],
-            ['key'=>'pengurus', 'label'=>'Pengurus Desa',   'icon'=>'bi-person-badge'],
+            ['key'=>'sejarah',  'label'=>'Sejarah Desa Adat',    'icon'=>'bi-book-half'],
+            ['key'=>'pengurus', 'label'=>'Pengurus Desa Adat',   'icon'=>'bi-person-badge'],
             ['key'=>'hukum',    'label'=>'Produk Hukum',    'icon'=>'bi-file-earmark-text'],
         ] as $t)
         <button @click="tab = '{{ $t['key'] }}'"
@@ -52,7 +52,7 @@
                     <div class="space-y-4">
                         <textarea id="sejarah_editor" name="konten_sejarah" rows="20"
                             class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 outline-none">{{ $settings['sejarah_desa'] ?? '' }}</textarea>
-                        <p class="text-[10px] text-slate-400">Konten ini ditampilkan di halaman publik Tentang Desa.</p>
+                        <p class="text-[10px] text-slate-400">Konten ini ditampilkan di halaman publik Tentang Desa Adat.</p>
                         <div class="flex justify-end">
                             <button type="submit" class="bg-primary-light hover:bg-primary-dark text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-100 transition-all">
                                 <i class="bi bi-save mr-2"></i>Simpan Sejarah

@@ -115,7 +115,7 @@ class TentangDesaController extends Controller
         $settings = $this->getSettings();
         $settings['foto_struktur_desa'] = $fileName;
         $this->saveSettings($settings);
-        return redirect()->back()->with('success', 'Foto struktur desa berhasil diunggah!');
+        return redirect()->back()->with('success', 'Foto struktur Desa Adat berhasil diunggah!');
     }
 
     // =========================================================================

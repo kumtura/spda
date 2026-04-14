@@ -34,77 +34,139 @@ class TentangDesaController extends Controller
 
     public function sejarahUpdate(Request $request)
     {
-        $request->validate([
-            'konten_sejarah' => 'required|string',
-        ]);
-
+        $request->validate(['konten_sejarah' => 'nullable|string']);
         $settings = $this->getSettings();
-        $settings['sejarah_desa'] = $request->konten_sejarah;
+        $settings['sejarah_desa'] = $request->konten_sejarah ?? '';
         $this->saveSettings($settings);
-
         return redirect()->back()->with('success', 'Sejarah Desa Adat berhasil diperbarui!');
     }
 
-    // =========================================================================
-    // PENGURUS
-    // =========================================================================
-
-    public function pengurus()
+    // Upload gambar untuk CKEditor (image upload callback)
+    public function sejarahUploadMedia(Request $request)
     {
-        $settings = $this->getSettings();
-        $pengurusList = $settings['pengurus_desa'] ?? [];
-        return view('admin.pages.tentang_desa.pengurus', compact('pengurusList'));
+        $request->validate(['upload' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120']);
+        $file = $request->file('upload');
+        $fileName = 'sejarah_img_' . time() . '_' . str_shuffle('abcde') . '.' . $file->getClientOriginalExtension();
+        $dest = public_path('storage/tentang_desa/sejarah');
+        if (!File::isDirectory($dest)) File::makeDirectory($dest, 0777, true, true);
+        $file->move($dest, $fileName);
+        return response()->json(['url' => asset('storage/tentang_desa/sejarah/' . $fileName)]);
     }
 
-    public function pengurusStore(Request $request)
+    // Upload video
+    public function sejarahUploadVideo(Request $request)
     {
         $request->validate([
-            'nama'     => 'required|string|max:255',
-            'jabatan'  => 'required|string|max:255',
-            'no_hp'    => 'nullable|string|max:20',
-            'foto'     => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'video'       => 'required|file|mimes:mp4,webm,ogg|max:102400',
+            'judul_video' => 'nullable|string|max:255',
+        ]);
+        $file = $request->file('video');
+        $fileName = 'sejarah_vid_' . time() . '.' . $file->getClientOriginalExtension();
+        $dest = public_path('storage/tentang_desa/sejarah');
+        if (!File::isDirectory($dest)) File::makeDirectory($dest, 0777, true, true);
+        $file->move($dest, $fileName);
+
+        $settings = $this->getSettings();
+        $videos = $settings['sejarah_videos'] ?? [];
+        $videos[] = ['id' => uniqid(), 'judul' => $request->judul_video ?? '', 'file' => $fileName];
+        $settings['sejarah_videos'] = $videos;
+        $this->saveSettings($settings);
+
+        return redirect()->back()->with('success', 'Video berhasil diunggah!');
+    }
+
+    // Update Bendesa + foto struktur desa
+    public function sejarahUpdatePengurus(Request $request)
+    {
+        $request->validate([
+            'nama_bendesa'    => 'nullable|string|max:255',
+            'kata_sambutan'   => 'nullable|string',
+            'no_telp_bendesa' => 'nullable|string|max:30',
+            'foto_bendesa'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $settings = $this->getSettings();
-        $list = $settings['pengurus_desa'] ?? [];
+        $settings['bendesa_nama']          = $request->nama_bendesa ?? '';
+        $settings['bendesa_sambutan']      = $request->kata_sambutan ?? '';
+        $settings['bendesa_no_telp']       = $request->no_telp_bendesa ?? '';
 
-        $fotoName = null;
-        if ($request->hasFile('foto')) {
-            $file = $request->file('foto');
-            $fotoName = 'pengurus_' . time() . '_' . str_shuffle('abcdefghij') . '.' . $file->getClientOriginalExtension();
+        if ($request->hasFile('foto_bendesa')) {
+            $file = $request->file('foto_bendesa');
+            $fileName = 'bendesa_' . time() . '.' . $file->getClientOriginalExtension();
             $dest = public_path('storage/tentang_desa/pengurus');
             if (!File::isDirectory($dest)) File::makeDirectory($dest, 0777, true, true);
-            $file->move($dest, $fotoName);
+            $file->move($dest, $fileName);
+            $settings['bendesa_foto'] = $fileName;
         }
 
-        $list[] = [
-            'id'      => uniqid(),
-            'nama'    => $request->nama,
-            'jabatan' => $request->jabatan,
-            'no_hp'   => $request->no_hp ?? '',
-            'foto'    => $fotoName,
-        ];
-
-        $settings['pengurus_desa'] = $list;
         $this->saveSettings($settings);
-
-        return redirect()->back()->with('success', 'Pengurus berhasil ditambahkan!');
+        return redirect()->back()->with('success', 'Data Bendesa Adat berhasil diperbarui!');
     }
 
-    public function pengurusDelete(Request $request)
+    public function sejarahUploadStruktur(Request $request)
     {
-        $request->validate(['id' => 'required|string']);
+        $request->validate(['foto_struktur_desa' => 'required|image|mimes:jpeg,png,jpg|max:5120']);
+        $file = $request->file('foto_struktur_desa');
+        $fileName = 'struktur_desa_' . time() . '.' . $file->getClientOriginalExtension();
+        $dest = public_path('storage/tentang_desa/pengurus');
+        if (!File::isDirectory($dest)) File::makeDirectory($dest, 0777, true, true);
+        $file->move($dest, $fileName);
 
         $settings = $this->getSettings();
-        $list = $settings['pengurus_desa'] ?? [];
+        $settings['foto_struktur_desa'] = $fileName;
+        $this->saveSettings($settings);
+        return redirect()->back()->with('success', 'Foto struktur desa berhasil diunggah!');
+    }
 
-        $list = array_filter($list, fn($item) => $item['id'] !== $request->id);
+    // =========================================================================
+    // PRODUK HUKUM
+    // =========================================================================
 
-        $settings['pengurus_desa'] = array_values($list);
+    public function produkHukumStore(Request $request)
+    {
+        $request->validate([
+            'nama_produk' => 'required|string|max:255',
+            'file_produk' => 'required|file|mimes:pdf,doc,docx|max:10240',
+        ]);
+
+        $file = $request->file('file_produk');
+        $fileName = 'produk_hukum_' . time() . '_' . str_shuffle('abcde') . '.' . $file->getClientOriginalExtension();
+        $dest = public_path('storage/tentang_desa/produk_hukum');
+        if (!File::isDirectory($dest)) File::makeDirectory($dest, 0777, true, true);
+        $file->move($dest, $fileName);
+
+        $settings = $this->getSettings();
+        $list = $settings['produk_hukum'] ?? [];
+        $list[] = [
+            'id'          => uniqid(),
+            'nama_produk' => $request->nama_produk,
+            'file'        => $fileName,
+            'ext'         => $file->getClientOriginalExtension(),
+            'created_at'  => now()->format('d M Y'),
+        ];
+        $settings['produk_hukum'] = $list;
         $this->saveSettings($settings);
 
-        return redirect()->back()->with('success', 'Pengurus berhasil dihapus!');
+        return redirect()->back()->with('success', 'Produk hukum berhasil ditambahkan!');
     }
+
+    public function produkHukumDelete(Request $request)
+    {
+        $request->validate(['id' => 'required|string']);
+        $settings = $this->getSettings();
+        $list = $settings['produk_hukum'] ?? [];
+        $list = array_values(array_filter($list, fn($p) => $p['id'] !== $request->id));
+        $settings['produk_hukum'] = $list;
+        $this->saveSettings($settings);
+        return redirect()->back()->with('success', 'Produk hukum berhasil dihapus!');
+    }
+
+    // =========================================================================
+    // PENGURUS (legacy — redirect ke sejarah)
+    // =========================================================================
+    public function pengurus() { return redirect(url('administrator/tentang-desa/sejarah')); }
+    public function pengurusStore(Request $request) { return redirect(url('administrator/tentang-desa/sejarah')); }
+    public function pengurusDelete(Request $request) { return redirect(url('administrator/tentang-desa/sejarah')); }
 
     // =========================================================================
     // LEMBAGA

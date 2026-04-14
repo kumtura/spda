@@ -539,10 +539,14 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             // Tentang Desa
             Route::get('/tentang-desa/sejarah', 'Administrator\TentangDesaController@sejarah')->name('tentang_desa.sejarah');
             Route::post('/tentang-desa/sejarah/update', 'Administrator\TentangDesaController@sejarahUpdate')->name('tentang_desa.sejarah.update');
-
-            Route::get('/tentang-desa/pengurus', 'Administrator\TentangDesaController@pengurus')->name('tentang_desa.pengurus');
-            Route::post('/tentang-desa/pengurus/store', 'Administrator\TentangDesaController@pengurusStore')->name('tentang_desa.pengurus.store');
-            Route::post('/tentang-desa/pengurus/delete', 'Administrator\TentangDesaController@pengurusDelete')->name('tentang_desa.pengurus.delete');
+            Route::post('/tentang-desa/sejarah/upload-media', 'Administrator\TentangDesaController@sejarahUploadMedia')->name('tentang_desa.sejarah.upload_media');
+            Route::post('/tentang-desa/sejarah/upload-video', 'Administrator\TentangDesaController@sejarahUploadVideo')->name('tentang_desa.sejarah.upload_video');
+            Route::post('/tentang-desa/sejarah/update-pengurus', 'Administrator\TentangDesaController@sejarahUpdatePengurus')->name('tentang_desa.sejarah.update_pengurus');
+            Route::post('/tentang-desa/sejarah/upload-struktur', 'Administrator\TentangDesaController@sejarahUploadStruktur')->name('tentang_desa.sejarah.upload_struktur');
+            Route::post('/tentang-desa/sejarah/produk-hukum/store', 'Administrator\TentangDesaController@produkHukumStore')->name('tentang_desa.produk_hukum.store');
+            Route::post('/tentang-desa/sejarah/produk-hukum/delete', 'Administrator\TentangDesaController@produkHukumDelete')->name('tentang_desa.produk_hukum.delete');
+            // Legacy redirect pengurus → sejarah
+            Route::get('/tentang-desa/pengurus', function() { return redirect(url('administrator/tentang-desa/sejarah')); });
 
             Route::get('/tentang-desa/lembaga', 'Administrator\TentangDesaController@lembaga')->name('tentang_desa.lembaga');
             Route::get('/tentang-desa/lembaga/create', 'Administrator\TentangDesaController@lembagaCreate')->name('tentang_desa.lembaga.create');

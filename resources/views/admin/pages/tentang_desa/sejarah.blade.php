@@ -27,6 +27,7 @@
         @foreach([
             ['key'=>'sejarah',  'label'=>'Sejarah Desa Adat',    'icon'=>'bi-book-half'],
             ['key'=>'pengurus', 'label'=>'Pengurus Desa Adat',   'icon'=>'bi-person-badge'],
+            ['key'=>'gallery',  'label'=>'Header Gallery',       'icon'=>'bi-images'],
             ['key'=>'hukum',    'label'=>'Produk Hukum',    'icon'=>'bi-file-earmark-text'],
         ] as $t)
         <button @click="tab = '{{ $t['key'] }}'"
@@ -219,6 +220,83 @@
                     <div class="flex justify-end">
                         <button type="submit" class="bg-primary-light hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all">
                             <i class="bi bi-cloud-arrow-up mr-1"></i>Upload Struktur
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- ═══════════════════════════════════════════════════════════
+         TAB: HEADER GALLERY
+    ═══════════════════════════════════════════════════════════ --}}
+    <div x-show="tab === 'gallery'" x-transition>
+        <div class="space-y-5">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="text-sm font-black text-slate-700 flex items-center gap-2 mb-5 pb-3 border-b border-slate-100">
+                    <i class="bi bi-images text-primary-light"></i> Header Image Gallery
+                </h3>
+                <p class="text-xs text-slate-500 mb-5">Gambar-gambar ini akan ditampilkan sebagai carousel di bagian atas halaman publik Tentang Desa Adat.</p>
+
+                {{-- Existing Images --}}
+                @php $gallery = $settings['gallery_desa'] ?? []; @endphp
+                @if(count($gallery) > 0)
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                    @foreach($gallery as $index => $image)
+                    <div class="relative group rounded-xl overflow-hidden border border-slate-200">
+                        <img src="{{ asset('storage/tentang_desa/gallery/' . $image) }}"
+                             class="w-full h-32 object-cover"
+                             alt="Gallery {{ $index + 1 }}">
+                        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <form action="{{ url('administrator/tentang-desa/sejarah/gallery/delete') }}"
+                                  method="POST"
+                                  onsubmit="return confirm('Hapus gambar ini?')">
+                                @csrf
+                                <input type="hidden" name="filename" value="{{ $image }}">
+                                <button type="submit"
+                                        class="h-10 w-10 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-colors flex items-center justify-center">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                            {{ $index + 1 }}
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-10 text-center mb-6">
+                    <i class="bi bi-images text-4xl text-slate-300 block mb-2"></i>
+                    <p class="text-sm font-bold text-slate-400">Belum ada gambar gallery.</p>
+                    <p class="text-xs text-slate-400 mt-1">Upload gambar untuk ditampilkan di header halaman Tentang Desa Adat.</p>
+                </div>
+                @endif
+
+                {{-- Upload Form --}}
+                <form action="{{ url('administrator/tentang-desa/sejarah/gallery/store') }}"
+                      method="POST"
+                      enctype="multipart/form-data"
+                      class="space-y-3 pt-4 border-t border-slate-100">
+                    @csrf
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                            Upload Gambar Gallery <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="file"
+                               name="gallery_image"
+                               required
+                               accept="image/jpeg,image/png,image/jpg"
+                               class="block w-full text-sm text-slate-500 border border-slate-200 rounded-xl cursor-pointer bg-slate-50 file:mr-4 file:py-2.5 file:px-4 file:rounded-l-xl file:border-0 file:text-xs file:font-semibold file:bg-primary-light file:text-white hover:file:bg-primary-dark">
+                        <p class="text-[10px] text-slate-400 mt-1">Format: JPG, PNG. Maks 5MB. Rekomendasi: 1200x600px (landscape).</p>
+                    </div>
+                    @error('gallery_image')
+                    <p class="text-xs text-rose-500">{{ $message }}</p>
+                    @enderror
+                    <div class="flex justify-end">
+                        <button type="submit"
+                                class="bg-primary-light hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all">
+                            <i class="bi bi-cloud-arrow-up mr-1"></i>Upload Gambar
                         </button>
                     </div>
                 </form>

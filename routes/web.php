@@ -545,6 +545,8 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/tentang-desa/sejarah/upload-struktur', 'Administrator\TentangDesaController@sejarahUploadStruktur')->name('tentang_desa.sejarah.upload_struktur');
             Route::post('/tentang-desa/sejarah/produk-hukum/store', 'Administrator\TentangDesaController@produkHukumStore')->name('tentang_desa.produk_hukum.store');
             Route::post('/tentang-desa/sejarah/produk-hukum/delete', 'Administrator\TentangDesaController@produkHukumDelete')->name('tentang_desa.produk_hukum.delete');
+            Route::post('/tentang-desa/sejarah/gallery/store', 'Administrator\TentangDesaController@galleryStore')->name('tentang_desa.gallery.store');
+            Route::post('/tentang-desa/sejarah/gallery/delete', 'Administrator\TentangDesaController@galleryDelete')->name('tentang_desa.gallery.delete');
             // Legacy redirect pengurus → sejarah
             Route::get('/tentang-desa/pengurus', function() { return redirect(url('administrator/tentang-desa/sejarah')); });
 

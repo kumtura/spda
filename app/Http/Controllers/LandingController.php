@@ -113,10 +113,18 @@ class LandingController extends Controller
         ];
         $fotoStrukturDesa = $village['foto_struktur_desa'] ?? null;
 
+        // Gallery header images
+        $gallery = $village['gallery_desa'] ?? [];
+
+        // Pura list for the Pura section
+        $puraList = \App\Models\Pura::where('aktif', '1')
+            ->orderBy('nama_pura', 'asc')
+            ->get();
+
         return view('front.pages.tentang_desa', compact(
             'village', 'totalPura', 'totalBanjar', 'totalKramaTamiu', 'totalUsaha',
             'pura', 'banjar', 'sejarah', 'pengurus', 'lembaga', 'bupda',
-            'produkHukum', 'videos', 'bendesa', 'fotoStrukturDesa'
+            'produkHukum', 'videos', 'bendesa', 'fotoStrukturDesa', 'gallery', 'puraList'
         ));
     }
 

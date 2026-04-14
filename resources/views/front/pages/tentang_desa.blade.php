@@ -15,63 +15,87 @@
         <p class="text-xs text-white/70 mt-1 relative z-10 font-semibold">{{ $village['name'] ?? 'Desa Adat' }}</p>
     </div>
 
-    {{-- ── STATS CARDS ── --}}
-    <div class="px-4 -mt-6 relative z-10">
-        <div class="grid grid-cols-4 gap-2">
-            <div class="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm text-center">
-                <i class="bi bi-houses text-[#00a6eb] text-lg block mb-1"></i>
-                <p class="text-lg font-black text-slate-800 leading-none">{{ $totalBanjar }}</p>
-                <p class="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Banjar</p>
-            </div>
-            <div class="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm text-center">
-                <i class="bi bi-building text-[#00a6eb] text-lg block mb-1"></i>
-                <p class="text-lg font-black text-slate-800 leading-none">{{ $totalPura }}</p>
-                <p class="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Pura</p>
-            </div>
-            <div class="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm text-center">
-                <i class="bi bi-people text-[#00a6eb] text-lg block mb-1"></i>
-                <p class="text-lg font-black text-slate-800 leading-none">{{ $totalKramaTamiu }}</p>
-                <p class="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Tamiu</p>
-            </div>
-            <div class="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm text-center">
-                <i class="bi bi-briefcase text-[#00a6eb] text-lg block mb-1"></i>
-                <p class="text-lg font-black text-slate-800 leading-none">{{ $totalUsaha }}</p>
-                <p class="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Usaha</p>
-            </div>
-        </div>
-    </div>
-
-    {{-- ── SAMBUTAN BENDESA ── --}}
-    @if(!empty($bendesa['nama']) || !empty($bendesa['sambutan']))
-    <div class="px-4 mt-5">
-        <div class="bg-gradient-to-br from-[#00a6eb]/5 to-white border border-[#00a6eb]/20 rounded-2xl p-5 shadow-sm">
-            <p class="text-[9px] font-black text-[#00a6eb] uppercase tracking-widest mb-3">Kata Sambutan</p>
-            <div class="flex items-start gap-4">
-                <div class="h-16 w-16 rounded-2xl bg-slate-100 overflow-hidden shrink-0 border-2 border-[#00a6eb]/20 flex items-center justify-center">
-                    @if(!empty($bendesa['foto']))
-                        <img src="{{ asset('storage/tentang_desa/pengurus/' . $bendesa['foto']) }}" class="h-full w-full object-cover" alt="{{ $bendesa['nama'] }}">
-                    @else
-                        <i class="bi bi-person-fill text-3xl text-slate-300"></i>
-                    @endif
+    {{-- ── HEADER GALLERY CAROUSEL ── --}}
+    @if(!empty($gallery) && count($gallery) > 0)
+    <div class="px-4 mt-5" x-data="{ currentSlide: 0, totalSlides: {{ count($gallery) }}, autoPlay: null }"
+         x-init="autoPlay = setInterval(() => { currentSlide = (currentSlide + 1) % totalSlides }, 5000)"
+         x-destroy="clearInterval(autoPlay)">
+        <div class="relative rounded-2xl overflow-hidden shadow-lg">
+            <div class="relative h-[200px] md:h-[400px] bg-slate-100">
+                @foreach($gallery as $index => $image)
+                <div x-show="currentSlide === {{ $index }}"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="absolute inset-0">
+                    <img src="{{ asset('storage/tentang_desa/gallery/' . $image) }}"
+                         class="w-full h-full object-cover"
+                         loading="lazy"
+                         alt="Gallery {{ $index + 1 }}">
                 </div>
-                <div class="flex-1 min-w-0">
-                    @if(!empty($bendesa['nama']))
-                    <p class="text-sm font-black text-slate-800 leading-tight">{{ $bendesa['nama'] }}</p>
-                    <span class="inline-block mt-1 bg-[#00a6eb] text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">Bendesa Adat</span>
-                    @if(!empty($bendesa['no_telp']))
-                    <p class="text-[10px] text-slate-400 mt-1"><i class="bi bi-telephone mr-1"></i>{{ $bendesa['no_telp'] }}</p>
-                    @endif
-                    @endif
-                </div>
+                @endforeach
             </div>
-            @if(!empty($bendesa['sambutan']))
-            <div class="mt-4 pt-4 border-t border-[#00a6eb]/10">
-                <div class="text-xs text-slate-600 leading-relaxed italic">
-                    <i class="bi bi-quote text-[#00a6eb] text-lg mr-1"></i>
-                    {!! nl2br(e(strip_tags($bendesa['sambutan']))) !!}
-                </div>
+            @if(count($gallery) > 1)
+            <button @click="currentSlide = (currentSlide - 1 + totalSlides) % totalSlides"
+                    class="absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow transition-all">
+                <i class="bi bi-chevron-left text-slate-700"></i>
+            </button>
+            <button @click="currentSlide = (currentSlide + 1) % totalSlides"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow transition-all">
+                <i class="bi bi-chevron-right text-slate-700"></i>
+            </button>
+            <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                @foreach($gallery as $index => $image)
+                <button @click="currentSlide = {{ $index }}"
+                        :class="currentSlide === {{ $index }} ? 'bg-white w-4' : 'bg-white/50 w-2'"
+                        class="h-2 rounded-full transition-all duration-300"></button>
+                @endforeach
             </div>
             @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- ── SAMBUTAN BENDESA (side-by-side layout) ── --}}
+    @if(!empty($bendesa['nama']) || !empty($bendesa['sambutan']))
+    <div class="px-4 mt-5">
+        <div class="bg-gradient-to-br from-[#00a6eb]/5 to-white border border-[#00a6eb]/20 rounded-2xl overflow-hidden shadow-sm">
+            <div class="flex flex-col md:flex-row">
+                {{-- Photo Section (50% on desktop) --}}
+                <div class="w-full md:w-1/2 h-64 md:h-96 bg-slate-100 relative overflow-hidden">
+                    @if(!empty($bendesa['foto']))
+                        <img src="{{ asset('storage/tentang_desa/pengurus/' . $bendesa['foto']) }}"
+                             class="w-full h-full object-cover"
+                             alt="{{ $bendesa['nama'] }}">
+                    @else
+                        <div class="w-full h-full flex items-center justify-center">
+                            <i class="bi bi-person-fill text-6xl text-slate-300"></i>
+                        </div>
+                    @endif
+                </div>
+                {{-- Information Section (50% on desktop) --}}
+                <div class="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
+                    <p class="text-[9px] font-black text-[#00a6eb] uppercase tracking-widest mb-3">Kata Sambutan</p>
+                    @if(!empty($bendesa['nama']))
+                    <h3 class="text-xl md:text-2xl font-black text-slate-800 leading-tight mb-2">{{ $bendesa['nama'] }}</h3>
+                    <span class="inline-block bg-[#00a6eb] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mb-3">Bendesa Adat</span>
+                    @endif
+                    @if(!empty($bendesa['no_telp']))
+                    <p class="text-sm text-slate-500 mb-4">
+                        <i class="bi bi-telephone mr-2 text-[#00a6eb]"></i>{{ $bendesa['no_telp'] }}
+                    </p>
+                    @endif
+                    @if(!empty($bendesa['sambutan']))
+                    <div class="text-sm text-slate-600 leading-relaxed italic border-l-4 border-[#00a6eb] pl-4">
+                        <i class="bi bi-quote text-[#00a6eb] text-2xl mr-1"></i>
+                        {!! nl2br(e(strip_tags($bendesa['sambutan']))) !!}
+                    </div>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
     @endif
@@ -409,6 +433,57 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    {{-- ── PURA DI DESA ADAT ── --}}
+    <div class="px-4 mt-8 mb-6">
+        <div class="flex items-center gap-2 mb-4">
+            <div class="h-8 w-8 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center">
+                <span class="text-lg">🕉️</span>
+            </div>
+            <h2 class="text-base font-black text-slate-800 uppercase tracking-widest">Pura di Desa Adat</h2>
+        </div>
+
+        @if(isset($puraList) && count($puraList) > 0)
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($puraList as $pura)
+            <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div class="h-40 bg-slate-100 overflow-hidden relative">
+                    @if(!empty($pura->gambar_pura))
+                        <img src="{{ asset('storage/pura/' . $pura->gambar_pura) }}"
+                             class="w-full h-full object-cover"
+                             loading="lazy"
+                             alt="{{ $pura->nama_pura }}">
+                    @else
+                        <div class="w-full h-full flex items-center justify-center">
+                            <i class="bi bi-building text-4xl text-slate-300"></i>
+                        </div>
+                    @endif
+                    <div class="absolute top-3 right-3 h-10 w-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
+                        <span class="text-xl">🕉️</span>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-sm font-black text-slate-800 leading-tight mb-2">{{ $pura->nama_pura }}</h3>
+                    @if(!empty($pura->lokasi))
+                    <p class="text-xs text-slate-500 mb-3">
+                        <i class="bi bi-geo-alt mr-1 text-[#00a6eb]"></i>{{ $pura->lokasi }}
+                    </p>
+                    @endif
+                    <a href="{{ route('public.pura.punia', ['id' => $pura->id_pura]) }}"
+                       class="block w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white text-center text-sm font-bold py-2.5 rounded-xl transition-colors">
+                        <i class="bi bi-heart-fill mr-1"></i>Donasi
+                    </a>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <div class="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 text-center">
+            <span class="text-3xl block mb-2">🕉️</span>
+            <p class="text-sm font-bold text-slate-400">Belum ada data pura</p>
+        </div>
+        @endif
     </div>
 </div>
 

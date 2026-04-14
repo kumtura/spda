@@ -628,6 +628,53 @@ class TentangDesaController extends Controller
         return redirect()->back()->with('success', 'Dokumentasi berhasil dihapus!');
     }
 
+    // =========================================================================
+    // GALLERY (Header Image Gallery)
+    // =========================================================================
+
+    public function galleryStore(Request $request)
+    {
+        $request->validate([
+            'gallery_image' => 'required|image|mimes:jpeg,png,jpg|max:5120',
+        ]);
+
+        $file = $request->file('gallery_image');
+        $fileName = 'gallery_' . time() . '_' . str_shuffle('abcde') . '.' . $file->getClientOriginalExtension();
+        $dest = public_path('storage/tentang_desa/gallery');
+        
+        if (!File::isDirectory($dest)) {
+            File::makeDirectory($dest, 0777, true, true);
+        }
+        
+        $file->move($dest, $fileName);
+
+        $settings = $this->getSettings();
+        $gallery = $settings['gallery_desa'] ?? [];
+        $gallery[] = $fileName;
+        $settings['gallery_desa'] = $gallery;
+        $this->saveSettings($settings);
+
+        return redirect()->back()->with('success', 'Gambar gallery berhasil diunggah!');
+    }
+
+    public function galleryDelete(Request $request)
+    {
+        $request->validate(['filename' => 'required|string']);
+
+        $settings = $this->getSettings();
+        $gallery = $settings['gallery_desa'] ?? [];
+        $gallery = array_values(array_filter($gallery, fn($img) => $img !== $request->filename));
+        $settings['gallery_desa'] = $gallery;
+        $this->saveSettings($settings);
+
+        $filePath = public_path('storage/tentang_desa/gallery/' . $request->filename);
+        if (File::exists($filePath)) {
+            File::delete($filePath);
+        }
+
+        return redirect()->back()->with('success', 'Gambar gallery berhasil dihapus!');
+    }
+
     // Legacy methods (kept for backward compat)
     public function bumdes() { return redirect(url('administrator/tentang-desa/bupda')); }
     public function bumdesStore(Request $request) { return redirect(url('administrator/tentang-desa/bupda')); }

@@ -1,36 +1,13 @@
 @extends('index')
 
 @section('isi_menu')
-<div class="space-y-6" x-data="{
-    pengurusList: @json(array_values($lembaga['pengurus'] ?? [])),
-    addPengurus() {
-        this.pengurusList.push({ id: '', nama: '', keterangan: '', no_telp: '', foto: null, fotoPreview: null, foto_existing: null });
-    },
-    removePengurus(index) {
-        this.pengurusList.splice(index, 1);
-    },
-    previewFoto(event, index) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = e => this.pengurusList[index].fotoPreview = e.target.result;
-            reader.readAsDataURL(file);
-        }
-    },
-    galleryPreviews: [],
-    previewGallery(event) {
-        this.galleryPreviews = [];
-        Array.from(event.target.files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = e => this.galleryPreviews.push(e.target.result);
-            reader.readAsDataURL(file);
-        });
-    },
-    removeGallery(index) {
-        this.$refs['gallery_keep_' + index].disabled = true;
-        this.$el.querySelector('[data-gallery-item=\'' + index + '\']').remove();
-    }
-}">
+
+{{-- Data PHP di-pass via script tag, aman dari konflik quote --}}
+<script>
+    window.__lembagaPengurus = @json(array_values($lembaga['pengurus'] ?? []));
+</script>
+
+<div class="space-y-6" x-data="lembagaEditForm()">
 
     {{-- HEADER --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -112,7 +89,6 @@
                                 class="absolute top-3 right-3 h-7 w-7 flex items-center justify-center bg-white border border-rose-200 text-rose-400 rounded-lg hover:bg-rose-50 transition-colors text-xs">
                             <i class="bi bi-x-lg"></i>
                         </button>
-                        {{-- hidden id --}}
                         <input type="hidden" :name="'pengurus[' + index + '][id]'" :value="p.id">
                         <input type="hidden" :name="'pengurus[' + index + '][foto_existing]'" :value="p.foto">
 
@@ -164,22 +140,19 @@
                 <i class="bi bi-images text-primary-light"></i> Gallery Foto
             </h3>
 
-            {{-- Existing gallery --}}
             @if(!empty($lembaga['gallery']) && count($lembaga['gallery']) > 0)
             <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Foto Saat Ini — Hapus centang untuk menghapus</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Foto Saat Ini — Hilangkan centang untuk menghapus</p>
                 <div class="grid grid-cols-3 md:grid-cols-5 gap-3">
                     @foreach($lembaga['gallery'] as $gi => $gfoto)
-                    <div data-gallery-item="{{ $gi }}" class="relative group">
+                    <div class="relative group">
                         <div class="aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
                             <img src="{{ asset('storage/tentang_desa/lembaga/' . $gfoto) }}" class="h-full w-full object-cover" alt="Gallery">
                         </div>
-                        <label class="absolute top-1 right-1 cursor-pointer">
+                        <label class="absolute top-1 right-1 cursor-pointer bg-white/80 rounded p-0.5">
                             <input type="checkbox" name="gallery_keep[]" value="{{ $gfoto }}" checked
-                                   x-ref="gallery_keep_{{ $gi }}"
                                    class="w-4 h-4 rounded border-slate-300 text-primary-light focus:ring-primary-light">
                         </label>
-                        <p class="text-[9px] text-slate-400 text-center mt-1 truncate">{{ $gfoto }}</p>
                     </div>
                     @endforeach
                 </div>
@@ -187,7 +160,6 @@
             </div>
             @endif
 
-            {{-- Upload new --}}
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Tambah Foto Baru (Opsional)</label>
                 <input type="file" name="gallery_new[]" multiple accept="image/png,image/jpeg,image/jpg"
@@ -220,6 +192,48 @@
 </div>
 
 <script>
+// Alpine component — data PHP di-load dari window variable, aman dari konflik quote
+document.addEventListener('alpine:init', () => {
+    Alpine.data('lembagaEditForm', () => ({
+        pengurusList: (window.__lembagaPengurus || []).map(p => ({
+            ...p,
+            fotoPreview: null
+        })),
+        galleryPreviews: [],
+
+        addPengurus() {
+            this.pengurusList.push({
+                id: '', nama: '', keterangan: '', no_telp: '', foto: null, fotoPreview: null
+            });
+        },
+
+        removePengurus(index) {
+            this.pengurusList.splice(index, 1);
+        },
+
+        previewFoto(event, index) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.pengurusList[index].fotoPreview = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        },
+
+        previewGallery(event) {
+            this.galleryPreviews = [];
+            Array.from(event.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.galleryPreviews.push(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }));
+});
+
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof CKEDITOR !== 'undefined') {
         CKEDITOR.replace('deskripsi_editor', {

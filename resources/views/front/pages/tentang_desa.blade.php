@@ -71,7 +71,7 @@
     {{-- ── BENDESA ADAT (side-by-side layout) ── --}}
     @if(!empty($bendesa['nama']))
     <div class="px-4 mt-8">
-        <div class="bg-gradient-to-br from-[#00a6eb]/5 to-white border border-[#00a6eb]/20 rounded-2xl overflow-hidden shadow-sm">
+        <div class="bg-white rounded-2xl overflow-hidden shadow-sm">
             <div class="flex flex-col md:flex-row">
                 {{-- Photo Section (50% on desktop) --}}
                 <div class="w-full md:w-1/2 h-64 md:h-96 bg-slate-100 relative overflow-hidden">
@@ -401,20 +401,16 @@
                         </div>
                         <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest">Daftar Banjar</h3>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        @forelse($banjar as $bj)
-                        <div class="bg-white border border-slate-100 rounded-xl p-3 flex items-center gap-2.5 shadow-sm">
-                            <div class="h-8 w-8 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center shrink-0">
-                                <i class="bi bi-house-door text-[#00a6eb] text-sm"></i>
-                            </div>
-                            <p class="text-[11px] font-bold text-slate-700 leading-tight">{{ $bj->nama_banjar }}</p>
-                        </div>
-                        @empty
-                        <div class="col-span-2 bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4 text-center">
-                            <p class="text-xs text-slate-400">Belum ada data banjar</p>
-                        </div>
-                        @endforelse
+                    @forelse($banjar as $bj)
+                    <div class="flex items-start gap-2.5 mb-2">
+                        <span class="text-[#00a6eb] font-bold mt-0.5">•</span>
+                        <p class="text-sm text-slate-700 leading-relaxed">{{ $bj->nama_banjar }}</p>
                     </div>
+                    @empty
+                    <div class="bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4 text-center">
+                        <p class="text-xs text-slate-400">Belum ada data banjar</p>
+                    </div>
+                    @endforelse
                 </div>
 
                 <div>
@@ -424,25 +420,52 @@
                         </div>
                         <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest">Daftar Pura</h3>
                     </div>
-                    <div class="space-y-2">
-                        @forelse($pura as $item)
-                        <div class="bg-white border border-slate-100 rounded-xl p-3.5 flex items-center gap-3 shadow-sm">
-                            <div class="h-9 w-9 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center shrink-0">
-                                <i class="bi bi-building text-[#00a6eb] text-sm"></i>
+                    @if(count($pura) > 0)
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach($pura as $item)
+                        <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            {{-- Pura Image --}}
+                            <div class="h-40 bg-slate-100 overflow-hidden relative">
+                                @if(!empty($item->gambar_pura))
+                                    <img src="{{ asset('storage/pura/' . $item->gambar_pura) }}"
+                                         class="w-full h-full object-cover"
+                                         alt="{{ $item->nama_pura }}">
+                                @else
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="bi bi-building text-4xl text-slate-300"></i>
+                                    </div>
+                                @endif
+                                {{-- Temple Icon Overlay --}}
+                                <div class="absolute top-3 right-3 h-10 w-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
+                                    <span class="text-xl">🕉️</span>
+                                </div>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs font-bold text-slate-800">{{ $item->nama_pura }}</p>
-                                <p class="text-[10px] text-slate-400 mt-0.5">
-                                    <i class="bi bi-geo-alt mr-0.5"></i>Banjar {{ $item->nama_banjar ?? '-' }}
+                            
+                            {{-- Pura Info --}}
+                            <div class="p-4">
+                                <h3 class="text-sm font-black text-slate-800 leading-tight mb-2">
+                                    {{ $item->nama_pura }}
+                                </h3>
+                                @if(!empty($item->lokasi))
+                                <p class="text-xs text-slate-500 mb-3">
+                                    <i class="bi bi-geo-alt mr-1 text-[#00a6eb]"></i>{{ $item->lokasi }}
                                 </p>
+                                @endif
+                                
+                                {{-- Donation Button --}}
+                                <a href="{{ route('public.punia.pura', ['id' => $item->id_pura]) }}"
+                                   class="block w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white text-center text-sm font-bold py-2.5 rounded-xl transition-colors">
+                                    <i class="bi bi-heart-fill mr-1"></i>Donasi
+                                </a>
                             </div>
                         </div>
-                        @empty
-                        <div class="bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4 text-center">
-                            <p class="text-xs text-slate-400">Belum ada data pura</p>
-                        </div>
-                        @endforelse
+                        @endforeach
                     </div>
+                    @else
+                    <div class="bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4 text-center">
+                        <p class="text-xs text-slate-400">Belum ada data pura</p>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>

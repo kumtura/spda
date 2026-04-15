@@ -453,7 +453,7 @@
                                 @endif
                                 
                                 {{-- Donation Button --}}
-                                <a href="{{ route('public.punia.pura', ['id' => $item->id_pura]) }}"
+                                <a href="{{ route('public.pura.punia', ['id' => $item->id_pura]) }}"
                                    class="block w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white text-center text-sm font-bold py-2.5 rounded-xl transition-colors">
                                     <i class="bi bi-heart-fill mr-1"></i>Donasi
                                 </a>

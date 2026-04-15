@@ -3,65 +3,74 @@
 @section('content')
 <div class="bg-white min-h-screen pb-24" x-data="{ tab: 'sejarah' }">
 
-    {{-- ── HERO HEADER ── --}}
-    <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-5 pt-12 pb-16 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24"></div>
-        <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-16 -mb-16"></div>
-        <a href="{{ route('public.home') }}" class="inline-flex items-center gap-1.5 text-white/70 hover:text-white transition-colors mb-4">
-            <i class="bi bi-arrow-left text-sm"></i>
-            <span class="text-[10px] font-bold uppercase tracking-widest">Beranda</span>
-        </a>
-        <h1 class="text-2xl font-black text-white tracking-tight relative z-10">Tentang Desa</h1>
-        <p class="text-xs text-white/70 mt-1 relative z-10 font-semibold">{{ $village['name'] ?? 'Desa Adat' }}</p>
-    </div>
-
-    {{-- ── HEADER GALLERY CAROUSEL ── --}}
-    @if(!empty($gallery) && count($gallery) > 0)
-    <div class="px-4 mt-5" x-data="{ currentSlide: 0, totalSlides: {{ count($gallery) }}, autoPlay: null }"
-         x-init="autoPlay = setInterval(() => { currentSlide = (currentSlide + 1) % totalSlides }, 5000)"
-         x-destroy="clearInterval(autoPlay)">
-        <div class="relative rounded-2xl overflow-hidden shadow-lg">
-            <div class="relative h-[200px] md:h-[400px] bg-slate-100">
-                @foreach($gallery as $index => $image)
-                <div x-show="currentSlide === {{ $index }}"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     x-transition:leave="transition ease-in duration-200"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0"
-                     class="absolute inset-0">
-                    <img src="{{ asset('storage/tentang_desa/gallery/' . $image) }}"
-                         class="w-full h-full object-cover"
-                         loading="lazy"
-                         alt="Gallery {{ $index + 1 }}">
-                </div>
-                @endforeach
+    {{-- ── HERO HEADER WITH GALLERY BACKGROUND ── --}}
+    <div class="relative overflow-hidden" x-data="{ currentSlide: 0, totalSlides: {{ !empty($gallery) && count($gallery) > 0 ? count($gallery) : 1 }}, autoPlay: null }"
+         x-init="if(totalSlides > 1) autoPlay = setInterval(() => { currentSlide = (currentSlide + 1) % totalSlides }, 5000)"
+         x-destroy="if(autoPlay) clearInterval(autoPlay)">
+        
+        {{-- Gallery Background Images --}}
+        @if(!empty($gallery) && count($gallery) > 0)
+            @foreach($gallery as $index => $image)
+            <div x-show="currentSlide === {{ $index }}"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="absolute inset-0 h-[300px] md:h-[400px]">
+                <img src="{{ asset('storage/tentang_desa/gallery/' . $image) }}"
+                     class="w-full h-full object-cover"
+                     loading="lazy"
+                     alt="Gallery {{ $index + 1 }}">
             </div>
-            @if(count($gallery) > 1)
-            <button @click="currentSlide = (currentSlide - 1 + totalSlides) % totalSlides"
-                    class="absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow transition-all">
-                <i class="bi bi-chevron-left text-slate-700"></i>
-            </button>
-            <button @click="currentSlide = (currentSlide + 1) % totalSlides"
-                    class="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow transition-all">
-                <i class="bi bi-chevron-right text-slate-700"></i>
-            </button>
-            <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                @foreach($gallery as $index => $image)
-                <button @click="currentSlide = {{ $index }}"
-                        :class="currentSlide === {{ $index }} ? 'bg-white w-4' : 'bg-white/50 w-2'"
-                        class="h-2 rounded-full transition-all duration-300"></button>
-                @endforeach
+            @endforeach
+        @else
+            <div class="absolute inset-0 h-[300px] md:h-[400px] bg-gradient-to-br from-[#00a6eb] to-[#0090d0]"></div>
+        @endif
+
+        {{-- Overlay --}}
+        <div class="absolute inset-0 h-[300px] md:h-[400px] bg-black/40"></div>
+
+        {{-- Hero Content --}}
+        <div class="relative z-10 px-5 pt-12 pb-16 h-[300px] md:h-[400px] flex flex-col justify-between">
+            <div>
+                <a href="{{ route('public.home') }}" class="inline-flex items-center gap-1.5 text-white/80 hover:text-white transition-colors mb-4">
+                    <i class="bi bi-arrow-left text-sm"></i>
+                    <span class="text-[10px] font-bold uppercase tracking-widest">Beranda</span>
+                </a>
+            </div>
+            <div>
+                <h1 class="text-3xl md:text-4xl font-black text-white tracking-tight mb-2">Tentang Desa</h1>
+                <p class="text-sm text-white/90 font-semibold">{{ $village['name'] ?? 'Desa Adat' }}</p>
+            </div>
+            
+            {{-- Gallery Controls --}}
+            @if(!empty($gallery) && count($gallery) > 1)
+            <div class="flex items-center justify-between">
+                <button @click="currentSlide = (currentSlide - 1 + totalSlides) % totalSlides"
+                        class="h-10 w-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow transition-all">
+                    <i class="bi bi-chevron-left text-slate-700"></i>
+                </button>
+                <div class="flex gap-1.5">
+                    @foreach($gallery as $index => $image)
+                    <button @click="currentSlide = {{ $index }}"
+                            :class="currentSlide === {{ $index }} ? 'bg-white w-4' : 'bg-white/50 w-2'"
+                            class="h-2 rounded-full transition-all duration-300"></button>
+                    @endforeach
+                </div>
+                <button @click="currentSlide = (currentSlide + 1) % totalSlides"
+                        class="h-10 w-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow transition-all">
+                    <i class="bi bi-chevron-right text-slate-700"></i>
+                </button>
             </div>
             @endif
         </div>
     </div>
-    @endif
 
     {{-- ── BENDESA ADAT (side-by-side layout) ── --}}
     @if(!empty($bendesa['nama']))
-    <div class="px-4 mt-5">
+    <div class="px-4 mt-8">
         <div class="bg-gradient-to-br from-[#00a6eb]/5 to-white border border-[#00a6eb]/20 rounded-2xl overflow-hidden shadow-sm">
             <div class="flex flex-col md:flex-row">
                 {{-- Photo Section (50% on desktop) --}}

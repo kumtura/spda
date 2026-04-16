@@ -110,6 +110,7 @@
                     'id' => $kat->id_kategori_tiket,
                     'nama' => $kat->nama_kategori,
                     'tipe' => $kat->tipe_kategori,
+                    'market_type' => $kat->market_type ?? 'all',
                     'harga' => $kat->harga,
                     'deskripsi' => $kat->deskripsi
                 ];
@@ -147,6 +148,10 @@ function loadKategori() {
     
     // Build kategori list
     objek.kategori.forEach(kat => {
+        var marketBadge = '';
+        if (kat.market_type === 'local') marketBadge = '<span class="text-[7px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-100">Lokal</span>';
+        else if (kat.market_type === 'wna') marketBadge = '<span class="text-[7px] font-bold text-violet-700 bg-violet-50 px-1 py-0.5 rounded border border-violet-100">WNA</span>';
+        
         const div = document.createElement('div');
         div.className = 'bg-slate-50 border border-slate-200 rounded-lg p-3';
         div.innerHTML = `
@@ -157,6 +162,7 @@ function loadKategori() {
                         <span class="text-[8px] font-bold text-[#00a6eb] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
                             ${kat.tipe}
                         </span>
+                        ${marketBadge}
                     </div>
                     <p class="text-[10px] font-bold text-[#00a6eb]">Rp ${parseInt(kat.harga).toLocaleString('id-ID')}</p>
                     ${kat.deskripsi ? `<p class="text-[9px] text-slate-500 mt-1">${kat.deskripsi}</p>` : ''}

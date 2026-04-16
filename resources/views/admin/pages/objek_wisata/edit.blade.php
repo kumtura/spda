@@ -146,6 +146,19 @@
                                 </div>
                             </div>
 
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-2">
+                                    <i class="bi bi-link-45deg mr-1"></i>Permalink / Slug
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-slate-400 whitespace-nowrap">{{ url('wisata') }}/</span>
+                                    <input type="text" name="slug" value="{{ $objek->slug }}"
+                                        class="flex-1 px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-light/10 focus:border-primary-light transition-all"
+                                        placeholder="contoh: daerah-konservasi">
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1 font-medium"><i class="bi bi-info-circle mr-1"></i>URL frontend untuk halaman detail & beli tiket. Kosongkan untuk auto-generate dari nama.</p>
+                            </div>
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-700 mb-2">Status Operasional <span class="text-rose-500">*</span></label>

@@ -1062,13 +1062,29 @@ class LandingController extends Controller
     // Tiket Wisata Public Pages
     public function wisata()
     {
-        return view('front.pages.wisata');
+        $objekWisata = ObjekWisata::with('kategoriTiket')
+            ->where('aktif', '1')
+            ->where('status', 'aktif')
+            ->get();
+        return view('front.pages.wisata', compact('objekWisata'));
     }
 
-    public function wisata_detail($id)
+    public function wisata_detail_legacy($id)
+    {
+        $objek = ObjekWisata::where('id_objek_wisata', $id)
+            ->where('aktif', '1')
+            ->where('status', 'aktif')
+            ->first();
+        if ($objek && $objek->slug) {
+            return redirect()->to('wisata/' . $objek->slug, 301);
+        }
+        abort(404);
+    }
+
+    public function wisata_detail($slug)
     {
         $objek = ObjekWisata::with('kategoriTiket')
-            ->where('id_objek_wisata', $id)
+            ->where('slug', $slug)
             ->where('aktif', '1')
             ->where('status', 'aktif')
             ->firstOrFail();
@@ -1077,11 +1093,8 @@ class LandingController extends Controller
 
     public function wisata_beli($slug)
     {
-        // Extract ID from slug format: "judul-tiket-{id}"
-        $parts = explode('-', $slug);
-        $id = end($parts);
         $objek = ObjekWisata::with('kategoriTiket')
-            ->where('id_objek_wisata', $id)
+            ->where('slug', $slug)
             ->where('aktif', '1')
             ->where('status', 'aktif')
             ->firstOrFail();

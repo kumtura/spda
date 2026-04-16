@@ -168,7 +168,7 @@
         </div>
         <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
             @forelse($objekWisata as $objek)
-                <a href="{{ route('public.wisata.detail', $objek->id_objek_wisata) }}" class="flex-shrink-0 w-64 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all group">
+                <a href="{{ route('public.wisata.detail', $objek->slug) }}" class="flex-shrink-0 w-64 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all group">
                     <div class="h-32 bg-slate-50 relative flex items-center justify-center overflow-hidden">
                         @if($objek->foto)
                             <img src="{{ asset('storage/wisata/'.$objek->foto) }}" class="w-full h-full object-cover" alt="{{ $objek->nama_objek }}">

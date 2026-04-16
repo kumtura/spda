@@ -275,6 +275,19 @@ class ObjekWisataController extends Controller
         $objek = ObjekWisata::findOrFail($id);
         $data = $request->except('foto');
         
+        // Handle slug
+        if (!empty($data['slug'])) {
+            $data['slug'] = \Illuminate\Support\Str::slug($data['slug']);
+            // Check uniqueness
+            $existing = ObjekWisata::where('slug', $data['slug'])->where('id_objek_wisata', '!=', $id)->first();
+            if ($existing) {
+                return redirect()->back()->withInput()->with('error', 'Permalink sudah digunakan oleh objek wisata lain.');
+            }
+        } else {
+            // Auto-generate from nama_objek if slug is empty
+            $data['slug'] = ObjekWisata::generateSlug($data['nama_objek'], $id);
+        }
+        
         // Convert empty batas_tiket_harian to null
         if (empty($data['batas_tiket_harian'])) {
             $data['batas_tiket_harian'] = null;

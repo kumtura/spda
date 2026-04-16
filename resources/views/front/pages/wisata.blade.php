@@ -24,17 +24,10 @@
             </div>
         </div>
 
-        @php
-            $objekWisata = App\Models\ObjekWisata::with('kategoriTiket')
-                ->where('aktif', '1')
-                ->where('status', 'aktif')
-                ->get();
-        @endphp
-
         @if($objekWisata->count() > 0)
         <div id="wisataGrid" class="grid grid-cols-2 gap-3">
             @foreach($objekWisata as $objek)
-            <a href="{{ url('wisata/detail/'.$objek->id_objek_wisata) }}" 
+            <a href="{{ url('wisata/' . $objek->slug) }}" 
                 class="wisata-card block bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-all"
                 data-name="{{ strtolower($objek->nama_objek) }}"
                 data-desc="{{ strtolower($objek->deskripsi) }}"

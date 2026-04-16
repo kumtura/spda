@@ -51,7 +51,7 @@ Route::get('/loker/{id}', [LandingController::class, 'loker_detail'])->name('pub
 Route::get('/loker/{id}/apply', [LandingController::class, 'loker_apply_form'])->name('public.loker.apply_form');
 Route::post('/loker/{id}/apply', [LandingController::class, 'loker_apply'])->name('public.loker.apply');
 Route::get('/wisata', [LandingController::class, 'wisata'])->name('public.wisata')->middleware('public.redirect');
-Route::get('/wisata/detail/{id}', [LandingController::class, 'wisata_detail'])->name('public.wisata.detail')->middleware('public.redirect');
+Route::get('/wisata/detail/{id}', [LandingController::class, 'wisata_detail_legacy'])->middleware('public.redirect');
 Route::get('/agenda', [LandingController::class, 'agenda'])->name('public.agenda')->middleware('public.redirect');
 Route::get('/krama-tamiu', [LandingController::class, 'krama_tamiu'])->name('public.krama_tamiu')->middleware('public.redirect');
 Route::get('/krama-tamiu/daftar', [LandingController::class, 'krama_tamiu_register'])->name('public.krama_tamiu.register')->middleware('public.redirect');
@@ -72,12 +72,17 @@ Route::post('/wisata/payment/simulate', [LandingController::class, 'wisata_payme
 Route::get('/wisata/tiket/success', [LandingController::class, 'wisata_tiket_success'])->name('public.wisata.tiket.success');
 Route::get('/wisata/tiket/download/{kode}', [LandingController::class, 'wisata_tiket_download'])->name('public.wisata.tiket.download');
 Route::get('/wisata/check-availability', [LandingController::class, 'wisata_check_availability'])->name('public.wisata.check_availability');
+// Slug-based detail route (must be AFTER all /wisata/* specific routes)
+Route::get('/wisata/{slug}', [LandingController::class, 'wisata_detail'])->name('public.wisata.detail')->middleware('public.redirect')->where('slug', '[a-z0-9\-]+');
 
 // Pura (Temple) Public Routes
 Route::get('/pura', [LandingController::class, 'pura_list'])->name('public.pura')->middleware('public.redirect');
 Route::get('/pura/{id}', [LandingController::class, 'pura_detail'])->name('public.pura.detail')->middleware('public.redirect');
 Route::get('/pura/{id}/punia', [LandingController::class, 'pura_punia_form'])->name('public.pura.punia')->middleware('public.redirect');
 Route::post('/pura/punia/submit', [LandingController::class, 'pura_punia_submit'])->name('public.pura.punia.submit');
+Route::get('/pura/punia/submit', function () {
+    return redirect()->route('public.pura');
+});
 
 // Banjar (Neighborhood) Public Routes
 Route::get('/banjar/{id}', [LandingController::class, 'banjar_detail'])->name('public.banjar.detail')->middleware('public.redirect');

@@ -121,6 +121,8 @@
         } else {
             this.availabilityInfo = { unlimited: true };
         }
+        // Re-sync quantities to ensure reactivity
+        this.quantities = Object.assign({}, this.quantities);
     },
 
     fmtDate: function(ds) {
@@ -130,27 +132,33 @@
     },
 
     incrementQty: function(id, harga, nama) {
-        if (!this.quantities[id]) this.quantities[id] = 0;
-        this.quantities[id]++;
+        var updated = Object.assign({}, this.quantities);
+        if (!updated[id]) updated[id] = 0;
+        updated[id]++;
+        this.quantities = updated;
         this.updateSummary(id, harga, nama);
     },
 
     decrementQty: function(id) {
         if (!this.quantities[id] || this.quantities[id] <= 0) return;
-        this.quantities[id]--;
+        var updated = Object.assign({}, this.quantities);
+        updated[id]--;
+        this.quantities = updated;
         if (this.summaryItems[id]) {
             var item = this.summaryItems[id];
-            this.updateSummary(id, item.subtotal / (this.quantities[id] + 1), item.name);
+            this.updateSummary(id, item.subtotal / (updated[id] + 1), item.name);
         }
     },
 
     updateSummary: function(id, harga, nama) {
         var qty = this.quantities[id] || 0;
+        var updated = Object.assign({}, this.summaryItems);
         if (qty > 0) {
-            this.summaryItems[id] = { name: nama, qty: qty, subtotal: qty * harga };
+            updated[id] = { name: nama, qty: qty, subtotal: qty * harga };
         } else {
-            delete this.summaryItems[id];
+            delete updated[id];
         }
+        this.summaryItems = updated;
         this.totalPrice = Object.values(this.summaryItems).reduce(function(sum, item) { return sum + item.subtotal; }, 0);
         this.totalQty = Object.values(this.summaryItems).reduce(function(sum, item) { return sum + item.qty; }, 0);
         var sitems = Object.values(this.summaryItems);
@@ -161,11 +169,21 @@
         if (!this.selectedDate) { alert('Pilih tanggal kunjungan terlebih dahulu'); return; }
         if (this.totalQty === 0) { alert('Pilih minimal 1 tiket'); return; }
         
-        // Ensure hidden input is updated before submission
-        document.querySelector('input[name="tanggal_kunjungan"]').value = this.selectedDate;
-        
-        // Submit the form
         var form = document.getElementById('formBeli');
+        
+        // Set tanggal
+        form.querySelector('input[name="tanggal_kunjungan"]').value = this.selectedDate;
+        
+        // Update all quantity input values from Alpine state
+        var self = this;
+        form.querySelectorAll('input[name^="kategori["]').forEach(function(input) {
+            var match = input.name.match(/kategori\[(\d+)\]/);
+            if (match) {
+                var id = parseInt(match[1]);
+                input.value = self.quantities[id] || 0;
+            }
+        });
+        
         form.submit();
     }
 }">
@@ -180,7 +198,7 @@
         <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
         @endif
         
-        <a href="{{ url('wisata/detail/'.$objek->id_objek_wisata) }}" class="inline-flex items-center gap-1 text-white/80 hover:text-white text-xs font-bold transition-colors mb-6 relative z-10">
+        <a href="{{ url('wisata/' . $objek->slug) }}" class="inline-flex items-center gap-1 text-white/80 hover:text-white text-xs font-bold transition-colors mb-6 relative z-10">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
         
@@ -527,7 +545,7 @@
 
                 <!-- Today shortcut -->
                 <div class="mt-5 flex items-center justify-center">
-                    <button type="button" @click="pickDate('{{ $todayStr }}')" class="text-xs font-bold text-[#00a6eb] hover:underline flex items-center gap-1">
+                    <button type="button" @click="pickDate('{{ $todayStr }}', calAvail['{{ $todayStr }}'] && calAvail['{{ $todayStr }}'].available <= 0)" class="text-xs font-bold text-[#00a6eb] hover:underline flex items-center gap-1">
                         <i class="bi bi-calendar-check"></i> Pilih Hari Ini
                     </button>
                 </div>

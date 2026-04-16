@@ -79,6 +79,9 @@ Route::get('/pura/{id}', [LandingController::class, 'pura_detail'])->name('publi
 Route::get('/pura/{id}/punia', [LandingController::class, 'pura_punia_form'])->name('public.pura.punia')->middleware('public.redirect');
 Route::post('/pura/punia/submit', [LandingController::class, 'pura_punia_submit'])->name('public.pura.punia.submit');
 
+// Banjar (Neighborhood) Public Routes
+Route::get('/banjar/{id}', [LandingController::class, 'banjar_detail'])->name('public.banjar.detail')->middleware('public.redirect');
+
 Route::middleware(['guest'])->group(function () {
     Route::get('/register_usaha', function () {
         $banjar = App\Models\Banjar::where('aktif', '1')->get();

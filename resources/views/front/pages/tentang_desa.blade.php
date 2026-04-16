@@ -267,19 +267,14 @@
             @if(!empty($bupda['nama']))
             <div class="space-y-4">
                 <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <div class="flex items-start gap-4">
-                        <div class="h-14 w-14 rounded-2xl bg-[#00a6eb]/10 shrink-0 flex items-center justify-center border border-[#00a6eb]/20">
-                            <i class="bi bi-shop text-2xl text-[#00a6eb]"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-black text-slate-800 leading-tight">{{ $bupda['nama'] }}</p>
-                            @if(!empty($bupda['tahun_berdiri']))
-                            <p class="text-[10px] text-slate-400 mt-0.5"><i class="bi bi-calendar3 mr-1"></i>Berdiri {{ $bupda['tahun_berdiri'] }}</p>
-                            @endif
-                            @if(!empty($bupda['deskripsi']))
-                            <p class="text-[10px] text-slate-500 mt-1.5 leading-relaxed">{!! strip_tags($bupda['deskripsi']) !!}</p>
-                            @endif
-                        </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-black text-slate-800 leading-tight">{{ $bupda['nama'] }}</p>
+                        @if(!empty($bupda['tahun_berdiri']))
+                        <p class="text-[10px] text-slate-400 mt-0.5"><i class="bi bi-calendar3 mr-1"></i>Berdiri {{ $bupda['tahun_berdiri'] }}</p>
+                        @endif
+                        @if(!empty($bupda['deskripsi']))
+                        <p class="text-[10px] text-slate-500 mt-1.5 leading-relaxed">{!! strip_tags($bupda['deskripsi']) !!}</p>
+                        @endif
                     </div>
                 </div>
 
@@ -395,22 +390,53 @@
         <div x-show="tab === 'banjar'" x-transition>
             <div class="space-y-5">
                 <div>
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="h-7 w-7 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center">
-                            <i class="bi bi-houses text-[#00a6eb] text-sm"></i>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="h-8 w-8 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center">
+                            <i class="bi bi-houses text-[#00a6eb]"></i>
                         </div>
-                        <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest">Daftar Banjar</h3>
+                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Daftar Banjar</h3>
                     </div>
-                    @forelse($banjar as $bj)
-                    <div class="flex items-start gap-2.5 mb-2">
-                        <span class="text-[#00a6eb] font-bold mt-0.5">•</span>
-                        <p class="text-sm text-slate-700 leading-relaxed">{{ $bj->nama_banjar }}</p>
+                    @if(count($banjar) > 0)
+                    <div class="space-y-3">
+                        @foreach($banjar as $bj)
+                        <a href="{{ route('public.banjar.detail', ['id' => $bj->id_data_banjar]) }}" class="block bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#00a6eb]/30 transition-all">
+                            <div class="flex gap-4 p-4">
+                                {{-- Banjar Image --}}
+                                <div class="h-24 w-24 rounded-xl bg-slate-100 overflow-hidden shrink-0">
+                                    @if(!empty($bj->gambar_banjar))
+                                        <img src="{{ asset($bj->gambar_banjar) }}"
+                                             class="w-full h-full object-cover"
+                                             alt="{{ $bj->nama_banjar }}">
+                                    @else
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <i class="bi bi-houses text-2xl text-slate-300"></i>
+                                        </div>
+                                    @endif
+                                </div>
+                                
+                                {{-- Banjar Info --}}
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-black text-slate-800 leading-tight mb-2">
+                                        {{ $bj->nama_banjar }}
+                                    </h3>
+                                    @if(!empty($bj->alamat_banjar))
+                                    <p class="text-xs text-slate-500 mb-2 line-clamp-2">
+                                        <i class="bi bi-geo-alt mr-1.5 text-[#00a6eb]"></i>{{ $bj->alamat_banjar }}
+                                    </p>
+                                    @endif
+                                    <p class="text-xs text-[#00a6eb] font-semibold">
+                                        <i class="bi bi-arrow-right mr-1"></i>Lihat Detail
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                        @endforeach
                     </div>
-                    @empty
+                    @else
                     <div class="bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4 text-center">
                         <p class="text-xs text-slate-400">Belum ada data banjar</p>
                     </div>
-                    @endforelse
+                    @endif
                 </div>
 
                 <div>

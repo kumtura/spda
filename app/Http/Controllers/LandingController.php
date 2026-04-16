@@ -1795,4 +1795,39 @@ class LandingController extends Controller
             ->with('success', 'Terima kasih atas punia Anda! Silakan scan QRIS BPD Bali di lokasi pura.');
     }
 
+    public function banjar_detail($id)
+    {
+        $village = $this->getVillageData();
+        $banjar = \App\Models\Banjar::where('id_data_banjar', $id)
+            ->where('aktif', '1')
+            ->firstOrFail();
+
+        // Get Kelian Adat user info
+        $kelianAdat = null;
+        if ($banjar->id_user_kelian) {
+            $kelianAdat = \App\Models\User::find($banjar->id_user_kelian);
+        }
+
+        // Get Pura in this Banjar
+        $pura = \App\Models\Pura::where('id_data_banjar', $id)
+            ->where('aktif', '1')
+            ->orderBy('nama_pura')
+            ->get();
+
+        // Get Krama Tamiu (Pendatang) in this Banjar
+        $kramaTamiu = \App\Models\Pendatang::where('id_data_banjar', $id)
+            ->where('aktif', '1')
+            ->where('status', 'aktif')
+            ->count();
+
+        // Get Tiket Wisata (Objek Wisata) in this Banjar
+        $tiketWisata = \App\Models\ObjekWisata::where('id_data_banjar', $id)
+            ->where('aktif', '1')
+            ->get();
+
+        return view('front.pages.banjar_detail', compact(
+            'village', 'banjar', 'kelianAdat', 'pura', 'kramaTamiu', 'tiketWisata'
+        ));
+    }
+
 }

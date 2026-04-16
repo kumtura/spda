@@ -428,7 +428,7 @@
                                 {{-- Pura Image --}}
                                 <div class="h-24 w-24 rounded-xl bg-slate-100 overflow-hidden shrink-0">
                                     @if(!empty($item->gambar_pura))
-                                        <img src="{{ asset('storage/pura/' . $item->gambar_pura) }}"
+                                        <img src="{{ asset($item->gambar_pura) }}"
                                              class="w-full h-full object-cover"
                                              alt="{{ $item->nama_pura }}">
                                     @else

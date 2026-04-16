@@ -148,17 +148,39 @@
                     </button>
                 </div>
 
-                <form action="{{ url('administrator/post_data_banjar') }}" method="POST" class="p-6 space-y-6">
+                <form action="{{ url('administrator/post_data_banjar') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
                     @csrf
                     <input type="hidden" name="t_id_banjar" x-model="banjarId">
                     
                     <div class="space-y-6">
+                        <!-- Nama Banjar -->
                         <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Banjar</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Banjar <span class="text-rose-500">*</span></label>
                             <input type="text" name="t_nama_banjar" required x-model="banjarName"
                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
                         </div>
 
+                        <!-- Alamat Banjar -->
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Lengkap <span class="text-rose-500">*</span></label>
+                            <textarea name="t_alamat_banjar" required rows="3" x-model="banjarAddress"
+                                      class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all"></textarea>
+                        </div>
+
+                        <!-- Gambar Banjar -->
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Gambar Banjar</label>
+                            <input type="file" name="t_gambar_banjar" accept="image/*"
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-light file:text-white hover:file:bg-primary-dark">
+                            <p class="text-[9px] text-slate-400">Format: JPG, PNG. Maks 5MB</p>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="border-t border-slate-200 pt-4">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Data Kelian Adat</p>
+                        </div>
+
+                        <!-- Kelian Adat Selection -->
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Kelian Adat</label>
                             <select name="t_kelian_adat" x-model="kelianAdat"
@@ -170,14 +192,48 @@
                             </select>
                         </div>
 
+                        <!-- Alamat Kelian Adat -->
                         <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Lengkap</label>
-                            <textarea name="t_alamat_banjar" required rows="3" x-model="banjarAddress"
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Kelian Adat</label>
+                            <textarea name="t_alamat_kelian_adat" rows="2"
                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all"></textarea>
+                        </div>
+
+                        <!-- No Telp Kelian Adat -->
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nomor Telepon Kelian Adat</label>
+                            <input type="tel" name="t_no_telp_kelian_adat" placeholder="08xxxxxxxxxx"
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="border-t border-slate-200 pt-4">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Data Kelian Dinas</p>
+                        </div>
+
+                        <!-- Nama Kelian Dinas -->
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Kelian Dinas</label>
+                            <input type="text" name="t_nama_kelian_dinas"
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                        </div>
+
+                        <!-- Alamat Kelian Dinas -->
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alamat Kelian Dinas</label>
+                            <textarea name="t_alamat_kelian_dinas" rows="2"
+                                      class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all"></textarea>
+                        </div>
+
+                        <!-- No Telp Kelian Dinas -->
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nomor Telepon Kelian Dinas</label>
+                            <input type="tel" name="t_no_telp_kelian_dinas" placeholder="08xxxxxxxxxx"
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
+                    <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100 sticky bottom-0 bg-white">
                         <button type="button" @click="showAddModal = false" class="px-6 py-2.5 font-black text-[10px] uppercase text-slate-400">Batal</button>
                         <button type="submit" class="px-8 py-2.5 bg-slate-900 hover:bg-primary-light text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all transform hover:-translate-y-0.5">
                             Simpan Data <i class="bi bi-check-lg ml-1"></i>

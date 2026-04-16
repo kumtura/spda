@@ -172,11 +172,11 @@
         var form = document.getElementById('formBeli');
         
         // Set tanggal
-        form.querySelector('input[name="tanggal_kunjungan"]').value = this.selectedDate;
+        form.querySelector('input[name=tanggal_kunjungan]').value = this.selectedDate;
         
         // Update all quantity input values from Alpine state
         var self = this;
-        form.querySelectorAll('input[name^="kategori["]').forEach(function(input) {
+        form.querySelectorAll('input[name^=kategori]').forEach(function(input) {
             var match = input.name.match(/kategori\[(\d+)\]/);
             if (match) {
                 var id = parseInt(match[1]);

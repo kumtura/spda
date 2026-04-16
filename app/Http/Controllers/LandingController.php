@@ -1768,12 +1768,12 @@ class LandingController extends Controller
         ]);
 
         if ($request->metode === 'xendit') {
-            // Redirect to payment method selection
-            $order_id = 'PP-' . $punia->id_punia_pura;
-            $punia->update(['xendit_id' => $order_id]);
+            // Create external_id in format: PP-{id_pura}-{id_punia_pura}
+            $external_id = 'PP-' . $request->id_pura . '-' . $punia->id_punia_pura;
+            $punia->update(['xendit_id' => $external_id]);
 
             return redirect()->route('public.payment_methods', [
-                'order_id' => $order_id,
+                'order_id' => $external_id,
                 'amount' => $request->nominal,
                 'type' => 'punia_pura',
             ]);

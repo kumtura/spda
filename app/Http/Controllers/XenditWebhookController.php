@@ -90,11 +90,9 @@ class XenditWebhookController extends Controller
         
         // Handle Punia Pura
         if ($prefix === 'PP') {
-            $id_pura = $parts[1];
-            // For punia pura, find the record by xendit_id pattern
-            $puniaPura = \App\Models\PuniaPura::where('xendit_id', 'like', 'PP-' . $id_pura . '-%')
+            // For punia pura, find the record by xendit_id (format: PP-{id_pura}-{id_punia_pura})
+            $puniaPura = \App\Models\PuniaPura::where('xendit_id', $external_id)
                 ->where('status_pembayaran', 'pending')
-                ->orderBy('created_at', 'desc')
                 ->first();
 
             if ($puniaPura) {

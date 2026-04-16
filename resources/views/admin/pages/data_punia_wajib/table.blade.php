@@ -56,6 +56,59 @@
         </div>
     </div>
 
+    <!-- Allocation Breakdown -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Desa Allocation -->
+        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center gap-2 mb-4">
+                <div class="h-8 w-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                    <i class="bi bi-building text-emerald-600"></i>
+                </div>
+                <h3 class="text-sm font-black text-slate-800">Alokasi Desa</h3>
+            </div>
+            <p class="text-2xl font-black text-emerald-600 mb-2">Rp {{ number_format($totalDesaGabungan, 0, ',', '.') }}</p>
+            <div class="space-y-2 text-xs">
+                @if($pengaturanUsaha)
+                <div class="flex justify-between text-slate-600">
+                    <span>Usaha ({{ $pengaturanUsaha->persen_desa }}%)</span>
+                    <span class="font-bold">Rp {{ number_format($totalUsahaDesa, 0, ',', '.') }}</span>
+                </div>
+                @endif
+                @if($pengaturanTamiu)
+                <div class="flex justify-between text-slate-600">
+                    <span>Tamiu ({{ $pengaturanTamiu->persen_desa }}%)</span>
+                    <span class="font-bold">Rp {{ number_format($totalTamiuDesa, 0, ',', '.') }}</span>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Banjar Allocation -->
+        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center gap-2 mb-4">
+                <div class="h-8 w-8 bg-amber-50 rounded-lg flex items-center justify-center">
+                    <i class="bi bi-houses text-amber-600"></i>
+                </div>
+                <h3 class="text-sm font-black text-slate-800">Alokasi Banjar</h3>
+            </div>
+            <p class="text-2xl font-black text-amber-600 mb-2">Rp {{ number_format($totalBanjarGabungan, 0, ',', '.') }}</p>
+            <div class="space-y-2 text-xs">
+                @if($pengaturanUsaha)
+                <div class="flex justify-between text-slate-600">
+                    <span>Usaha ({{ $pengaturanUsaha->persen_banjar }}%)</span>
+                    <span class="font-bold">Rp {{ number_format($totalUsahaBanjar, 0, ',', '.') }}</span>
+                </div>
+                @endif
+                @if($pengaturanTamiu)
+                <div class="flex justify-between text-slate-600">
+                    <span>Tamiu ({{ $pengaturanTamiu->persen_banjar }}%)</span>
+                    <span class="font-bold">Rp {{ number_format($totalTamiuBanjar, 0, ',', '.') }}</span>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
     <!-- Stats Grid -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">

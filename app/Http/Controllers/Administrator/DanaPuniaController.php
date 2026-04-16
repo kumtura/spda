@@ -13,6 +13,7 @@ use App\Models\Danapunia;
 use App\Models\Pendatang;
 use App\Models\PuniaPendatang;
 use App\Models\Usaha;
+use App\Models\PengaturanBagiHasil;
 
 use DB;
 use File;
@@ -52,6 +53,19 @@ class DanaPuniaController extends BaseController
             $akhir = $year."-".$monthPadded."-31";
             $monthKey = $year . '-' . $monthPadded;
 
+            // === GET PENGATURAN BAGI HASIL ===
+            $pengaturanTamiu = \App\Models\PengaturanBagiHasil::where('jenis_punia', 'tamiu')
+                ->whereNull('id_data_banjar')
+                ->where('aktif', 1)
+                ->orderBy('berlaku_sejak', 'desc')
+                ->first();
+            
+            $pengaturanUsaha = \App\Models\PengaturanBagiHasil::where('jenis_punia', 'usaha')
+                ->whereNull('id_data_banjar')
+                ->where('aktif', 1)
+                ->orderBy('berlaku_sejak', 'desc')
+                ->first();
+
             // === UNIT USAHA DATA ===
             $usahaList = Usaha::select('tb_usaha.id_usaha', 'tb_usaha.aktif_status', 'tb_detail_usaha.nama_usaha', 'tb_detail_usaha.minimal_bayar', 'tb_penanggung_jawab.nama')
                 ->join("tb_detail_usaha", "tb_detail_usaha.id_detail_usaha", "tb_usaha.id_detail_usaha")
@@ -61,6 +75,7 @@ class DanaPuniaController extends BaseController
                 ->get();
 
             $usahaPaid = 0; $usahaUnpaid = 0; $totalUsaha = 0;
+            $totalUsahaDesa = 0; $totalUsahaBanjar = 0;
             foreach($usahaList as $u) {
                 $payment = Danapunia::where('id_usaha', $u->id_usaha)
                     ->where('aktif', '1')
@@ -71,6 +86,12 @@ class DanaPuniaController extends BaseController
                 if($payment) {
                     $usahaPaid++;
                     $totalUsaha += $payment->jumlah_dana;
+                    
+                    // Calculate allocation if pengaturan exists
+                    if ($pengaturanUsaha) {
+                        $totalUsahaDesa += ($payment->jumlah_dana * $pengaturanUsaha->persen_desa / 100);
+                        $totalUsahaBanjar += ($payment->jumlah_dana * $pengaturanUsaha->persen_banjar / 100);
+                    }
                 } else {
                     $usahaUnpaid++;
                 }
@@ -87,6 +108,11 @@ class DanaPuniaController extends BaseController
                 ->where('status_pembayaran', 'lunas')
                 ->where('bulan_tahun', 'LIKE', $monthKey . '%')
                 ->sum('nominal');
+            $totalTamiuDesa = 0; $totalTamiuBanjar = 0;
+            if ($pengaturanTamiu) {
+                $totalTamiuDesa = $totalTamiu * $pengaturanTamiu->persen_desa / 100;
+                $totalTamiuBanjar = $totalTamiu * $pengaturanTamiu->persen_banjar / 100;
+            }
             $tamiuUnpaid = $pendatangAktif - $tamiuPaid;
             if($tamiuUnpaid < 0) $tamiuUnpaid = 0;
 
@@ -116,13 +142,16 @@ class DanaPuniaController extends BaseController
             $recentAll = $recentUsaha->concat($recentTamiu)->sortByDesc('tanggal')->take(15);
 
             $totalGabungan = $totalUsaha + $totalTamiu;
+            $totalDesaGabungan = $totalUsahaDesa + $totalTamiuDesa;
+            $totalBanjarGabungan = $totalUsahaBanjar + $totalTamiuBanjar;
 
             return view('admin.pages.data_punia_wajib.table', compact(
                 'month', 'year',
-                'usahaPaid', 'usahaUnpaid', 'totalUsaha',
-                'tamiuPaid', 'tamiuUnpaid', 'totalTamiu',
-                'totalGabungan', 'recentAll',
-                'usahaList', 'pendatangAktif'
+                'usahaPaid', 'usahaUnpaid', 'totalUsaha', 'totalUsahaDesa', 'totalUsahaBanjar',
+                'tamiuPaid', 'tamiuUnpaid', 'totalTamiu', 'totalTamiuDesa', 'totalTamiuBanjar',
+                'totalGabungan', 'totalDesaGabungan', 'totalBanjarGabungan', 'recentAll',
+                'usahaList', 'pendatangAktif',
+                'pengaturanTamiu', 'pengaturanUsaha'
             ));
         }
 

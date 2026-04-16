@@ -414,49 +414,52 @@
                 </div>
 
                 <div>
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="h-7 w-7 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center">
-                            <i class="bi bi-building text-[#00a6eb] text-sm"></i>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="h-8 w-8 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center">
+                            <i class="bi bi-building text-[#00a6eb]"></i>
                         </div>
-                        <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest">Daftar Pura</h3>
+                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Daftar Pura</h3>
                     </div>
                     @if(count($pura) > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="space-y-3">
                         @foreach($pura as $item)
                         <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                            {{-- Pura Image --}}
-                            <div class="h-40 bg-slate-100 overflow-hidden relative">
-                                @if(!empty($item->gambar_pura))
-                                    <img src="{{ asset('storage/pura/' . $item->gambar_pura) }}"
-                                         class="w-full h-full object-cover"
-                                         alt="{{ $item->nama_pura }}">
-                                @else
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <i class="bi bi-building text-4xl text-slate-300"></i>
-                                    </div>
-                                @endif
-                                {{-- Temple Icon Overlay --}}
-                                <div class="absolute top-3 right-3 h-10 w-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
-                                    <span class="text-xl">🕉️</span>
+                            <div class="flex gap-4 p-4">
+                                {{-- Pura Image --}}
+                                <div class="h-24 w-24 rounded-xl bg-slate-100 overflow-hidden shrink-0">
+                                    @if(!empty($item->gambar_pura))
+                                        <img src="{{ asset('storage/pura/' . $item->gambar_pura) }}"
+                                             class="w-full h-full object-cover"
+                                             alt="{{ $item->nama_pura }}">
+                                    @else
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <i class="bi bi-building text-2xl text-slate-300"></i>
+                                        </div>
+                                    @endif
                                 </div>
-                            </div>
-                            
-                            {{-- Pura Info --}}
-                            <div class="p-4">
-                                <h3 class="text-sm font-black text-slate-800 leading-tight mb-2">
-                                    {{ $item->nama_pura }}
-                                </h3>
-                                @if(!empty($item->lokasi))
-                                <p class="text-xs text-slate-500 mb-3">
-                                    <i class="bi bi-geo-alt mr-1 text-[#00a6eb]"></i>{{ $item->lokasi }}
-                                </p>
-                                @endif
                                 
-                                {{-- Donation Button --}}
-                                <a href="{{ route('public.pura.punia', ['id' => $item->id_pura]) }}"
-                                   class="block w-full bg-[#00a6eb] hover:bg-[#0090d0] text-white text-center text-sm font-bold py-2.5 rounded-xl transition-colors">
-                                    <i class="bi bi-heart-fill mr-1"></i>Donasi
-                                </a>
+                                {{-- Pura Info --}}
+                                <div class="flex-1 min-w-0 flex flex-col justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-black text-slate-800 leading-tight mb-2">
+                                            {{ $item->nama_pura }}
+                                        </h3>
+                                        @if(!empty($item->lokasi))
+                                        <p class="text-xs text-slate-500 mb-2">
+                                            <i class="bi bi-geo-alt mr-1.5 text-[#00a6eb]"></i>{{ $item->lokasi }}
+                                        </p>
+                                        @endif
+                                        <p class="text-xs text-[#00a6eb] font-semibold">
+                                            <wa-icon name="om" family="sharp" variant="solid" class="inline mr-1.5"></wa-icon>Donasi untuk Pura
+                                        </p>
+                                    </div>
+                                    
+                                    {{-- Donation Button --}}
+                                    <a href="{{ route('public.pura.punia', ['id' => $item->id_pura]) }}"
+                                       class="inline-block bg-[#00a6eb] hover:bg-[#0090d0] text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors mt-2">
+                                        <i class="bi bi-heart-fill mr-1"></i>Donasi
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         @endforeach

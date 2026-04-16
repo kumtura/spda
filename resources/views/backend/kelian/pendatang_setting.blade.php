@@ -1,10 +1,27 @@
 @extends('mobile_layout')
 
 @section('isi_menu')
+@php
+    $dbSettingTamiu = App\Models\PengaturanBagiHasil::where('jenis_punia', 'tamiu')
+        ->whereNull('id_data_banjar')
+        ->where('aktif', 1)
+        ->orderBy('berlaku_sejak', 'desc')
+        ->first();
+    
+    if ($dbSettingTamiu) {
+        $keDesa = true;
+        $tipeKeDesa = 'persentase';
+        $nilaiKeDesa = $dbSettingTamiu->persen_desa;
+    } else {
+        $keDesa = $settings['punia_pendatang_ke_desa'] ?? false;
+        $tipeKeDesa = $settings['punia_pendatang_tipe_ke_desa'] ?? 'persentase';
+        $nilaiKeDesa = $settings['punia_pendatang_nilai_ke_desa'] ?? 0;
+    }
+@endphp
 <div class="bg-white pb-24" x-data="{ 
-    keDesa: {{ json_encode($settings['punia_pendatang_ke_desa'] ?? false) }},
-    tipeKeDesa: '{{ $settings['punia_pendatang_tipe_ke_desa'] ?? 'persentase' }}',
-    nilaiKeDesa: {{ $settings['punia_pendatang_nilai_ke_desa'] ?? 0 }}
+    keDesa: {{ json_encode($keDesa) }},
+    tipeKeDesa: '{{ $tipeKeDesa }}',
+    nilaiKeDesa: {{ $nilaiKeDesa }}
 }">
     <!-- Header -->
     <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-6 pb-8 text-white relative overflow-hidden">
@@ -75,10 +92,27 @@
 
             <!-- Pengaturan Bagi Hasil ke Desa -->
             <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-                <div>
-                    <h3 class="text-sm font-bold text-slate-800 mb-1">Bagi Hasil ke Desa</h3>
-                    <p class="text-[10px] text-slate-500">Atur pembagian dana punia pendatang ke kas desa</p>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800 mb-1">Bagi Hasil ke Desa</h3>
+                        <p class="text-[10px] text-slate-500">Atur pembagian dana punia pendatang ke kas desa</p>
+                    </div>
+                    <a href="{{ url('administrator/pengaturan_bagi_hasil') }}" class="text-[9px] font-bold text-[#00a6eb] hover:underline flex items-center gap-1">
+                        <i class="bi bi-gear"></i> Detail
+                    </a>
                 </div>
+
+                @if($dbSettingTamiu)
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                    <div class="flex items-start gap-2">
+                        <i class="bi bi-check-circle-fill text-emerald-600 text-sm shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="text-[10px] font-bold text-emerald-700">Tersinkronisasi</p>
+                            <p class="text-[9px] text-emerald-600">{{ number_format($dbSettingTamiu->persen_desa, 1) }}% ke Desa, {{ number_format($dbSettingTamiu->persen_banjar, 1) }}% ke Banjar — sejak {{ $dbSettingTamiu->berlaku_sejak->format('d M Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <label class="relative inline-flex items-center cursor-pointer">

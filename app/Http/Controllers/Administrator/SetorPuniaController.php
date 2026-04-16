@@ -197,6 +197,12 @@ class SetorPuniaController extends BaseController
                     break;
                 case 'banjar_ke_desa':
                     BagiHasilService::setorBanjarKeDesa($setor->id_data_banjar, $setor->nominal);
+                    // Mark riwayat bagi hasil records as settled for desa portion
+                    RiwayatBagiHasil::where('id_data_banjar', $setor->id_data_banjar)
+                        ->where('aktif', 1)
+                        ->where('metode_pembayaran', 'cash')
+                        ->where('status_setor_desa', 'pending')
+                        ->update(['status_setor_desa' => 'selesai']);
                     break;
                 case 'desa_tarik_pg':
                     BagiHasilService::desaTarikPG($setor->nominal);
@@ -204,6 +210,12 @@ class SetorPuniaController extends BaseController
                 case 'desa_ke_banjar':
                     if ($setor->id_data_banjar_tujuan) {
                         BagiHasilService::setorDesaKeBanjar($setor->id_data_banjar_tujuan, $setor->nominal);
+                        // Mark riwayat bagi hasil records as settled for banjar portion
+                        RiwayatBagiHasil::where('id_data_banjar', $setor->id_data_banjar_tujuan)
+                            ->where('aktif', 1)
+                            ->whereIn('metode_pembayaran', ['xendit', 'online', 'qris'])
+                            ->where('status_setor_banjar', 'pending')
+                            ->update(['status_setor_banjar' => 'selesai']);
                     }
                     break;
             }

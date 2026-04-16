@@ -18,6 +18,7 @@ use App\Models\Detail_Usaha;
 use App\Models\Kategori_Usaha;
 use App\Models\Jadwal_Interview;
 use App\Models\List_Skill_Tk;
+use App\Services\BagiHasilService;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class PenagihController extends BaseController
@@ -199,6 +200,16 @@ class PenagihController extends BaseController
             'petugas_id' => Auth::id(),
         ]);
 
+        // Split bagi hasil
+        BagiHasilService::splitPayment(
+            'tamiu',
+            $punia->id_punia_pendatang,
+            $pendatang->id_data_banjar,
+            $punia->nominal,
+            $request->metode_pembayaran,
+            now()->toDateString()
+        );
+
         return redirect()->back()->with('success', 'Pembayaran berhasil dicatat');
     }
 
@@ -218,6 +229,16 @@ class PenagihController extends BaseController
             'tanggal_bayar' => now(),
             'petugas_id' => Auth::id(),
         ]);
+
+        // Split bagi hasil
+        BagiHasilService::splitPayment(
+            'tamiu',
+            $punia->id_punia_pendatang,
+            $pendatang->id_data_banjar,
+            $punia->nominal,
+            $request->input('metode_pembayaran', 'cash'),
+            now()->toDateString()
+        );
 
         return redirect()->back()->with('success', 'Pembayaran punia berhasil dicatat');
     }
@@ -351,7 +372,7 @@ class PenagihController extends BaseController
             $file->move(public_path('bukti_pembayaran'), $buktiFile);
         }
 
-        Danapunia::create([
+        $danapunia = Danapunia::create([
             'id_usaha' => $request->id_usaha,
             'jumlah_dana' => $request->jumlah_dana,
             'tanggal_pembayaran' => $request->tanggal_pembayaran,
@@ -366,6 +387,20 @@ class PenagihController extends BaseController
             'status_verifikasi' => 'approved',
             'aktif' => '1',
         ]);
+
+        // Split bagi hasil
+        $usaha = Usaha::with('detail')->find($request->id_usaha);
+        $idBanjar = $usaha && $usaha->detail ? $usaha->detail->id_banjar : null;
+        if ($idBanjar) {
+            BagiHasilService::splitPayment(
+                'usaha',
+                $danapunia->id_dana_punia,
+                $idBanjar,
+                $request->jumlah_dana,
+                $request->metode_pembayaran === 'tunai' ? 'cash' : $request->metode_pembayaran,
+                $request->tanggal_pembayaran
+            );
+        }
 
         return redirect('administrator/penagih/usaha/detail/' . $request->id_usaha)
             ->with('success', 'Pembayaran bulan ' . $request->bulan . '/' . $request->tahun . ' berhasil disimpan.');

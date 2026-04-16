@@ -18,6 +18,7 @@ use App\Models\Kategori_Usaha;
 
 use App\Models\Sumbangan;
 use App\Models\Jadwal_Interview;
+use App\Services\BagiHasilService;
 
 
 use DB;
@@ -68,10 +69,38 @@ class UsahaController extends BaseController
             $settingsPath = storage_path('app/settings.json');
             $settings = json_decode(file_get_contents($settingsPath), true);
             $settings['punia_usaha_global'] = $request->punia_usaha_global;
-            $settings['punia_usaha_ke_desa'] = $request->has('punia_usaha_ke_desa') ? true : false;
-            $settings['punia_usaha_tipe_ke_desa'] = $request->input('punia_usaha_tipe_ke_desa', 'persentase');
-            $settings['punia_usaha_nilai_ke_desa'] = (float) $request->input('punia_usaha_nilai_ke_desa', 0);
+            
+            // Sync bagi hasil to tb_pengaturan_bagi_hasil
+            $keDesa = $request->has('punia_usaha_ke_desa');
+            $tipeKeDesa = $request->input('punia_usaha_tipe_ke_desa', 'persentase');
+            $nilaiKeDesa = (float) $request->input('punia_usaha_nilai_ke_desa', 0);
+            
+            // Keep settings.json in sync for display
+            $settings['punia_usaha_ke_desa'] = $keDesa;
+            $settings['punia_usaha_tipe_ke_desa'] = $tipeKeDesa;
+            $settings['punia_usaha_nilai_ke_desa'] = $nilaiKeDesa;
             file_put_contents($settingsPath, json_encode($settings, JSON_PRETTY_PRINT));
+            
+            // Sync to database (the actual source of truth for BagiHasilService)
+            if ($keDesa && $tipeKeDesa === 'persentase' && $nilaiKeDesa > 0) {
+                $persenDesa = $nilaiKeDesa;
+                
+                // Deactivate old global usaha setting
+                \App\Models\PengaturanBagiHasil::where('jenis_punia', 'usaha')
+                    ->whereNull('id_data_banjar')
+                    ->where('aktif', 1)
+                    ->update(['aktif' => 0]);
+                
+                // Create new setting
+                \App\Models\PengaturanBagiHasil::create([
+                    'jenis_punia' => 'usaha',
+                    'id_data_banjar' => null,
+                    'persen_desa' => $persenDesa,
+                    'persen_banjar' => 100 - $persenDesa,
+                    'berlaku_sejak' => now()->toDateString(),
+                    'keterangan' => 'Disinkronkan dari pengaturan punia usaha',
+                ]);
+            }
 
             return redirect()->back()->with('success', 'Pengaturan punia usaha berhasil diupdate');
         }
@@ -244,7 +273,7 @@ class UsahaController extends BaseController
                 $file->move(public_path('bukti_pembayaran'), $buktiFile);
             }
 
-            Danapunia::create([
+            $danapunia = Danapunia::create([
                 'id_usaha' => $request->id_usaha,
                 'jumlah_dana' => $request->jumlah_dana,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
@@ -259,6 +288,20 @@ class UsahaController extends BaseController
                 'status_verifikasi' => 'approved',
                 'aktif' => '1',
             ]);
+
+            // Split bagi hasil
+            $usaha = Usaha::with('detail')->find($request->id_usaha);
+            $idBanjar = $usaha && $usaha->detail ? $usaha->detail->id_banjar : null;
+            if ($idBanjar) {
+                BagiHasilService::splitPayment(
+                    'usaha',
+                    $danapunia->id_dana_punia,
+                    $idBanjar,
+                    $request->jumlah_dana,
+                    $request->metode_pembayaran === 'tunai' ? 'cash' : $request->metode_pembayaran,
+                    $request->tanggal_pembayaran
+                );
+            }
 
             return redirect('administrator/kelian/detail_usaha/' . $request->id_usaha)
                 ->with('success', 'Pembayaran bulan ' . $request->bulan . '/' . $request->tahun . ' berhasil disimpan.');

@@ -10,6 +10,7 @@ use App\Models\AcaraPunia;
 use App\Models\Banjar;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
+use App\Services\BagiHasilService;
 
 class PendatangController extends Controller
 {
@@ -87,10 +88,38 @@ class PendatangController extends Controller
         $settingsPath = storage_path('app/settings.json');
         $settings = json_decode(file_get_contents($settingsPath), true);
         $settings['punia_pendatang_global'] = $request->punia_pendatang_global;
-        $settings['punia_pendatang_ke_desa'] = $request->has('punia_pendatang_ke_desa') ? true : false;
-        $settings['punia_pendatang_tipe_ke_desa'] = $request->input('punia_pendatang_tipe_ke_desa', 'persentase');
-        $settings['punia_pendatang_nilai_ke_desa'] = (float) $request->input('punia_pendatang_nilai_ke_desa', 0);
+        
+        // Sync bagi hasil to tb_pengaturan_bagi_hasil
+        $keDesa = $request->has('punia_pendatang_ke_desa');
+        $tipeKeDesa = $request->input('punia_pendatang_tipe_ke_desa', 'persentase');
+        $nilaiKeDesa = (float) $request->input('punia_pendatang_nilai_ke_desa', 0);
+        
+        // Keep settings.json in sync for display
+        $settings['punia_pendatang_ke_desa'] = $keDesa;
+        $settings['punia_pendatang_tipe_ke_desa'] = $tipeKeDesa;
+        $settings['punia_pendatang_nilai_ke_desa'] = $nilaiKeDesa;
         file_put_contents($settingsPath, json_encode($settings, JSON_PRETTY_PRINT));
+        
+        // Sync to database (the actual source of truth for BagiHasilService)
+        if ($keDesa && $tipeKeDesa === 'persentase' && $nilaiKeDesa > 0) {
+            $persenDesa = $nilaiKeDesa;
+            
+            // Deactivate old global tamiu setting
+            \App\Models\PengaturanBagiHasil::where('jenis_punia', 'tamiu')
+                ->whereNull('id_data_banjar')
+                ->where('aktif', 1)
+                ->update(['aktif' => 0]);
+            
+            // Create new setting
+            \App\Models\PengaturanBagiHasil::create([
+                'jenis_punia' => 'tamiu',
+                'id_data_banjar' => null,
+                'persen_desa' => $persenDesa,
+                'persen_banjar' => 100 - $persenDesa,
+                'berlaku_sejak' => now()->toDateString(),
+                'keterangan' => 'Disinkronkan dari pengaturan punia pendatang',
+            ]);
+        }
         
         return redirect()->back()->with('success', 'Pengaturan punia global berhasil diupdate');
     }
@@ -385,6 +414,16 @@ class PendatangController extends Controller
             'tanggal_bayar' => now(),
             'petugas_id' => auth()->id()
         ]);
+
+        // Split bagi hasil
+        BagiHasilService::splitPayment(
+            'tamiu',
+            $punia->id_punia_pendatang,
+            $pendatang->id_data_banjar,
+            $punia->nominal,
+            $request->metode_pembayaran,
+            now()->toDateString()
+        );
         
         return redirect()->back()->with('success', 'Pembayaran punia berhasil dicatat');
     }
@@ -452,6 +491,19 @@ class PendatangController extends Controller
             'tanggal_bayar' => now(),
             'petugas_id' => auth()->id()
         ]);
+
+        // Split bagi hasil
+        $pendatang = Pendatang::find($punia->id_pendatang);
+        if ($pendatang) {
+            BagiHasilService::splitPayment(
+                'tamiu',
+                $punia->id_punia_pendatang,
+                $pendatang->id_data_banjar,
+                $punia->nominal,
+                $request->metode_pembayaran,
+                now()->toDateString()
+            );
+        }
         
         return redirect()->to('administrator/kelian/pendatang/detail/'.$punia->id_pendatang)->with('success', 'Pembayaran punia berhasil dicatat');
     }
@@ -773,6 +825,16 @@ class PendatangController extends Controller
             'petugas_id' => auth()->id()
         ]);
 
+        // Split bagi hasil
+        BagiHasilService::splitPayment(
+            'tamiu',
+            $punia->id_punia_pendatang,
+            $pendatang->id_data_banjar,
+            $punia->nominal,
+            $request->metode_pembayaran,
+            now()->toDateString()
+        );
+
         return redirect()->back()->with('success', 'Pembayaran punia berhasil dicatat');
     }
 
@@ -816,6 +878,19 @@ class PendatangController extends Controller
             'tanggal_bayar' => now(),
             'petugas_id' => auth()->id()
         ]);
+
+        // Split bagi hasil
+        $pendatang = Pendatang::find($punia->id_pendatang);
+        if ($pendatang) {
+            BagiHasilService::splitPayment(
+                'tamiu',
+                $punia->id_punia_pendatang,
+                $pendatang->id_data_banjar,
+                $punia->nominal,
+                $request->metode_pembayaran,
+                now()->toDateString()
+            );
+        }
 
         return redirect()->to('administrator/pendatang/detail/'.$punia->id_pendatang)->with('success', 'Pembayaran punia berhasil dicatat');
     }

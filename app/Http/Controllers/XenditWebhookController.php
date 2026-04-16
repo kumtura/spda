@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Danapunia;
 use App\Models\Sumbangan;
 use App\Models\PaymentSetting;
+use App\Models\Usaha;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Services\BagiHasilService;
 
 class XenditWebhookController extends Controller
 {
@@ -144,6 +146,22 @@ class XenditWebhookController extends Controller
             }
             
             $record->update($updateData);
+
+            // Split bagi hasil for punia usaha (PN- prefix)
+            if ($type === 'punia') {
+                $usaha = Usaha::with('detail')->find($record->id_usaha);
+                $idBanjar = $usaha && $usaha->detail ? $usaha->detail->id_banjar : null;
+                if ($idBanjar) {
+                    BagiHasilService::splitPayment(
+                        'usaha',
+                        $record->id_dana_punia,
+                        $idBanjar,
+                        $record->jumlah_dana,
+                        'xendit',
+                        now()->toDateString()
+                    );
+                }
+            }
 
             // For Donation Programs: Update 'terkumpul' total
             if ($type === 'donasi' && $record->id_program_donasi) {

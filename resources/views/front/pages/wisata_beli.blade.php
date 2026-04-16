@@ -160,7 +160,13 @@
     submitForm: function() {
         if (!this.selectedDate) { alert('Pilih tanggal kunjungan terlebih dahulu'); return; }
         if (this.totalQty === 0) { alert('Pilih minimal 1 tiket'); return; }
-        document.getElementById('formBeli').submit();
+        
+        // Ensure hidden input is updated before submission
+        document.querySelector('input[name="tanggal_kunjungan"]').value = this.selectedDate;
+        
+        // Submit the form
+        var form = document.getElementById('formBeli');
+        form.submit();
     }
 }">
     <!-- Header with wisata background image -->

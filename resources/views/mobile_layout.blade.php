@@ -53,7 +53,7 @@
             @php
                 $homeActiveColor = 'text-[#00a6eb]';
             @endphp
-            @if(Session::get('level') != "2")
+            @if(Session::get('level') != "2" && Session::get('level') != "5")
             <a href="{{ url('administrator/') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator') ? $homeActiveColor : 'text-gray-400' }}">
                 <i class="bi bi-house-door{{ Request::is('administrator') ? '-fill' : '' }} text-xl"></i>
                 <span class="text-[10px] font-semibold">Home</span>

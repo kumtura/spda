@@ -161,7 +161,7 @@
          x-cloak
          x-transition.opacity
          class="fixed inset-0 z-[90] flex items-end justify-center"
-         style="display: none;">
+            style="display: none; z-index: 9999;">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px]" @click="showPaymentModal = false"></div>
 
         <div x-transition:enter="transition ease-out duration-300 transform"
@@ -171,6 +171,7 @@
              x-transition:leave-start="translate-y-0"
              x-transition:leave-end="translate-y-full"
              class="relative bg-white rounded-t-[28px] shadow-2xl w-full max-w-[480px] max-h-[calc(100vh-5rem)] overflow-y-auto p-5 pb-[calc(2rem+env(safe-area-inset-bottom))]"
+               style="z-index: 10000; max-height: calc(100vh - 5rem); padding-bottom: calc(2rem + env(safe-area-inset-bottom));"
              @click.stop>
             <div class="w-14 h-1.5 bg-slate-200 rounded-full mx-auto mb-4"></div>
 

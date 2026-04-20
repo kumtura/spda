@@ -57,7 +57,7 @@
         @yield('isi_menu')
 
         <!-- Bottom Navigation (Minimalist KitaBisa Style) -->
-        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around items-center h-[70px] z-40 px-2 pb-[env(safe-area-inset-bottom)]">
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around items-center h-[70px] z-40 px-2 pb-[env(safe-area-inset-bottom)]" style="z-index: 30;">
             @php
                 $homeActiveColor = 'text-[#00a6eb]';
             @endphp

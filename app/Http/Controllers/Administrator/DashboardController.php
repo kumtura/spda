@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 
 use Session;
 
@@ -190,11 +191,17 @@ class DashboardController extends BaseController
         if($request->type === 'punia') {
             $payment = Danapunia::find($request->id);
             if($payment) {
-                $payment->update([
+                $payload = [
                     'status_verifikasi' => 'approved',
                     'status_pembayaran' => 'completed',
                     'tanggal_pembayaran' => now()
-                ]);
+                ];
+
+                if (Schema::hasColumn('tb_dana_punia', 'verified_by')) {
+                    $payload['verified_by'] = Auth::id();
+                }
+
+                $payment->update($payload);
             }
         } elseif($request->type === 'donasi') {
             $payment = \App\Models\Sumbangan::find($request->id);

@@ -181,6 +181,12 @@ public function initiate(Request $request)
         $isCompleted = in_array($record->status_pembayaran, ['completed', 'lunas'], true);
         $isManualFlow = in_array(strtolower((string) $method), ['cash', 'tunai', 'transfer', 'transfer_manual'], true);
         $showSuccessState = $isCompleted || $isManualFlow;
+        $canDirectVerify = auth()->check()
+            && (int) auth()->user()->id_level === 7
+            && in_array($type, ['punia', 'punia_pendatang'], true)
+            && in_array(strtolower((string) $method), ['transfer', 'transfer_manual'], true)
+            && (($record->status_verifikasi ?? null) === 'pending');
+        $verifiedByName = optional($record->verifiedBy ?? null)->name;
         $paymentContext = $this->paymentOrders->buildContext($type, $record);
         $receiptCode = null;
         $receiptUrl = null;
@@ -206,7 +212,7 @@ public function initiate(Request $request)
         // Get payment channel info from database
         $channel = \App\Models\PaymentChannel::where('code', $method)->first();
 
-        return view('front.pages.payment_result', compact('record', 'payment_data', 'method', 'village', 'order_id', 'type', 'is_sandbox', 'channel', 'isCompleted', 'showSuccessState', 'paymentContext', 'receiptCode', 'receiptUrl', 'receiptDownloadUrl'));
+        return view('front.pages.payment_result', compact('record', 'payment_data', 'method', 'village', 'order_id', 'type', 'is_sandbox', 'channel', 'isCompleted', 'showSuccessState', 'canDirectVerify', 'verifiedByName', 'paymentContext', 'receiptCode', 'receiptUrl', 'receiptDownloadUrl'));
     }
 
     public function checkStatus($order_id)

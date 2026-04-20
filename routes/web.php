@@ -293,6 +293,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/penagih/pendatang/kartu-punia/{id}', 'Administrator\PenagihController@kartuPunia');
             Route::post('/penagih/pendatang/kartu-punia/bayar', 'Administrator\PenagihController@bayarKartuPunia');
             Route::post('/penagih/pendatang/kartu-punia/online', 'Administrator\PenagihController@initiateKartuPuniaOnline');
+            Route::post('/penagih/pembayaran/verify-transfer', 'Administrator\PenagihController@verifyTransferPayment')->name('penagih.transfer.verify');
             Route::post('/penagih/pendatang/kartu-punia/hapus', 'Administrator\PenagihController@hapusKartuPunia');
             Route::post('/penagih/pendatang/punia/bayar/{id}', 'Administrator\PenagihController@bayarPuniaPendatang');
             Route::get('/penagih/pendatang/generate-tagihan/{id}', 'Administrator\PenagihController@generateTagihan');

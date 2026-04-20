@@ -27,6 +27,7 @@ class PuniaPendatang extends Model
         'bukti_transfer',
         'status_verifikasi',
         'catatan_verifikasi',
+        'verified_by',
         'catatan_hapus',
         'dihapus_oleh',
         'tanggal_hapus',
@@ -51,5 +52,10 @@ class PuniaPendatang extends Model
     public function petugas()
     {
         return $this->belongsTo(User::class, 'petugas_id', 'id');
+    }
+
+    public function verifiedBy()
+    {
+        return $this->belongsTo(User::class, 'verified_by', 'id');
     }
 }

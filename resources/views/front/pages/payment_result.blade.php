@@ -12,7 +12,9 @@
         $isPendingVerification = $paidState && !($isCompleted ?? false) && (($record->status_verifikasi ?? null) === 'pending');
         $successTitle = $isPendingVerification ? 'Pembayaran Berhasil Dicatat' : ($paymentContext['title'] ?? 'Pembayaran Berhasil');
         $successMessage = $isPendingVerification
-            ? 'Pembayaran sudah masuk dan sedang menunggu verifikasi admin.'
+            ? (($canDirectVerify ?? false)
+                ? 'Pembayaran sudah masuk. Penagih yang sedang login bisa langsung memverifikasi di bawah.'
+                : 'Pembayaran sudah masuk dan sedang menunggu verifikasi admin.')
             : ($paymentContext['thank_you'] ?? 'Terima kasih atas kontribusi Anda');
     @endphp
     <!-- Header -->
@@ -38,6 +40,18 @@
 
     <!-- Main Content -->
     <div class="px-4 -mt-6 relative z-10 pb-8">
+        @if(session('success'))
+        <div class="mb-4 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3 text-xs font-medium text-emerald-700">
+            {{ session('success') }}
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="mb-4 bg-rose-50 border border-rose-100 rounded-2xl px-4 py-3 text-xs font-medium text-rose-700">
+            {{ session('error') }}
+        </div>
+        @endif
+
         <!-- Success View -->
         <div id="successView" class="hidden">
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 text-center space-y-6">
@@ -70,7 +84,31 @@
                         <span class="text-xs text-slate-500">Waktu</span>
                         <span class="text-xs font-bold text-slate-800">{{ now()->translatedFormat('d M Y, H:i') }}</span>
                     </div>
+                    @if(!empty($verifiedByName))
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500">Diverifikasi Oleh</span>
+                        <span class="text-xs font-bold text-slate-800 text-right">{{ $verifiedByName }}</span>
+                    </div>
+                    @endif
                 </div>
+
+                @if($canDirectVerify)
+                <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-left space-y-3">
+                    <div>
+                        <p class="text-[10px] text-amber-700 uppercase tracking-widest font-black mb-1">Verifikasi Langsung</p>
+                        <p class="text-xs text-amber-700">Transfer ini masih pending. Penagih yang login bisa langsung memverifikasi dan sistem akan mencatat akun verifier secara otomatis.</p>
+                    </div>
+
+                    <form method="POST" action="{{ route('penagih.transfer.verify') }}">
+                        @csrf
+                        <input type="hidden" name="order_id" value="{{ $order_id }}">
+                        <input type="hidden" name="type" value="{{ $type }}">
+                        <button type="submit" class="w-full py-3 bg-amber-500 text-white rounded-xl font-bold text-xs">
+                            Verifikasi Sekarang
+                        </button>
+                    </form>
+                </div>
+                @endif
 
                 @if(in_array($type, ['punia', 'punia_pendatang'], true) && $receiptUrl)
                 <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 space-y-3 text-left">

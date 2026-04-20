@@ -32,6 +32,7 @@ class Danapunia extends Model
         'bukti_transfer',
         'status_verifikasi',
         'catatan_verifikasi',
+        'verified_by',
         'bukti_pembayaran',
         'charge',
         'catatan_hapus',
@@ -65,6 +66,11 @@ class Danapunia extends Model
     public function usaha()
     {
         return $this->belongsTo(Usaha::class, 'id_usaha', 'id_usaha');
+    }
+
+    public function verifiedBy()
+    {
+        return $this->belongsTo(User::class, 'verified_by', 'id');
     }
 
     public static function get_dataPunia($request){

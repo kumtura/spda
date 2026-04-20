@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use App\Models\Pendatang;
 use App\Models\PuniaPendatang;
@@ -34,6 +35,11 @@ class PenagihController extends BaseController
     private function buildPuniaRutinLabel(string $bulanTahun): string
     {
         return 'Punia rutin bulan ' . \Carbon\Carbon::createFromFormat('Y-m', $bulanTahun)->translatedFormat('F Y');
+    }
+
+    private function buildVerificationNote(): string
+    {
+        return 'Diverifikasi langsung oleh penagih ' . (Auth::user()->name ?? 'Unknown') . ' pada ' . now()->translatedFormat('d M Y H:i');
     }
 
     private function resolvePendatangPuniaBulanan(Pendatang $pendatang, int $bulan, int $tahun): PuniaPendatang
@@ -311,6 +317,127 @@ class PenagihController extends BaseController
             'type' => 'punia_pendatang',
             'context' => 'penagih',
         ]);
+    }
+
+    public function verifyTransferPayment(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|string',
+            'type' => 'required|in:punia,punia_pendatang',
+        ]);
+
+        $banjar = $this->getPenagihBanjar();
+        abort_if(!$banjar, 403);
+
+        if ($request->type === 'punia') {
+            if (!preg_match('/^PN-(\d+)$/i', trim((string) $request->order_id), $matches)) {
+                return redirect()->back()->with('error', 'Kode pembayaran usaha tidak valid.');
+            }
+
+            $payment = Danapunia::with('usaha.detail')->findOrFail((int) $matches[1]);
+            $paymentBanjarId = $payment->usaha?->detail?->id_banjar;
+
+            if (!$paymentBanjarId || (int) $paymentBanjarId !== (int) $banjar->id_data_banjar) {
+                abort(403);
+            }
+
+            $method = strtolower((string) ($payment->metode_pembayaran ?: $payment->metode));
+            if (!in_array($method, ['transfer', 'transfer_manual'], true)) {
+                return redirect()->back()->with('error', 'Pembayaran ini bukan transfer yang memerlukan verifikasi.');
+            }
+
+            if (($payment->status_verifikasi ?? null) === 'approved' || ($payment->status_pembayaran ?? null) === 'completed') {
+                return redirect()->route('public.payment_result', [
+                    'order_id' => $request->order_id,
+                    'type' => $request->type,
+                ])->with('success', 'Pembayaran usaha sudah diverifikasi sebelumnya.');
+            }
+
+            if (($payment->status_verifikasi ?? null) !== 'pending') {
+                return redirect()->back()->with('error', 'Status pembayaran usaha ini tidak dapat diverifikasi lagi.');
+            }
+
+            $payload = [
+                'status_verifikasi' => 'approved',
+                'status_pembayaran' => 'completed',
+                'tanggal_pembayaran' => $payment->tanggal_pembayaran ?: now(),
+                'catatan_verifikasi' => $this->buildVerificationNote(),
+            ];
+
+            if (Schema::hasColumn('tb_dana_punia', 'verified_by')) {
+                $payload['verified_by'] = Auth::id();
+            }
+
+            $payment->update($payload);
+
+            BagiHasilService::splitPayment(
+                'usaha',
+                $payment->id_dana_punia,
+                $paymentBanjarId,
+                (float) $payment->jumlah_dana,
+                'transfer',
+                (string) ($payment->fresh()->tanggal_pembayaran ?: now()->toDateTimeString())
+            );
+
+            return redirect()->route('public.payment_result', [
+                'order_id' => $request->order_id,
+                'type' => $request->type,
+            ])->with('success', 'Pembayaran transfer usaha berhasil diverifikasi.');
+        }
+
+        if (!preg_match('/^TM-(\d+)$/i', trim((string) $request->order_id), $matches)) {
+            return redirect()->back()->with('error', 'Kode pembayaran pendatang tidak valid.');
+        }
+
+        $payment = PuniaPendatang::with('pendatang')->findOrFail((int) $matches[1]);
+        $paymentBanjarId = $payment->pendatang?->id_data_banjar;
+
+        if (!$paymentBanjarId || (int) $paymentBanjarId !== (int) $banjar->id_data_banjar) {
+            abort(403);
+        }
+
+        $method = strtolower((string) $payment->metode_pembayaran);
+        if ($method !== 'transfer') {
+            return redirect()->back()->with('error', 'Pembayaran ini bukan transfer yang memerlukan verifikasi.');
+        }
+
+        if (($payment->status_verifikasi ?? null) === 'approved' || ($payment->status_pembayaran ?? null) === 'lunas') {
+            return redirect()->route('public.payment_result', [
+                'order_id' => $request->order_id,
+                'type' => $request->type,
+            ])->with('success', 'Pembayaran pendatang sudah diverifikasi sebelumnya.');
+        }
+
+        if (($payment->status_verifikasi ?? null) !== 'pending') {
+            return redirect()->back()->with('error', 'Status pembayaran pendatang ini tidak dapat diverifikasi lagi.');
+        }
+
+        $payload = [
+            'status_verifikasi' => 'approved',
+            'status_pembayaran' => 'lunas',
+            'tanggal_bayar' => $payment->tanggal_bayar ?: now(),
+            'catatan_verifikasi' => $this->buildVerificationNote(),
+        ];
+
+        if (Schema::hasColumn('tb_punia_pendatang', 'verified_by')) {
+            $payload['verified_by'] = Auth::id();
+        }
+
+        $payment->update($payload);
+
+        BagiHasilService::splitPayment(
+            'tamiu',
+            $payment->id_punia_pendatang,
+            $paymentBanjarId,
+            (float) $payment->nominal,
+            'transfer',
+            optional($payment->fresh()->tanggal_bayar)->toDateTimeString() ?: now()->toDateTimeString()
+        );
+
+        return redirect()->route('public.payment_result', [
+            'order_id' => $request->order_id,
+            'type' => $request->type,
+        ])->with('success', 'Pembayaran transfer pendatang berhasil diverifikasi.');
     }
 
     public function bayarPuniaPendatang(Request $request, $id)

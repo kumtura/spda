@@ -19,9 +19,9 @@ class PaymentOrderService
         }
 
         return match ($type) {
-            'punia_pendatang' => PuniaPendatang::with('pendatang')->find($id),
+            'punia_pendatang' => PuniaPendatang::with(['pendatang', 'verifiedBy'])->find($id),
             'punia_pura' => PuniaPura::find($id),
-            'punia' => Danapunia::find($id),
+            'punia' => Danapunia::with(['usaha.detail', 'verifiedBy'])->find($id),
             'donasi' => Sumbangan::find($id),
             default => null,
         };

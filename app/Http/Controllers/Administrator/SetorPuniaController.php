@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Administrator;
 
 use Illuminate\Routing\Controller as BaseController;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,10 @@ class SetorPuniaController extends BaseController
 {
     public function index(Request $request)
     {
+        if (Schema::hasTable('tb_riwayat_bagi_hasil') && Schema::hasTable('tb_saldo_kas')) {
+            BagiHasilService::synchronizeHistoricalData();
+        }
+
         $banjarList = Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
         $filterBanjar = $request->get('banjar', '');
         $filterJenis = $request->get('jenis', '');
@@ -111,6 +116,51 @@ class SetorPuniaController extends BaseController
 
         $riwayat = $query->orderBy('tanggal_setor', 'desc')->get();
 
+        $alokasiHistory = collect([]);
+        if ($hasRiwayatTable) {
+            $alokasiQuery = RiwayatBagiHasil::with('banjar')
+                ->where('aktif', 1);
+
+            if ($filterBanjar) {
+                $alokasiQuery->where('id_data_banjar', $filterBanjar);
+            }
+
+            $alokasiRows = $alokasiQuery->orderBy('tanggal', 'desc')->orderBy('id_riwayat', 'desc')->get();
+
+            $tamiuIds = $alokasiRows->where('jenis_punia', 'tamiu')->pluck('id_pembayaran')->unique()->values();
+            $usahaIds = $alokasiRows->where('jenis_punia', 'usaha')->pluck('id_pembayaran')->unique()->values();
+
+            $tamiuMap = PuniaPendatang::with('pendatang:id_pendatang,nama')
+                ->whereIn('id_punia_pendatang', $tamiuIds)
+                ->get()
+                ->keyBy('id_punia_pendatang');
+
+            $usahaMap = Danapunia::with('usaha.detail:id_detail_usaha,nama_usaha,id_banjar')
+                ->whereIn('id_dana_punia', $usahaIds)
+                ->get()
+                ->keyBy('id_dana_punia');
+
+            $alokasiHistory = $alokasiRows->map(function ($row) use ($tamiuMap, $usahaMap) {
+                $source = null;
+                $sourceName = '-';
+
+                if ($row->jenis_punia === 'tamiu') {
+                    $source = $tamiuMap->get($row->id_pembayaran);
+                    $sourceName = $source?->pendatang?->nama ?: '-';
+                } else {
+                    $source = $usahaMap->get($row->id_pembayaran);
+                    $sourceName = $source?->usaha?->detail?->nama_usaha ?: $source?->nama_donatur ?: '-';
+                }
+
+                $row->subjek_nama = $sourceName;
+                $row->subjek_label = $row->jenis_punia === 'tamiu' ? 'Krama Tamiu' : 'Unit Usaha';
+                $row->tanggal_transaksi = $source?->tanggal_bayar
+                    ?: (!empty($source?->tanggal_pembayaran) ? Carbon::parse($source->tanggal_pembayaran) : $row->tanggal);
+
+                return $row;
+            });
+        }
+
         // Summary totals
         $totalSetorDiterima = SetorPunia::where('aktif', 1)->where('status', 'diterima')->sum('nominal');
         $totalPending = SetorPunia::where('aktif', 1)->where('status', 'pending')->sum('nominal');
@@ -120,7 +170,7 @@ class SetorPuniaController extends BaseController
             'saldoDesa', 'banjarSaldos', 'totalSaldoBanjar',
             'totalCashTamiu', 'totalCashUsaha', 'totalCashAll',
             'totalOnlineTamiu', 'totalOnlineUsaha', 'totalOnlineAll',
-            'riwayat', 'totalSetorDiterima', 'totalPending'
+            'riwayat', 'alokasiHistory', 'totalSetorDiterima', 'totalPending'
         ));
     }
 
@@ -188,40 +238,11 @@ class SetorPuniaController extends BaseController
         $setor->verified_at = now();
         $setor->catatan_verifikasi = $request->catatan;
 
-        // If accepted, process the saldo transfer
-        if ($request->action === 'diterima' && $setor->jenis_alur) {
-            switch ($setor->jenis_alur) {
-                case 'penagih_ke_banjar':
-                    // Cash already added to banjar saldo via BagiHasilService::splitPayment
-                    // This is just confirming the deposit was received
-                    break;
-                case 'banjar_ke_desa':
-                    BagiHasilService::setorBanjarKeDesa($setor->id_data_banjar, $setor->nominal);
-                    // Mark riwayat bagi hasil records as settled for desa portion
-                    RiwayatBagiHasil::where('id_data_banjar', $setor->id_data_banjar)
-                        ->where('aktif', 1)
-                        ->where('metode_pembayaran', 'cash')
-                        ->where('status_setor_desa', 'pending')
-                        ->update(['status_setor_desa' => 'selesai']);
-                    break;
-                case 'desa_tarik_pg':
-                    BagiHasilService::desaTarikPG($setor->nominal);
-                    break;
-                case 'desa_ke_banjar':
-                    if ($setor->id_data_banjar_tujuan) {
-                        BagiHasilService::setorDesaKeBanjar($setor->id_data_banjar_tujuan, $setor->nominal);
-                        // Mark riwayat bagi hasil records as settled for banjar portion
-                        RiwayatBagiHasil::where('id_data_banjar', $setor->id_data_banjar_tujuan)
-                            ->where('aktif', 1)
-                            ->whereIn('metode_pembayaran', ['xendit', 'online', 'qris'])
-                            ->where('status_setor_banjar', 'pending')
-                            ->update(['status_setor_banjar' => 'selesai']);
-                    }
-                    break;
-            }
-        }
-
         $setor->save();
+
+        if ($request->action === 'diterima' && Schema::hasTable('tb_riwayat_bagi_hasil') && Schema::hasTable('tb_saldo_kas')) {
+            BagiHasilService::synchronizeHistoricalData();
+        }
 
         $msg = $request->action === 'diterima' ? 'Setoran diverifikasi dan diterima.' : 'Setoran ditolak.';
         return redirect('administrator/setor_punia')->with('success', $msg);

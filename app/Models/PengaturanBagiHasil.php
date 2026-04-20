@@ -34,14 +34,18 @@ class PengaturanBagiHasil extends Model
      * Get the active percentage setting for a given punia type and banjar.
      * Priority: specific banjar setting > global setting.
      */
-    public static function getPersentase($jenisPunia, $idDataBanjar = null)
+    public static function getPersentase($jenisPunia, $idDataBanjar = null, $tanggal = null)
     {
+        $effectiveDate = $tanggal
+            ? \Carbon\Carbon::parse($tanggal)->toDateString()
+            : now()->toDateString();
+
         // 1. Check for specific banjar override
         if ($idDataBanjar) {
             $specific = self::where('jenis_punia', $jenisPunia)
                 ->where('id_data_banjar', $idDataBanjar)
                 ->where('aktif', 1)
-                ->where('berlaku_sejak', '<=', now()->toDateString())
+                ->where('berlaku_sejak', '<=', $effectiveDate)
                 ->orderBy('berlaku_sejak', 'desc')
                 ->first();
 
@@ -54,7 +58,7 @@ class PengaturanBagiHasil extends Model
         $global = self::where('jenis_punia', $jenisPunia)
             ->whereNull('id_data_banjar')
             ->where('aktif', 1)
-            ->where('berlaku_sejak', '<=', now()->toDateString())
+            ->where('berlaku_sejak', '<=', $effectiveDate)
             ->orderBy('berlaku_sejak', 'desc')
             ->first();
 

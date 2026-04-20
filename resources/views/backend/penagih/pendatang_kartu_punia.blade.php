@@ -160,7 +160,7 @@
     <div x-show="showPaymentModal" 
          x-cloak
          x-transition.opacity
-         class="fixed inset-0 z-[90] flex items-end justify-center"
+         class="fixed inset-0 z-[90] flex items-end justify-center overflow-hidden"
             style="display: none; z-index: 9999;">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px]" @click="showPaymentModal = false"></div>
 
@@ -170,8 +170,8 @@
              x-transition:leave="transition ease-in duration-200 transform"
              x-transition:leave-start="translate-y-0"
              x-transition:leave-end="translate-y-full"
-             class="relative bg-white rounded-t-[28px] shadow-2xl w-full max-w-[480px] max-h-[calc(100vh-5rem)] overflow-y-auto p-5 pb-[calc(2rem+env(safe-area-inset-bottom))]"
-               style="z-index: 10000; max-height: calc(100vh - 5rem); padding-bottom: calc(2rem + env(safe-area-inset-bottom));"
+                         class="relative bg-white rounded-t-[28px] rounded-b-none shadow-2xl w-full max-w-[480px] max-h-[calc(100vh-5rem)] overflow-y-auto px-5 pt-5 pb-5"
+                             style="z-index: 10000; max-height: calc(100vh - 5rem); margin-bottom: 0; padding-bottom: 1.25rem;"
              @click.stop>
             <div class="w-14 h-1.5 bg-slate-200 rounded-full mx-auto mb-4"></div>
 

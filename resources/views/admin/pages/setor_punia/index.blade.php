@@ -172,6 +172,71 @@
         </div>
     </div>
 
+    <!-- Riwayat Alokasi Transaksi Punia -->
+    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Riwayat Alokasi Transaksi Punia</h3>
+                <p class="text-[11px] text-slate-400 mt-1">Menampilkan histori semua pembayaran Krama Tamiu dan Unit Usaha yang sudah disinkronkan ke banjar masing-masing.</p>
+            </div>
+            <span class="text-xs font-bold text-slate-400">{{ $alokasiHistory->count() }} transaksi</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/50">
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tanggal</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Jenis</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Banjar</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Metode</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Bagian Desa</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Bagian Banjar</th>
+                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status Alokasi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($alokasiHistory as $item)
+                    @php
+                        $isOnlineAllocation = in_array(strtolower($item->metode_pembayaran), ['xendit', 'online', 'qris'], true);
+                        $statusText = $isOnlineAllocation
+                            ? ($item->status_setor_banjar === 'selesai' ? 'Banjar Selesai' : 'Menunggu Setor Banjar')
+                            : ($item->status_setor_desa === 'selesai' ? 'Desa Selesai' : 'Menunggu Setor Desa');
+                    @endphp
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-5 py-4 text-xs font-bold text-slate-600">{{ optional($item->tanggal_transaksi)->format('d M Y H:i') ?: optional($item->tanggal)->format('d M Y H:i') }}</td>
+                        <td class="px-5 py-4">
+                            <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-lg {{ $item->jenis_punia === 'tamiu' ? 'bg-blue-50 text-primary-light border border-blue-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100' }} inline-flex items-center gap-1">
+                                <i class="bi {{ $item->jenis_punia === 'tamiu' ? 'bi-people' : 'bi-building' }} text-[8px]"></i>
+                                {{ $item->subjek_label }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 text-xs font-bold text-slate-700">{{ $item->subjek_nama }}</td>
+                        <td class="px-5 py-4 text-xs font-medium text-slate-600">{{ $item->banjar->nama_banjar ?? '-' }}</td>
+                        <td class="px-5 py-4 text-[10px] font-bold text-slate-500 uppercase">{{ $item->metode_pembayaran ?: '-' }}</td>
+                        <td class="px-5 py-4 text-right text-xs font-bold text-slate-700">Rp {{ number_format($item->nominal_total, 0, ',', '.') }}</td>
+                        <td class="px-5 py-4 text-right text-xs font-bold text-primary-light">Rp {{ number_format($item->nominal_desa, 0, ',', '.') }}</td>
+                        <td class="px-5 py-4 text-right text-xs font-bold text-emerald-600">Rp {{ number_format($item->nominal_banjar, 0, ',', '.') }}</td>
+                        <td class="px-5 py-4 text-center">
+                            <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg {{ str_contains($statusText, 'Selesai') ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600' }}">{{ $statusText }}</span>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="9" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center gap-2">
+                                <i class="bi bi-diagram-3 text-4xl text-slate-200"></i>
+                                <p class="text-sm text-slate-400 font-medium">Belum ada riwayat alokasi transaksi yang bisa ditampilkan.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Filter -->
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div class="flex flex-wrap items-center gap-3">

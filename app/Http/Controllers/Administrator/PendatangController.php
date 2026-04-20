@@ -288,7 +288,7 @@ class PendatangController extends Controller
     {
         $pendatang = Pendatang::findOrFail($id);
         
-        if ($pendatang->punia_rutin_bulanan <= 0) {
+        if ($pendatang->effective_punia_nominal <= 0) {
             return redirect()->back()->with('error', 'Nominal punia rutin bulanan belum diatur');
         }
         
@@ -310,7 +310,7 @@ class PendatangController extends Controller
             'jenis_punia' => 'rutin',
             'periode_rutin' => 'bulanan',
             'bulan_tahun' => $bulanTahun,
-            'nominal' => $pendatang->punia_rutin_bulanan,
+            'nominal' => $pendatang->effective_punia_nominal,
             'keterangan' => 'Punia rutin bulan ' . now()->translatedFormat('F Y'),
             'petugas_id' => auth()->id()
         ]);
@@ -401,7 +401,7 @@ class PendatangController extends Controller
                 'jenis_punia' => 'rutin',
                 'periode_rutin' => 'bulanan',
                 'bulan_tahun' => $bulanTahun,
-                'nominal' => $pendatang->punia_rutin_bulanan,
+                'nominal' => $pendatang->effective_punia_nominal,
                 'keterangan' => 'Punia rutin bulan ' . \Carbon\Carbon::createFromFormat('Y-m', $bulanTahun)->translatedFormat('F Y'),
                 'petugas_id' => auth()->id()
             ]);
@@ -715,7 +715,7 @@ class PendatangController extends Controller
     {
         $pendatang = Pendatang::findOrFail($id);
 
-        if ($pendatang->punia_rutin_bulanan <= 0) {
+        if ($pendatang->effective_punia_nominal <= 0) {
             return redirect()->back()->with('error', 'Nominal punia rutin bulanan belum diatur');
         }
 
@@ -736,7 +736,7 @@ class PendatangController extends Controller
             'jenis_punia' => 'rutin',
             'periode_rutin' => 'bulanan',
             'bulan_tahun' => $bulanTahun,
-            'nominal' => $pendatang->punia_rutin_bulanan,
+            'nominal' => $pendatang->effective_punia_nominal,
             'keterangan' => 'Punia rutin bulan ' . now()->translatedFormat('F Y'),
             'petugas_id' => auth()->id()
         ]);
@@ -812,7 +812,7 @@ class PendatangController extends Controller
                 'jenis_punia' => 'rutin',
                 'periode_rutin' => 'bulanan',
                 'bulan_tahun' => $bulanTahun,
-                'nominal' => $pendatang->punia_rutin_bulanan,
+                'nominal' => $pendatang->effective_punia_nominal,
                 'keterangan' => 'Punia rutin bulan ' . \Carbon\Carbon::createFromFormat('Y-m', $bulanTahun)->translatedFormat('F Y'),
                 'petugas_id' => auth()->id()
             ]);

@@ -60,7 +60,9 @@
     showPayModal: false,
     payMonth: null,
     payMonthName: '',
-    payProcessing: false
+    payProcessing: false,
+    payAmount: {{ (float) ($rows->minimal_bayar ?? 0) }},
+    payDate: '{{ date('Y-m-d') }}'
 }">
     <!-- Header -->
     <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-6 pb-8 text-white relative overflow-hidden">
@@ -266,7 +268,7 @@
                                         @if($isPaid)
                                         <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100">Lunas</span>
                                         @else
-                                        <button @click="payMonth = {{ $num }}; payMonthName = '{{ $name }}'; showPayModal = true"
+                                        <button @click="payMonth = {{ $num }}; payMonthName = '{{ $name }}'; payAmount = {{ (float) ($rows->minimal_bayar ?? 0) }}; payDate = '{{ date('Y-m-d') }}'; showPayModal = true"
                                                 class="h-7 w-7 bg-[#00a6eb] text-white rounded-lg flex items-center justify-center hover:bg-[#0090d0] transition-all" title="Bayar Manual">
                                             <i class="bi bi-wallet2 text-xs"></i>
                                         </button>
@@ -345,66 +347,84 @@
         </div>
     </div>
 
-    <!-- Manual Payment Modal -->
+    <!-- Payment Modal -->
     <div x-show="showPayModal" x-cloak class="fixed inset-0 z-50 flex items-end justify-center">
         <div class="absolute inset-0 bg-black/40" @click="showPayModal = false"></div>
         <div class="relative bg-white rounded-t-2xl w-full max-w-[480px] max-h-[85vh] overflow-y-auto p-5 pb-8 shadow-xl" @click.stop>
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-black text-slate-800">Bayar Manual - <span x-text="payMonthName"></span> {{ $currentYear }}</h3>
+                <h3 class="text-sm font-black text-slate-800">Pembayaran Iuran - <span x-text="payMonthName"></span> {{ $selectedYear }}</h3>
                 <button @click="showPayModal = false" class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">
                     <i class="bi bi-x-lg text-xs text-slate-500"></i>
                 </button>
             </div>
 
-            <form action="{{ url('administrator/penagih/usaha/bayar-manual') }}" method="POST" enctype="multipart/form-data"
+            <div class="space-y-4">
+                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nominal (Rp)</label>
+                        <input type="number" x-model="payAmount" min="1000"
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Tanggal Pembayaran Tunai</label>
+                        <input type="date" x-model="payDate"
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none">
+                    </div>
+                </div>
+
+                <button type="button" @click="payProcessing = true; $refs.usahaCashForm.submit()"
+                        class="w-full text-left bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:bg-slate-50/50 transition-all group">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
+                            <i class="bi bi-cash-coin text-slate-400 text-xl group-hover:text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Tunai</h4>
+                            <p class="text-[10px] text-slate-400">Catat pembayaran tunai langsung</p>
+                        </div>
+                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-transform group-hover:translate-x-1"></i>
+                    </div>
+                </button>
+
+                <button type="button" @click="payProcessing = true; $refs.usahaOnlineForm.submit()"
+                        class="w-full text-left bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:bg-slate-50/50 transition-all group">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
+                            <i class="bi bi-phone text-slate-400 text-xl group-hover:text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Online Payment</h4>
+                            <p class="text-[10px] text-slate-400">Lanjut ke metode pembayaran Xendit</p>
+                        </div>
+                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-transform group-hover:translate-x-1"></i>
+                    </div>
+                </button>
+            </div>
+
+            <form x-ref="usahaCashForm" action="{{ url('administrator/penagih/usaha/bayar-manual') }}" method="POST" style="display:none"
                   @submit="payProcessing = true">
                 @csrf
                 <input type="hidden" name="id_usaha" value="{{ $rows->id_usaha }}">
-                <input type="hidden" name="tahun" value="{{ $currentYear }}">
+                <input type="hidden" name="tahun" value="{{ $selectedYear }}">
                 <input type="hidden" :name="'bulan'" :value="payMonth">
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nominal (Rp)</label>
-                        <input type="number" name="jumlah_dana" required min="1000"
-                               value="{{ $rows->minimal_bayar ?? '' }}"
-                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Tanggal Pembayaran</label>
-                        <input type="date" name="tanggal_pembayaran" required
-                               value="{{ date('Y-m-d') }}"
-                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Metode Pembayaran</label>
-                        <select name="metode_pembayaran" required
-                                class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none">
-                            <option value="tunai">Tunai</option>
-                            <option value="transfer">Transfer Bank</option>
-                            <option value="qris">QRIS</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Bukti Pembayaran (opsional)</label>
-                        <input type="file" name="bukti_pembayaran" accept="image/*"
-                               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-600">
-                    </div>
-
-                    <button type="submit" :disabled="payProcessing"
-                            class="w-full bg-[#00a6eb] text-white font-bold text-xs py-3 rounded-xl hover:bg-[#0090d0] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                        <template x-if="!payProcessing">
-                            <span><i class="bi bi-check-circle mr-1"></i> Simpan Pembayaran</span>
-                        </template>
-                        <template x-if="payProcessing">
-                            <span><i class="bi bi-arrow-repeat animate-spin mr-1"></i> Menyimpan...</span>
-                        </template>
-                    </button>
-                </div>
+                <input type="hidden" name="jumlah_dana" :value="payAmount">
+                <input type="hidden" name="tanggal_pembayaran" :value="payDate">
+                <input type="hidden" name="metode_pembayaran" value="tunai">
             </form>
+
+            <form x-ref="usahaOnlineForm" action="{{ url('administrator/penagih/usaha/bayar-online') }}" method="POST" style="display:none">
+                @csrf
+                <input type="hidden" name="id_usaha" value="{{ $rows->id_usaha }}">
+                <input type="hidden" name="tahun" value="{{ $selectedYear }}">
+                <input type="hidden" :name="'bulan'" :value="payMonth">
+                <input type="hidden" name="jumlah_dana" :value="payAmount">
+            </form>
+
+            <div x-show="payProcessing" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+                <i class="bi bi-arrow-repeat animate-spin text-4xl text-[#00a6eb] mb-3"></i>
+                <p class="text-xs font-bold text-slate-600">Sedang diproses...</p>
+            </div>
         </div>
     </div>
 </div>

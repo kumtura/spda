@@ -185,7 +185,7 @@
                 <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-2">
                     <div class="flex items-center justify-between">
                         <span class="text-[10px] text-slate-400">Nominal</span>
-                        <span class="text-sm font-bold text-slate-800">Rp {{ number_format($pendatang->punia_rutin_bulanan, 0, ',', '.') }}</span>
+                        <span class="text-sm font-bold text-slate-800">Rp {{ number_format($pendatang->effective_punia_nominal, 0, ',', '.') }}</span>
                     </div>
                 </div>
 
@@ -204,16 +204,16 @@
                     </div>
                 </button>
 
-                <!-- QRIS -->
-                <button type="button" @click="processing = true; $refs.paymentForm.metode_pembayaran.value = 'qris'; $refs.paymentForm.submit()"
+                <!-- Online Payment -->
+                <button type="button" @click="processing = true; $refs.onlinePaymentForm.submit()"
                    class="w-full text-left bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:bg-slate-50/50 transition-all group">
                     <div class="flex items-center gap-4">
                         <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
-                            <i class="bi bi-qr-code text-slate-400 text-xl group-hover:text-white"></i>
+                            <i class="bi bi-phone text-slate-400 text-xl group-hover:text-white"></i>
                         </div>
                         <div class="flex-1">
-                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Scan QRIS</h4>
-                            <p class="text-[10px] text-slate-400">Metode QRIS</p>
+                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Online Payment</h4>
+                            <p class="text-[10px] text-slate-400">Lanjut ke metode pembayaran Xendit</p>
                         </div>
                         <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-transform group-hover:translate-x-1"></i>
                     </div>
@@ -233,6 +233,13 @@
                 <input type="hidden" name="bulan" x-model="selectedMonth">
                 <input type="hidden" name="tahun" x-model="selectedYear">
                 <input type="hidden" name="metode_pembayaran">
+            </form>
+
+            <form x-ref="onlinePaymentForm" action="{{ url('administrator/penagih/pendatang/kartu-punia/online') }}" method="POST" style="display:none">
+                @csrf
+                <input type="hidden" name="id_pendatang" value="{{ $pendatang->id_pendatang }}">
+                <input type="hidden" name="bulan" x-model="selectedMonth">
+                <input type="hidden" name="tahun" x-model="selectedYear">
             </form>
 
             <!-- Footer -->

@@ -25,7 +25,7 @@
                     if($sumbangan && $sumbangan->id_program_donasi) {
                         $back_url = route('public.donasi.pembayaran', $sumbangan->id_program_donasi);
                     }
-                } elseif($type === 'punia') {
+                } elseif($type === 'punia' && empty($showCollectorQr)) {
                     $back_url = route('public.punia.pembayaran');
                 }
             }
@@ -72,6 +72,33 @@
                 </div>
             </div>
 
+            @if(!empty($paymentContext['subject_name']) || !empty($paymentContext['period_label']))
+            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-2">
+                @if(!empty($paymentContext['subject_name']))
+                <div class="flex items-center justify-between gap-3">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ $paymentContext['subject_label'] ?? 'Atas Nama' }}</span>
+                    <span class="text-xs font-bold text-slate-800 text-right">{{ $paymentContext['subject_name'] }}</span>
+                </div>
+                @endif
+                @if(!empty($paymentContext['period_label']))
+                <div class="flex items-center justify-between gap-3">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Periode</span>
+                    <span class="text-xs font-bold text-slate-800 text-right">{{ $paymentContext['period_label'] }}</span>
+                </div>
+                @endif
+            </div>
+            @endif
+
+            @if($showCollectorQr && $shareUrl)
+            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center gap-4">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={{ urlencode($shareUrl) }}" class="h-16 w-16 rounded-xl bg-white p-1 border border-blue-100 shrink-0" alt="QR URL pembayaran">
+                <div class="min-w-0">
+                    <p class="text-[10px] font-bold text-[#00a6eb] uppercase tracking-widest mb-1">QR URL Pembayaran</p>
+                    <p class="text-[10px] text-slate-600 leading-relaxed">Scan QR kecil ini di perangkat pembayar untuk membuka halaman pembayaran dengan ID transaksi yang sama.</p>
+                </div>
+            </div>
+            @endif
+
         <form id="paymentForm" action="{{ route('public.payment_initiate') }}" method="POST">
             @csrf
             <input type="hidden" name="amount" value="{{ $amount }}">
@@ -87,6 +114,7 @@
                 @endphp
 
                 <!-- Transfer Manual -->
+                @if($showManualOption)
                 <div class="space-y-3">
                     <div class="flex items-center justify-between px-1">
                         <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Transfer Manual</h3>
@@ -105,6 +133,7 @@
                         </a>
                     </div>
                 </div>
+                @endif
 
                 <!-- Instant Payment -->
                 @if($instantPayments->count() > 0)

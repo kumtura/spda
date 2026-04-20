@@ -277,6 +277,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/penagih/pendatang/kartu-punia/print/{id}', 'Administrator\PenagihController@printKartuPunia');
             Route::get('/penagih/pendatang/kartu-punia/{id}', 'Administrator\PenagihController@kartuPunia');
             Route::post('/penagih/pendatang/kartu-punia/bayar', 'Administrator\PenagihController@bayarKartuPunia');
+            Route::post('/penagih/pendatang/kartu-punia/online', 'Administrator\PenagihController@initiateKartuPuniaOnline');
             Route::post('/penagih/pendatang/kartu-punia/hapus', 'Administrator\PenagihController@hapusKartuPunia');
             Route::post('/penagih/pendatang/punia/bayar/{id}', 'Administrator\PenagihController@bayarPuniaPendatang');
             Route::get('/penagih/pendatang/generate-tagihan/{id}', 'Administrator\PenagihController@generateTagihan');
@@ -286,6 +287,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::post('/penagih/usaha/store', 'Administrator\PenagihController@usahaStore');
             Route::get('/penagih/usaha/detail/{id}', 'Administrator\PenagihController@usahaDetail');
             Route::post('/penagih/usaha/bayar-manual', 'Administrator\PenagihController@usahaBayarManual');
+            Route::post('/penagih/usaha/bayar-online', 'Administrator\PenagihController@usahaInitiateOnline');
         });
 
 		// Karyawan / Tenaga Kerja

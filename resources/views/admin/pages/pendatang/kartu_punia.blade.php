@@ -85,7 +85,7 @@
                 </div>
                 <div>
                     <p class="text-[10px] font-black text-slate-400 uppercase">Tarif Bulanan</p>
-                    <p class="text-lg font-black text-slate-800">Rp {{ number_format($pendatang->punia_rutin_bulanan, 0, ',', '.') }}</p>
+                    <p class="text-lg font-black text-slate-800">Rp {{ number_format($pendatang->effective_punia_nominal, 0, ',', '.') }}</p>
                 </div>
             </div>
         </div>
@@ -182,7 +182,7 @@
                 <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 mb-2">
                     <div class="flex items-center justify-between">
                         <span class="text-xs text-slate-400">Nominal</span>
-                        <span class="text-sm font-bold text-slate-800">Rp {{ number_format($pendatang->punia_rutin_bulanan, 0, ',', '.') }}</span>
+                        <span class="text-sm font-bold text-slate-800">Rp {{ number_format($pendatang->effective_punia_nominal, 0, ',', '.') }}</span>
                     </div>
                 </div>
                 <button type="button" @click="processing = true; $refs.paymentForm.metode_pembayaran.value = 'cash'; $refs.paymentForm.submit()"

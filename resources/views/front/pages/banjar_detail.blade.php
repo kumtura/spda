@@ -30,33 +30,27 @@
         <div>
             <h3 class="text-xs font-black text-slate-600 uppercase tracking-widest mb-3">Informasi Utama</h3>
             <div class="bg-white rounded-2xl border border-slate-100 p-5 space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center">
-                            <i class="bi bi-people text-[#00a6eb]"></i>
+                <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5 sm:p-3 text-center">
+                        <div class="h-8 w-8 sm:h-9 sm:w-9 mx-auto bg-[#00a6eb]/10 rounded-lg flex items-center justify-center mb-1.5 sm:mb-2">
+                            <i class="bi bi-people text-[#00a6eb] text-xs sm:text-sm"></i>
                         </div>
-                        <div>
-                            <p class="text-[9px] text-slate-400 uppercase tracking-widest">Krama Tamiu</p>
-                            <p class="text-lg font-black text-slate-800">{{ $kramaTamiu }}</p>
-                        </div>
+                        <p class="text-[7px] sm:text-[8px] text-slate-400 uppercase tracking-wide sm:tracking-widest">Krama Tamiu</p>
+                        <p class="text-sm sm:text-base font-black text-slate-800 mt-0.5">{{ $kramaTamiu }}</p>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center">
-                            <i class="bi bi-ticket-perforated text-[#00a6eb]"></i>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5 sm:p-3 text-center">
+                        <div class="h-8 w-8 sm:h-9 sm:w-9 mx-auto bg-[#00a6eb]/10 rounded-lg flex items-center justify-center mb-1.5 sm:mb-2">
+                            <i class="bi bi-ticket-perforated text-[#00a6eb] text-xs sm:text-sm"></i>
                         </div>
-                        <div>
-                            <p class="text-[9px] text-slate-400 uppercase tracking-widest">Tiket Wisata</p>
-                            <p class="text-lg font-black text-slate-800">{{ count($tiketWisata) }}</p>
-                        </div>
+                        <p class="text-[7px] sm:text-[8px] text-slate-400 uppercase tracking-wide sm:tracking-widest">Tiket Wisata</p>
+                        <p class="text-sm sm:text-base font-black text-slate-800 mt-0.5">{{ count($tiketWisata) }}</p>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 bg-[#00a6eb]/10 rounded-lg flex items-center justify-center">
-                            <i class="bi bi-building text-[#00a6eb]"></i>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5 sm:p-3 text-center">
+                        <div class="h-8 w-8 sm:h-9 sm:w-9 mx-auto bg-[#00a6eb]/10 rounded-lg flex items-center justify-center mb-1.5 sm:mb-2">
+                            <i class="bi bi-building text-[#00a6eb] text-xs sm:text-sm"></i>
                         </div>
-                        <div>
-                            <p class="text-[9px] text-slate-400 uppercase tracking-widest">Pura</p>
-                            <p class="text-lg font-black text-slate-800">{{ count($pura) }}</p>
-                        </div>
+                        <p class="text-[7px] sm:text-[8px] text-slate-400 uppercase tracking-wide sm:tracking-widest">Pura</p>
+                        <p class="text-sm sm:text-base font-black text-slate-800 mt-0.5">{{ count($pura) }}</p>
                     </div>
                 </div>
             </div>
@@ -104,14 +98,48 @@
             <h3 class="text-xs font-black text-slate-600 uppercase tracking-widest mb-3">Tiket Wisata Terdaftar</h3>
             <div class="space-y-3">
                 @foreach($tiketWisata as $tiket)
-                <div class="bg-white rounded-2xl border border-slate-100 p-4">
-                    <p class="text-sm font-black text-slate-800 mb-1">{{ $tiket->nama_objek }}</p>
-                    @if($tiket->deskripsi)
-                    <p class="text-xs text-slate-500 mb-2 line-clamp-2">{{ $tiket->deskripsi }}</p>
-                    @endif
-                    @if($tiket->alamat)
-                    <p class="text-xs text-slate-500"><i class="bi bi-geo-alt mr-1 text-[#00a6eb]"></i>{{ $tiket->alamat }}</p>
-                    @endif
+                @php
+                    $minPrice = $tiket->kategoriTiket->min('harga') ?? $tiket->harga_tiket ?? 0;
+                @endphp
+                <div class="block bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md hover:border-[#00a6eb]/30 transition-all">
+                    <div class="flex gap-3 p-3">
+                        <div class="h-24 w-24 rounded-xl bg-slate-100 overflow-hidden shrink-0">
+                            @if(!empty($tiket->foto))
+                                <img src="{{ asset('storage/wisata/'.$tiket->foto) }}" class="w-full h-full object-cover" alt="{{ $tiket->nama_objek }}">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <i class="bi bi-ticket-perforated text-2xl text-slate-300"></i>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="flex-1 min-w-0 flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-sm font-black text-slate-800 leading-tight mb-1 line-clamp-2">{{ $tiket->nama_objek }}</h3>
+                                @if($tiket->alamat)
+                                <p class="text-[10px] text-slate-500 mb-1 line-clamp-1">
+                                    <i class="bi bi-geo-alt mr-1 text-[#00a6eb]"></i>{{ $tiket->alamat }}
+                                </p>
+                                @endif
+                                @if($tiket->deskripsi)
+                                <p class="text-[10px] text-slate-500 line-clamp-2">{{ $tiket->deskripsi }}</p>
+                                @endif
+                            </div>
+
+                            <div class="pt-2 mt-2 border-t border-slate-100 flex items-end justify-between gap-2">
+                                <div>
+                                    <p class="text-[8px] text-slate-400 uppercase">Mulai dari</p>
+                                    <p class="text-sm font-black text-[#00a6eb]">Rp {{ number_format($minPrice, 0, ',', '.') }}</p>
+                                </div>
+                                @if(!empty($tiket->slug))
+                                <a href="{{ url('wisata/' . $tiket->slug) }}" class="inline-flex items-center gap-1 text-[10px] font-bold text-[#00a6eb] hover:text-[#0090d0] transition-colors">
+                                    Lihat
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 @endforeach
             </div>

@@ -144,7 +144,7 @@
             
             <div class="flex items-center justify-between pt-2 border-t border-slate-100">
                 <div class="text-[10px] text-slate-500">
-                    Punia: <span class="font-medium text-slate-700">Rp {{ number_format($pendatang->use_global_punia ? $puniaGlobal : $pendatang->punia_rutin_bulanan, 0, ',', '.') }}/bln</span>
+                    Punia: <span class="font-medium text-slate-700">Rp {{ number_format($pendatang->effective_punia_nominal, 0, ',', '.') }}/bln</span>
                     @if($pendatang->use_global_punia)
                     <span class="text-[9px] text-slate-400 ml-1">(global)</span>
                     @endif
@@ -156,7 +156,7 @@
         </div>
 
         <!-- Generate Tagihan Bulan Ini -->
-        @if(!$tagihanBulanIni && $pendatang->punia_rutin_bulanan > 0 && $pendatang->status === 'aktif')
+        @if(!$tagihanBulanIni && $pendatang->effective_punia_nominal > 0 && $pendatang->status === 'aktif')
         <a href="{{ url('administrator/kelian/pendatang/generate-tagihan/'.$pendatang->id_pendatang) }}" 
            onclick="return confirm('Generate tagihan punia untuk bulan {{ now()->translatedFormat('F Y') }}?')"
            class="block w-full bg-[#00a6eb] text-white py-3 rounded-xl font-bold text-sm shadow-lg text-center">

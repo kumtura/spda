@@ -185,7 +185,7 @@
                 <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-2">
                     <div class="flex items-center justify-between">
                         <span class="text-[10px] text-slate-400">Nominal</span>
-                        <span class="text-sm font-bold text-slate-800">Rp {{ number_format($pendatang->punia_rutin_bulanan, 0, ',', '.') }}</span>
+                        <span class="text-sm font-bold text-slate-800">Rp {{ number_format($pendatang->effective_punia_nominal, 0, ',', '.') }}</span>
                     </div>
                 </div>
 

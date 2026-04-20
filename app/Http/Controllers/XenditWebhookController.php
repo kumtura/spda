@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Danapunia;
+use App\Models\PuniaPendatang;
 use App\Models\Sumbangan;
 use App\Models\PaymentSetting;
 use App\Models\Usaha;
@@ -112,6 +113,46 @@ class XenditWebhookController extends Controller
                 }
             } else {
                 Log::warning("Xendit Webhook: Punia Pura record NOT FOUND for {$external_id}");
+            }
+
+            Log::info('--- XENDIT WEBHOOK END ---');
+            return response()->json(['status' => 'success']);
+        }
+
+        if ($prefix === 'TM') {
+            $id_punia_pendatang = $parts[1] ?? null;
+            $puniaPendatang = $id_punia_pendatang
+                ? PuniaPendatang::with('pendatang')->find($id_punia_pendatang)
+                : null;
+
+            if (!$puniaPendatang) {
+                Log::warning("Xendit Webhook: Punia Pendatang record NOT FOUND for {$external_id}");
+                Log::info('--- XENDIT WEBHOOK END ---');
+                return response()->json(['status' => 'success']);
+            }
+
+            $success_statuses = ['PAID', 'SETTLED', 'COMPLETED', 'SUCCEEDED'];
+            if (in_array(strtoupper($status), $success_statuses)) {
+                $puniaPendatang->update([
+                    'status_pembayaran' => 'lunas',
+                    'metode_pembayaran' => 'xendit',
+                    'tanggal_bayar' => now(),
+                    'aktif' => '1',
+                ]);
+
+                $idBanjar = $puniaPendatang->pendatang->id_data_banjar ?? null;
+                if ($idBanjar) {
+                    BagiHasilService::splitPayment(
+                        'tamiu',
+                        $puniaPendatang->id_punia_pendatang,
+                        $idBanjar,
+                        $puniaPendatang->nominal,
+                        'xendit',
+                        now()->toDateString()
+                    );
+                }
+
+                Log::info("Xendit Webhook: Punia Pendatang #{$puniaPendatang->id_punia_pendatang} COMPLETED.");
             }
 
             Log::info('--- XENDIT WEBHOOK END ---');

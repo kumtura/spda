@@ -7,7 +7,9 @@
     $totalPaid = $pendatangList->where('payment_status', 'lunas')->sum(function($p) {
         return $p->payment_data ? $p->payment_data->nominal : 0;
     });
-    $totalTerutang = $pendatangList->where('payment_status', 'belum')->sum('punia_rutin_bulanan');
+    $totalTerutang = $pendatangList->where('payment_status', 'belum')->sum(function($p) {
+        return $p->effective_punia_nominal;
+    });
 @endphp
 
 <div id="admin-page-container" class="space-y-6" x-data="{ 
@@ -144,7 +146,7 @@
                             @if($p->payment_status == 'lunas')
                                 <span class="text-sm font-bold text-slate-700">Rp {{ number_format($p->payment_data->nominal, 0, ',', '.') }}</span>
                             @else
-                                <span class="text-sm font-medium text-slate-400 italic">Rp {{ number_format($p->punia_rutin_bulanan, 0, ',', '.') }}</span>
+                                <span class="text-sm font-medium text-slate-400 italic">Rp {{ number_format($p->effective_punia_nominal, 0, ',', '.') }}</span>
                             @endif
                         </td>
                         <td class="px-5 py-4 text-center">
@@ -170,7 +172,7 @@
                                     <i class="bi bi-wallet2 text-sm"></i>
                                 </a>
                                 @if($p->payment_status != 'lunas')
-                                <button @click="openPayModal('{{ $p->id_pendatang }}', '{{ $p->nama }}', selectedMonth, selectedYear, {{ $p->punia_rutin_bulanan }})" 
+                                <button @click="openPayModal('{{ $p->id_pendatang }}', '{{ $p->nama }}', selectedMonth, selectedYear, {{ $p->effective_punia_nominal }})" 
                                         class="h-8 px-3 bg-primary-light text-white rounded-lg text-[10px] font-bold hover:bg-primary-dark transition-all" title="Bayar Sekarang">
                                     <i class="bi bi-cash-coin mr-1"></i>Bayar
                                 </button>

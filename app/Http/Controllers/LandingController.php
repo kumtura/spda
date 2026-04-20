@@ -11,6 +11,7 @@ use App\Models\ObjekWisata;
 use App\Models\TiketWisata;
 use App\Models\KategoriTiket;
 use App\Models\TiketDetail;
+use App\Services\PaymentOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -332,12 +333,34 @@ class LandingController extends Controller
         $order_id = $request->order_id;
         $type = $request->type;
         $village = $this->getVillageData();
+        $paymentOrders = app(PaymentOrderService::class);
+        $record = ($order_id && $type) ? $paymentOrders->resolveRecord($type, $order_id) : null;
+
+        if ((!$amount || (float) $amount <= 0) && $record) {
+            $amount = $record->nominal ?? $record->jumlah_dana ?? 0;
+        }
+
+        $paymentContext = $paymentOrders->buildContext($type, $record);
+        $showCollectorQr = $request->query('context') === 'penagih';
+        $shareUrl = $showCollectorQr ? $request->fullUrl() : null;
+        $showManualOption = !$showCollectorQr;
 
         $xendit = new \App\Services\XenditService();
         $is_configured = $xendit->isConfigured();
         $channels = PaymentChannel::where('is_active', true)->get();
 
-        return view('front.pages.payment_methods', compact('amount', 'order_id', 'type', 'village', 'is_configured', 'channels'));
+        return view('front.pages.payment_methods', compact(
+            'amount',
+            'order_id',
+            'type',
+            'village',
+            'is_configured',
+            'channels',
+            'paymentContext',
+            'showCollectorQr',
+            'shareUrl',
+            'showManualOption'
+        ));
     }
 
     public function payment_manual(Request $request)

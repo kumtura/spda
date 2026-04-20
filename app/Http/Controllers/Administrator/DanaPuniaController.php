@@ -52,6 +52,7 @@ class DanaPuniaController extends BaseController
             $awal = $year."-".$monthPadded."-01";
             $akhir = $year."-".$monthPadded."-31";
             $monthKey = $year . '-' . $monthPadded;
+            $hasRiwayatBagiHasil = \Illuminate\Support\Facades\Schema::hasTable('tb_riwayat_bagi_hasil');
 
             // === GET PENGATURAN BAGI HASIL ===
             $pengaturanTamiu = \App\Models\PengaturanBagiHasil::where('jenis_punia', 'tamiu')
@@ -97,6 +98,19 @@ class DanaPuniaController extends BaseController
                 }
             }
 
+            if ($hasRiwayatBagiHasil) {
+                $totalUsahaDesa = (float) \App\Models\RiwayatBagiHasil::where('aktif', 1)
+                    ->where('jenis_punia', 'usaha')
+                    ->whereDate('tanggal', '>=', $awal)
+                    ->whereDate('tanggal', '<=', $akhir)
+                    ->sum('nominal_desa');
+                $totalUsahaBanjar = (float) \App\Models\RiwayatBagiHasil::where('aktif', 1)
+                    ->where('jenis_punia', 'usaha')
+                    ->whereDate('tanggal', '>=', $awal)
+                    ->whereDate('tanggal', '<=', $akhir)
+                    ->sum('nominal_banjar');
+            }
+
             // === KRAMA TAMIU DATA ===
             $pendatangAktif = Pendatang::where('aktif', '1')->where('status', 'aktif')->count();
             $tamiuPaid = PuniaPendatang::where('aktif', '1')
@@ -109,7 +123,18 @@ class DanaPuniaController extends BaseController
                 ->where('bulan_tahun', 'LIKE', $monthKey . '%')
                 ->sum('nominal');
             $totalTamiuDesa = 0; $totalTamiuBanjar = 0;
-            if ($pengaturanTamiu) {
+            if ($hasRiwayatBagiHasil) {
+                $totalTamiuDesa = (float) \App\Models\RiwayatBagiHasil::where('aktif', 1)
+                    ->where('jenis_punia', 'tamiu')
+                    ->whereDate('tanggal', '>=', $awal)
+                    ->whereDate('tanggal', '<=', $akhir)
+                    ->sum('nominal_desa');
+                $totalTamiuBanjar = (float) \App\Models\RiwayatBagiHasil::where('aktif', 1)
+                    ->where('jenis_punia', 'tamiu')
+                    ->whereDate('tanggal', '>=', $awal)
+                    ->whereDate('tanggal', '<=', $akhir)
+                    ->sum('nominal_banjar');
+            } elseif ($pengaturanTamiu) {
                 $totalTamiuDesa = $totalTamiu * $pengaturanTamiu->persen_desa / 100;
                 $totalTamiuBanjar = $totalTamiu * $pengaturanTamiu->persen_banjar / 100;
             }

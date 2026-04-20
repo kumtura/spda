@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Danapunia;
+use App\Models\PuniaPendatang;
 use App\Models\PuniaPura;
 use App\Models\Sumbangan;
+use App\Services\PaymentOrderService;
 use App\Services\XenditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -12,10 +14,12 @@ use Illuminate\Support\Facades\Log;
 class PaymentController extends Controller
 {
     protected $xendit;
+    protected $paymentOrders;
 
-    public function __construct(XenditService $xendit)
+    public function __construct(XenditService $xendit, PaymentOrderService $paymentOrders)
     {
         $this->xendit = $xendit;
+        $this->paymentOrders = $paymentOrders;
     }
 
 public function initiate(Request $request)
@@ -23,7 +27,7 @@ public function initiate(Request $request)
         $request->validate([
             'amount' => 'required|numeric',
             'order_id' => 'required|string',
-            'type' => 'required|in:punia,donasi,punia_pura',
+            'type' => 'required|in:punia,donasi,punia_pura,punia_pendatang',
             'method' => 'required|string'
         ]);
 
@@ -32,31 +36,23 @@ public function initiate(Request $request)
         $amount = $request->input('amount');
         $type = $request->input('type');
 
-        // Extract numeric ID dari order_id
-        $id_segments = explode('-', $order_id);
-        // For punia_pura: PP-{id_pura}-{id_punia_pura} → need segment [2]
-        // For others: PN-{id} or DN-{id} → need segment [1]
-        if ($type === 'punia_pura') {
-            $id_numeric = $id_segments[2] ?? null;
-        } else {
-            $id_numeric = $id_segments[1] ?? null;
-        }
+        $id_numeric = $this->paymentOrders->extractNumericId($type, $order_id);
 
         if (!$id_numeric) {
             return redirect()->back()->with('error', 'Format Order ID tidak valid.');
         }
 
-        // Cari record di database
-        if ($type === 'punia_pura') {
-            $record = PuniaPura::find($id_numeric);
-        } elseif ($type === 'punia') {
-            $record = Danapunia::find($id_numeric);
-        } else {
-            $record = Sumbangan::find($id_numeric);
-        }
+        $record = $this->paymentOrders->resolveRecord($type, $order_id);
 
         if (!$record) {
             return redirect()->back()->with('error', 'Data transaksi tidak ditemukan.');
+        }
+
+        if (in_array($record->status_pembayaran ?? null, ['completed', 'lunas'], true)) {
+            return redirect()->route('public.payment_result', [
+                'order_id' => $order_id,
+                'type' => $type,
+            ]);
         }
 
         $external_id = $order_id . '-' . time();
@@ -70,10 +66,13 @@ public function initiate(Request $request)
 
         $redirect_url = route('public.payment_result', ['order_id' => $order_id, 'type' => $type]);
 
+        $paymentContext = $this->paymentOrders->buildContext($type, $record);
+        $payerName = $paymentContext['subject_name'] ?? $record->nama_donatur ?? $record->nama ?? 'Anonim';
+
         // 1. Tembak Direct API (Tanpa fallback Invoice sama sekali)
         if (str_ends_with($method, '_VA')) {
             $bank_code = str_replace('_VA', '', $method); 
-            $response = $this->xendit->createVA($external_id, $bank_code, $record->nama ?? 'Anonim', $amount);
+            $response = $this->xendit->createVA($external_id, $bank_code, $payerName, $amount);
             
         } elseif (in_array($method, ['ID_OVO', 'ID_DANA', 'ID_SHOPEEPAY', 'ID_LINKAJA', 'ID_GOPAY'])) {
             $response = $this->xendit->createEWalletCharge($external_id, $amount, $method, $order_id, $redirect_url);
@@ -104,6 +103,8 @@ public function initiate(Request $request)
         // PuniaPura uses 'metode_pembayaran', others use 'metode'
         if ($type === 'punia_pura') {
             $updateData['metode_pembayaran'] = $method;
+        } elseif ($type === 'punia_pendatang') {
+            $updateData['metode_pembayaran'] = 'xendit';
         } else {
             $updateData['metode'] = $method;
         }
@@ -131,21 +132,11 @@ public function initiate(Request $request)
         $order_id = $request->order_id;
         $type = $request->type;
         $amount = $request->amount;
-        $id_segments = explode('-', $order_id);
-        $id_numeric = ($type === 'punia_pura') ? ($id_segments[2] ?? null) : ($id_segments[1] ?? null);
-
-        $record = null;
-        if ($type === 'punia_pura') {
-            $record = PuniaPura::find($id_numeric);
-        } elseif ($type === 'punia') {
-            $record = Danapunia::find($id_numeric);
-        } else {
-            $record = Sumbangan::find($id_numeric);
-        }
+        $record = $this->paymentOrders->resolveRecord($type, $order_id);
         if (!$record) return response()->json(['status' => 'error', 'message' => 'Record not found'], 404);
 
-        $payment_data = json_decode($record->payment_data, true);
-        $metode = $record->metode ?? $record->metode_pembayaran;
+        $payment_data = $this->paymentOrders->decodePaymentData($record);
+        $metode = $this->paymentOrders->extractMethodCode($record, $payment_data) ?? ($record->metode ?? $record->metode_pembayaran);
         
         // 1. If it's VA, call Xendit Simulator API
         if ($metode && str_contains($metode, '_VA')) {
@@ -178,25 +169,17 @@ public function initiate(Request $request)
     {
         $order_id = $request->order_id;
         $type = $request->type;
-        $id_segments = explode('-', $order_id);
-        $id_numeric = ($type === 'punia_pura') ? ($id_segments[2] ?? null) : ($id_segments[1] ?? null);
-
-        $record = null;
-        if ($type === 'punia_pura') {
-            $record = PuniaPura::find($id_numeric);
-        } elseif ($type === 'punia') {
-            $record = Danapunia::find($id_numeric);
-        } else {
-            $record = Sumbangan::find($id_numeric);
-        }
+        $record = $this->paymentOrders->resolveRecord($type, $order_id);
 
         if (!$record || !$record->payment_data) {
             return redirect()->route('public.home')->with('error', 'Transaksi tidak ditemukan.');
         }
 
-        $payment_data = json_decode($record->payment_data, true);
-        $method = $record->metode ?? $record->metode_pembayaran;
+        $payment_data = $this->paymentOrders->decodePaymentData($record);
+        $method = $this->paymentOrders->extractMethodCode($record, $payment_data) ?? ($record->metode ?? $record->metode_pembayaran);
         $is_sandbox = $this->xendit->isSandbox();
+        $isCompleted = in_array($record->status_pembayaran, ['completed', 'lunas'], true);
+        $paymentContext = $this->paymentOrders->buildContext($type, $record);
         
         // Get village data
         $settingsPath = storage_path('app/settings.json');
@@ -208,30 +191,28 @@ public function initiate(Request $request)
         // Get payment channel info from database
         $channel = \App\Models\PaymentChannel::where('code', $method)->first();
 
-        return view('front.pages.payment_result', compact('record', 'payment_data', 'method', 'village', 'order_id', 'type', 'is_sandbox', 'channel'));
+        return view('front.pages.payment_result', compact('record', 'payment_data', 'method', 'village', 'order_id', 'type', 'is_sandbox', 'channel', 'isCompleted', 'paymentContext'));
     }
 
     public function checkStatus($order_id)
     {
-        $id_segments = explode('-', $order_id);
-        // For PP-{id_pura}-{id_punia_pura} → need segment [2]
-        $id_numeric = str_contains($order_id, 'PP-') ? ($id_segments[2] ?? null) : ($id_segments[1] ?? null);
-        
-        $record = null;
-        if (str_contains($order_id, 'PP-')) {
-            $record = PuniaPura::find($id_numeric);
-        } elseif (str_contains($order_id, 'PN-')) {
-            $record = Danapunia::find($id_numeric);
-        } else {
-            $record = Sumbangan::find($id_numeric);
-        }
+        $type = str_contains($order_id, 'PP-')
+            ? 'punia_pura'
+            : (str_contains($order_id, 'TM-') ? 'punia_pendatang' : (str_contains($order_id, 'PN-') ? 'punia' : 'donasi'));
+
+        $record = $this->paymentOrders->resolveRecord($type, $order_id);
 
         if (!$record) {
             return response()->json(['status' => 'not_found'], 404);
         }
 
+        $status = $record->status_pembayaran;
+        if ($status === 'lunas') {
+            $status = 'completed';
+        }
+
         return response()->json([
-            'status' => $record->status_pembayaran,
+            'status' => $status,
         ]);
     }
 }

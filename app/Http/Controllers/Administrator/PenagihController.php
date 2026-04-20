@@ -31,6 +31,51 @@ class PenagihController extends BaseController
         return Banjar::where('id_data_banjar', $user->id_banjar)->first();
     }
 
+    private function buildPuniaRutinLabel(string $bulanTahun): string
+    {
+        return 'Punia rutin bulan ' . \Carbon\Carbon::createFromFormat('Y-m', $bulanTahun)->translatedFormat('F Y');
+    }
+
+    private function resolvePendatangPuniaBulanan(Pendatang $pendatang, int $bulan, int $tahun): PuniaPendatang
+    {
+        $bulanTahun = sprintf('%04d-%02d', $tahun, $bulan);
+        $legacyFormat = sprintf('%02d/%04d', $bulan, $tahun);
+        $nominal = (float) $pendatang->effective_punia_nominal;
+
+        $punia = PuniaPendatang::where('id_pendatang', $pendatang->id_pendatang)
+            ->where('jenis_punia', 'rutin')
+            ->where('aktif', '1')
+            ->where(function ($query) use ($bulanTahun, $legacyFormat) {
+                $query->where('bulan_tahun', $bulanTahun)
+                    ->orWhere('bulan_tahun', $legacyFormat);
+            })
+            ->first();
+
+        if (!$punia) {
+            return PuniaPendatang::create([
+                'id_pendatang' => $pendatang->id_pendatang,
+                'jenis_punia' => 'rutin',
+                'periode_rutin' => 'bulanan',
+                'bulan_tahun' => $bulanTahun,
+                'nominal' => $nominal,
+                'status_pembayaran' => 'belum_bayar',
+                'keterangan' => $this->buildPuniaRutinLabel($bulanTahun),
+                'petugas_id' => Auth::id(),
+                'aktif' => '1',
+            ]);
+        }
+
+        if ($punia->status_pembayaran !== 'lunas' && $nominal > 0 && (float) $punia->nominal <= 0) {
+            $punia->update([
+                'nominal' => $nominal,
+                'keterangan' => $punia->keterangan ?: $this->buildPuniaRutinLabel($bulanTahun),
+            ]);
+            $punia->refresh();
+        }
+
+        return $punia;
+    }
+
     public function index()
     {
         $banjar = $this->getPenagihBanjar();
@@ -158,7 +203,7 @@ class PenagihController extends BaseController
             'id_pendatang' => 'required|exists:tb_pendatang,id_pendatang',
             'bulan' => 'required|integer|min:1|max:12',
             'tahun' => 'required|integer',
-            'metode_pembayaran' => 'required|in:cash,qris',
+            'metode_pembayaran' => 'required|in:cash',
         ]);
 
         $pendatang = Pendatang::findOrFail($request->id_pendatang);
@@ -169,28 +214,10 @@ class PenagihController extends BaseController
             abort(403);
         }
 
-        $bulanTahun = $request->tahun . '-' . str_pad($request->bulan, 2, '0', STR_PAD_LEFT);
+        $punia = $this->resolvePendatangPuniaBulanan($pendatang, (int) $request->bulan, (int) $request->tahun);
 
-        // Check if tagihan exists (support both formats)
-        $punia = PuniaPendatang::where('id_pendatang', $request->id_pendatang)
-            ->where('jenis_punia', 'rutin')
-            ->where('aktif', '1')
-            ->where(function($q) use ($bulanTahun, $request) {
-                $q->where('bulan_tahun', $bulanTahun)
-                  ->orWhere('bulan_tahun', str_pad($request->bulan, 2, '0', STR_PAD_LEFT) . '/' . $request->tahun);
-            })
-            ->first();
-
-        if (!$punia) {
-            $punia = PuniaPendatang::create([
-                'id_pendatang' => $request->id_pendatang,
-                'jenis_punia' => 'rutin',
-                'periode_rutin' => 'bulanan',
-                'bulan_tahun' => $bulanTahun,
-                'nominal' => $pendatang->punia_rutin_bulanan,
-                'keterangan' => 'Punia rutin bulan ' . \Carbon\Carbon::createFromFormat('Y-m', $bulanTahun)->translatedFormat('F Y'),
-                'petugas_id' => Auth::id(),
-            ]);
+        if ((float) $punia->nominal <= 0) {
+            return redirect()->back()->with('error', 'Nominal iuran belum diatur. Periksa setting global atau nominal khusus pendatang ini.');
         }
 
         $punia->update([
@@ -211,6 +238,39 @@ class PenagihController extends BaseController
         );
 
         return redirect()->back()->with('success', 'Pembayaran berhasil dicatat');
+    }
+
+    public function initiateKartuPuniaOnline(Request $request)
+    {
+        $request->validate([
+            'id_pendatang' => 'required|exists:tb_pendatang,id_pendatang',
+            'bulan' => 'required|integer|min:1|max:12',
+            'tahun' => 'required|integer',
+        ]);
+
+        $pendatang = Pendatang::findOrFail($request->id_pendatang);
+
+        $banjar = $this->getPenagihBanjar();
+        if ($banjar && $pendatang->id_data_banjar != $banjar->id_data_banjar) {
+            abort(403);
+        }
+
+        $punia = $this->resolvePendatangPuniaBulanan($pendatang, (int) $request->bulan, (int) $request->tahun);
+
+        if ($punia->status_pembayaran === 'lunas') {
+            return redirect()->back()->with('error', 'Tagihan untuk periode ini sudah lunas.');
+        }
+
+        if ((float) $punia->nominal <= 0) {
+            return redirect()->back()->with('error', 'Nominal iuran belum diatur. Periksa setting global atau nominal khusus pendatang ini.');
+        }
+
+        return redirect()->route('public.payment_methods', [
+            'amount' => $punia->nominal,
+            'order_id' => 'TM-' . $punia->id_punia_pendatang,
+            'type' => 'punia_pendatang',
+            'context' => 'penagih',
+        ]);
     }
 
     public function bayarPuniaPendatang(Request $request, $id)
@@ -251,11 +311,7 @@ class PenagihController extends BaseController
             abort(403);
         }
 
-        $nominal = $pendatang->punia_rutin_bulanan;
-        if ($pendatang->use_global_punia) {
-            $settings = json_decode(file_get_contents(storage_path('app/settings.json')), true);
-            $nominal = $settings['punia_pendatang_global'] ?? 0;
-        }
+        $nominal = (float) $pendatang->effective_punia_nominal;
 
         if ($nominal > 0) {
             $bulanTahun = date('Y-m');
@@ -406,6 +462,63 @@ class PenagihController extends BaseController
             ->with('success', 'Pembayaran bulan ' . $request->bulan . '/' . $request->tahun . ' berhasil disimpan.');
     }
 
+    public function usahaInitiateOnline(Request $request)
+    {
+        $request->validate([
+            'id_usaha' => 'required|integer',
+            'bulan' => 'required|integer|min:1|max:12',
+            'tahun' => 'required|integer',
+            'jumlah_dana' => 'required|numeric|min:1000',
+        ]);
+
+        $banjar = $this->getPenagihBanjar();
+        $rows = Usaha::get_detailUsaha($request->id_usaha);
+
+        if ($banjar && isset($rows->id_banjar) && $rows->id_banjar != $banjar->id_data_banjar) {
+            abort(403);
+        }
+
+        $existing = Danapunia::where('id_usaha', $request->id_usaha)
+            ->where('aktif', '1')
+            ->where('bulan_punia', $request->bulan)
+            ->where('tahun_punia', $request->tahun)
+            ->orderByDesc('id_dana_punia')
+            ->first();
+
+        if ($existing && $existing->status_pembayaran === 'completed') {
+            return redirect()->back()->with('error', 'Iuran unit usaha untuk periode ini sudah lunas.');
+        }
+
+        if (!$existing) {
+            $existing = Danapunia::create([
+                'id_usaha' => $request->id_usaha,
+                'jumlah_dana' => $request->jumlah_dana,
+                'tanggal_pembayaran' => now(),
+                'bulan_punia' => $request->bulan,
+                'tahun_punia' => $request->tahun,
+                'bulan' => $request->bulan,
+                'tahun' => $request->tahun,
+                'status_pembayaran' => 'pending',
+                'aktif' => '1',
+            ]);
+        } elseif ($existing->status_pembayaran !== 'completed') {
+            $existing->update([
+                'jumlah_dana' => $request->jumlah_dana,
+                'bulan_punia' => $request->bulan,
+                'tahun_punia' => $request->tahun,
+                'bulan' => $request->bulan,
+                'tahun' => $request->tahun,
+            ]);
+        }
+
+        return redirect()->route('public.payment_methods', [
+            'amount' => $existing->jumlah_dana,
+            'order_id' => 'PN-' . $existing->id_dana_punia,
+            'type' => 'punia',
+            'context' => 'penagih',
+        ]);
+    }
+
     // =========================================================================
     // PENDATANG CRUD (create, edit, update, delete, toggle)
     // =========================================================================
@@ -443,13 +556,13 @@ class PenagihController extends BaseController
 
         $pendatang = Pendatang::create($data);
 
-        if ($pendatang->punia_rutin_bulanan > 0) {
+        if ($pendatang->effective_punia_nominal > 0) {
             PuniaPendatang::create([
                 'id_pendatang' => $pendatang->id_pendatang,
                 'jenis_punia' => 'rutin',
                 'periode_rutin' => 'bulanan',
                 'bulan_tahun' => now()->format('Y-m'),
-                'nominal' => $pendatang->punia_rutin_bulanan,
+                'nominal' => $pendatang->effective_punia_nominal,
                 'keterangan' => 'Punia rutin bulan ' . now()->translatedFormat('F Y'),
                 'petugas_id' => Auth::id(),
             ]);

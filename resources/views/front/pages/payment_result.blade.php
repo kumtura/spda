@@ -7,6 +7,9 @@
 </style>
 
 <div class="bg-white min-h-screen">
+    @php
+        $paidState = $isCompleted ?? in_array($record->status_pembayaran, ['completed', 'lunas'], true);
+    @endphp
     <!-- Header -->
     <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-8 pb-12 text-white relative overflow-hidden">
         <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
@@ -37,11 +40,23 @@
                     <i class="bi bi-check-circle-fill text-4xl"></i>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-black text-slate-800 mb-2">Pembayaran Berhasil</h2>
-                    <p class="text-xs text-slate-500">Terima kasih atas kontribusi Anda</p>
+                    <h2 class="text-2xl font-black text-slate-800 mb-2">{{ $paymentContext['title'] ?? 'Pembayaran Berhasil' }}</h2>
+                    <p class="text-xs text-slate-500">{{ $paymentContext['thank_you'] ?? 'Terima kasih atas kontribusi Anda' }}</p>
                 </div>
                 
                 <div class="bg-slate-50 rounded-2xl p-4 space-y-3">
+                    @if(!empty($paymentContext['subject_name']))
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500">{{ $paymentContext['subject_label'] ?? 'Atas Nama' }}</span>
+                        <span class="text-xs font-bold text-slate-800 text-right">{{ $paymentContext['subject_name'] }}</span>
+                    </div>
+                    @endif
+                    @if(!empty($paymentContext['period_label']))
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500">Periode</span>
+                        <span class="text-xs font-bold text-slate-800 text-right">{{ $paymentContext['period_label'] }}</span>
+                    </div>
+                    @endif
                     <div class="flex justify-between items-center">
                         <span class="text-xs text-slate-500">Metode</span>
                         <span class="text-xs font-bold text-slate-800">{{ str_replace('_', ' ', $method) }}</span>
@@ -59,7 +74,7 @@
         </div>
 
         <!-- Payment Instructions -->
-        <div id="instructionsView" class="{{ $record->status_pembayaran === 'completed' ? 'hidden' : '' }} space-y-4">
+        <div id="instructionsView" class="{{ $paidState ? 'hidden' : '' }} space-y-4">
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
                 <div class="p-8 text-center border-b border-slate-100 bg-white">
                     <div class="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 text-slate-500 border border-slate-200 rounded-full text-[10px] font-bold mb-4">
@@ -75,6 +90,23 @@
                 <!-- Payment Details -->
                 <div class="p-6 space-y-4">
                     <div class="bg-slate-50 rounded-2xl p-5 space-y-4">
+                        @if(!empty($paymentContext['subject_name']) || !empty($paymentContext['period_label']))
+                        <div class="bg-white rounded-xl p-4 border border-slate-200 space-y-2">
+                            @if(!empty($paymentContext['subject_name']))
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="text-[9px] text-slate-400 uppercase tracking-wider">{{ $paymentContext['subject_label'] ?? 'Atas Nama' }}</span>
+                                <span class="text-xs font-bold text-slate-800 text-right">{{ $paymentContext['subject_name'] }}</span>
+                            </div>
+                            @endif
+                            @if(!empty($paymentContext['period_label']))
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="text-[9px] text-slate-400 uppercase tracking-wider">Periode</span>
+                                <span class="text-xs font-bold text-slate-800 text-right">{{ $paymentContext['period_label'] }}</span>
+                            </div>
+                            @endif
+                        </div>
+                        @endif
+
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-[9px] text-slate-400 uppercase tracking-wider mb-1">Metode Pembayaran</p>
@@ -234,7 +266,7 @@
 
     const statusInterval = setInterval(checkPaymentStatus, 3000);
 
-    if('{{ $record->status_pembayaran }}' === 'completed') {
+    if(@json($paidState)) {
         $('#instructionsView').hide();
         $('#successView').removeClass('hidden');
     }

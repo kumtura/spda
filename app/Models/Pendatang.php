@@ -52,4 +52,25 @@ class Pendatang extends Model
         return $this->hasMany(PuniaPendatang::class, 'id_pendatang', 'id_pendatang')
             ->where('jenis_punia', 'acara');
     }
+
+    public static function getGlobalPuniaNominal(): float
+    {
+        $settingsPath = storage_path('app/settings.json');
+        if (!file_exists($settingsPath)) {
+            return 0;
+        }
+
+        $settings = json_decode(file_get_contents($settingsPath), true);
+
+        return (float) ($settings['punia_pendatang_global'] ?? 0);
+    }
+
+    public function getEffectivePuniaNominalAttribute(): float
+    {
+        if ($this->use_global_punia) {
+            return self::getGlobalPuniaNominal();
+        }
+
+        return (float) ($this->punia_rutin_bulanan ?? 0);
+    }
 }

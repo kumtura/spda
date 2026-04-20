@@ -4,6 +4,7 @@
 <div class="space-y-6" x-data="{ 
     showModal: false,
     jenisAlur: '',
+    activeAlokasiTab: '{{ $activeAlokasiTab }}',
     filterJenis: '{{ $filterJenis }}',
     filterBanjar: '{{ $filterBanjar }}',
     openModal(alur) {
@@ -60,6 +61,15 @@
         <div class="flex items-center gap-2">
             <i class="bi bi-check-circle text-primary-light"></i>
             <p class="text-sm text-blue-700 font-medium">{{ session('success') }}</p>
+        </div>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="bg-rose-50 border border-rose-200 rounded-xl p-4">
+        <div class="flex items-center gap-2">
+            <i class="bi bi-exclamation-circle text-rose-500"></i>
+            <p class="text-sm text-rose-700 font-medium">{{ session('error') }}</p>
         </div>
     </div>
     @endif
@@ -173,68 +183,124 @@
     </div>
 
     <!-- Riwayat Alokasi Transaksi Punia -->
+    @php
+        $alokasiTabs = [
+            'tamiu' => [
+                'title' => 'Krama Tamiu',
+                'items' => $alokasiHistoryTamiu,
+                'activeClass' => 'bg-blue-50 text-primary-light border-blue-200',
+            ],
+            'usaha' => [
+                'title' => 'Unit Usaha',
+                'items' => $alokasiHistoryUsaha,
+                'activeClass' => 'bg-emerald-50 text-emerald-600 border-emerald-200',
+            ],
+        ];
+    @endphp
     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div class="p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Riwayat Alokasi Transaksi Punia</h3>
-                <p class="text-[11px] text-slate-400 mt-1">Menampilkan histori semua pembayaran Krama Tamiu dan Unit Usaha yang sudah disinkronkan ke banjar masing-masing.</p>
+                <p class="text-[11px] text-slate-400 mt-1">Riwayat dipisahkan per jenis punia agar lebih mudah dicek, dan bulk edit status mengikuti pembagian global.</p>
             </div>
-            <span class="text-xs font-bold text-slate-400">{{ $alokasiHistory->count() }} transaksi</span>
+            <div class="flex flex-wrap items-center gap-2">
+                @foreach($alokasiTabs as $tabKey => $tab)
+                <button type="button"
+                        @click="activeAlokasiTab = '{{ $tabKey }}'"
+                        :class="activeAlokasiTab === '{{ $tabKey }}' ? '{{ $tab['activeClass'] }}' : 'bg-white text-slate-500 border-slate-200'"
+                        class="px-4 py-2 rounded-xl border text-xs font-black uppercase tracking-widest transition-all">
+                    {{ $tab['title'] }}
+                    <span class="ml-1.5 text-[10px]">{{ $tab['items']->count() }}</span>
+                </button>
+                @endforeach
+            </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-slate-50/50">
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tanggal</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Jenis</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Banjar</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Metode</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Bagian Desa</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Bagian Banjar</th>
-                        <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status Alokasi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    @forelse($alokasiHistory as $item)
-                    @php
-                        $isOnlineAllocation = in_array(strtolower($item->metode_pembayaran), ['xendit', 'online', 'qris'], true);
-                        $statusText = $isOnlineAllocation
-                            ? ($item->status_setor_banjar === 'selesai' ? 'Banjar Selesai' : 'Menunggu Setor Banjar')
-                            : ($item->status_setor_desa === 'selesai' ? 'Desa Selesai' : 'Menunggu Setor Desa');
-                    @endphp
-                    <tr class="hover:bg-slate-50/50 transition-colors">
-                        <td class="px-5 py-4 text-xs font-bold text-slate-600">{{ optional($item->tanggal_transaksi)->format('d M Y H:i') ?: optional($item->tanggal)->format('d M Y H:i') }}</td>
-                        <td class="px-5 py-4">
-                            <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-lg {{ $item->jenis_punia === 'tamiu' ? 'bg-blue-50 text-primary-light border border-blue-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100' }} inline-flex items-center gap-1">
-                                <i class="bi {{ $item->jenis_punia === 'tamiu' ? 'bi-people' : 'bi-building' }} text-[8px]"></i>
-                                {{ $item->subjek_label }}
-                            </span>
-                        </td>
-                        <td class="px-5 py-4 text-xs font-bold text-slate-700">{{ $item->subjek_nama }}</td>
-                        <td class="px-5 py-4 text-xs font-medium text-slate-600">{{ $item->banjar->nama_banjar ?? '-' }}</td>
-                        <td class="px-5 py-4 text-[10px] font-bold text-slate-500 uppercase">{{ $item->metode_pembayaran ?: '-' }}</td>
-                        <td class="px-5 py-4 text-right text-xs font-bold text-slate-700">Rp {{ number_format($item->nominal_total, 0, ',', '.') }}</td>
-                        <td class="px-5 py-4 text-right text-xs font-bold text-primary-light">Rp {{ number_format($item->nominal_desa, 0, ',', '.') }}</td>
-                        <td class="px-5 py-4 text-right text-xs font-bold text-emerald-600">Rp {{ number_format($item->nominal_banjar, 0, ',', '.') }}</td>
-                        <td class="px-5 py-4 text-center">
-                            <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg {{ str_contains($statusText, 'Selesai') ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600' }}">{{ $statusText }}</span>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="9" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center gap-2">
-                                <i class="bi bi-diagram-3 text-4xl text-slate-200"></i>
-                                <p class="text-sm text-slate-400 font-medium">Belum ada riwayat alokasi transaksi yang bisa ditampilkan.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+
+        <div class="px-5 py-4 bg-slate-50/70 border-b border-slate-100">
+            <p class="text-[11px] text-slate-500 font-medium">Opsi bulk edit `Ikuti Pembagian Global` akan otomatis mengubah `Status Setor Desa` untuk pembayaran cash, dan `Status Setor Banjar` untuk pembayaran online.</p>
         </div>
+
+        @foreach($alokasiTabs as $tabKey => $tab)
+        @php
+            $pendingCount = $tab['items']->where('status_global', 'pending')->count();
+        @endphp
+        <div x-show="activeAlokasiTab === '{{ $tabKey }}'" x-cloak>
+            <form action="{{ url('administrator/setor_punia/alokasi/bulk-status') }}" method="POST">
+                @csrf
+                <input type="hidden" name="jenis_punia_tab" value="{{ $tabKey }}">
+                <input type="hidden" name="tab" value="{{ $tabKey }}">
+                <input type="hidden" name="filter_banjar" value="{{ $filterBanjar }}">
+                <input type="hidden" name="filter_jenis" value="{{ $filterJenis }}">
+
+                <div class="p-5 border-b border-slate-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                    <div>
+                        <h4 class="text-sm font-black text-slate-800">Daftar {{ $tab['title'] }}</h4>
+                        <p class="text-[11px] text-slate-400 mt-1">{{ $tab['items']->count() }} transaksi, {{ $pendingCount }} transaksi masih menunggu setor sesuai jalur global.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+                        <select name="bulk_status_action" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
+                            <option value="follow_global_selesai">Ikuti Pembagian Global → Tandai Selesai</option>
+                            <option value="follow_global_pending">Ikuti Pembagian Global → Tandai Menunggu</option>
+                        </select>
+                        <button type="submit" onclick="return confirm('Terapkan bulk edit ke riwayat terpilih?')" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-light transition-all shadow-md">
+                            <i class="bi bi-check2-square mr-1"></i>Terapkan Bulk Edit
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50/50">
+                                <th class="px-5 py-4 w-12">
+                                    <input type="checkbox" onclick="this.form.querySelectorAll('input[name=&quot;riwayat_ids[]&quot;]').forEach(cb => cb.checked = this.checked)" class="rounded border-slate-300 text-primary-light focus:ring-primary-light/20">
+                                </th>
+                                <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tanggal</th>
+                                <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama</th>
+                                <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Banjar</th>
+                                <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Metode</th>
+                                <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total</th>
+                                <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Bagian Desa</th>
+                                <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Bagian Banjar</th>
+                                <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status Global</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @forelse($tab['items'] as $item)
+                            <tr class="hover:bg-slate-50/50 transition-colors {{ $item->status_global === 'pending' ? 'bg-amber-50/30' : '' }}">
+                                <td class="px-5 py-4">
+                                    <input type="checkbox" name="riwayat_ids[]" value="{{ $item->id_riwayat }}" class="rounded border-slate-300 text-primary-light focus:ring-primary-light/20">
+                                </td>
+                                <td class="px-5 py-4 text-xs font-bold text-slate-600">{{ optional($item->tanggal_transaksi)->format('d M Y H:i') ?: optional($item->tanggal)->format('d M Y H:i') }}</td>
+                                <td class="px-5 py-4">
+                                    <p class="text-xs font-bold text-slate-700">{{ $item->subjek_nama }}</p>
+                                    <p class="text-[10px] text-slate-400 mt-1">{{ $item->subjek_label }}</p>
+                                </td>
+                                <td class="px-5 py-4 text-xs font-medium text-slate-600">{{ $item->banjar->nama_banjar ?? '-' }}</td>
+                                <td class="px-5 py-4 text-[10px] font-bold text-slate-500 uppercase">{{ $item->metode_pembayaran ?: '-' }}</td>
+                                <td class="px-5 py-4 text-right text-xs font-bold text-slate-700">Rp {{ number_format($item->nominal_total, 0, ',', '.') }}</td>
+                                <td class="px-5 py-4 text-right text-xs font-bold text-primary-light">Rp {{ number_format($item->nominal_desa, 0, ',', '.') }}</td>
+                                <td class="px-5 py-4 text-right text-xs font-bold text-emerald-600">Rp {{ number_format($item->nominal_banjar, 0, ',', '.') }}</td>
+                                <td class="px-5 py-4 text-center">
+                                    <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg {{ $item->status_global === 'selesai' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600' }}">{{ $item->status_text }}</span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="9" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <i class="bi bi-diagram-3 text-4xl text-slate-200"></i>
+                                        <p class="text-sm text-slate-400 font-medium">Belum ada riwayat alokasi {{ strtolower($tab['title']) }} yang bisa ditampilkan.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+        @endforeach
     </div>
 
     <!-- Filter -->

@@ -30,6 +30,11 @@ class SetorPuniaController extends BaseController
         $banjarList = Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
         $filterBanjar = $request->get('banjar', '');
         $filterJenis = $request->get('jenis', '');
+        $activeAlokasiTab = $request->get('tab', 'tamiu');
+
+        if (!in_array($activeAlokasiTab, ['tamiu', 'usaha'], true)) {
+            $activeAlokasiTab = 'tamiu';
+        }
 
         // === SALDO KAS (defensive — tables may not exist yet) ===
         $hasSaldoTable = Schema::hasTable('tb_saldo_kas');
@@ -156,10 +161,18 @@ class SetorPuniaController extends BaseController
                 $row->subjek_label = $row->jenis_punia === 'tamiu' ? 'Krama Tamiu' : 'Unit Usaha';
                 $row->tanggal_transaksi = $source?->tanggal_bayar
                     ?: (!empty($source?->tanggal_pembayaran) ? Carbon::parse($source->tanggal_pembayaran) : $row->tanggal);
+                $row->status_kolom_global = self::resolveGlobalStatusColumn($row->metode_pembayaran);
+                $row->status_global = $row->{$row->status_kolom_global} ?? 'pending';
+                $row->status_text = $row->status_kolom_global === 'status_setor_banjar'
+                    ? ($row->status_global === 'selesai' ? 'Banjar Selesai' : 'Menunggu Setor Banjar')
+                    : ($row->status_global === 'selesai' ? 'Desa Selesai' : 'Menunggu Setor Desa');
 
                 return $row;
             });
         }
+
+        $alokasiHistoryTamiu = $alokasiHistory->where('jenis_punia', 'tamiu')->values();
+        $alokasiHistoryUsaha = $alokasiHistory->where('jenis_punia', 'usaha')->values();
 
         // Summary totals
         $totalSetorDiterima = SetorPunia::where('aktif', 1)->where('status', 'diterima')->sum('nominal');
@@ -170,8 +183,52 @@ class SetorPuniaController extends BaseController
             'saldoDesa', 'banjarSaldos', 'totalSaldoBanjar',
             'totalCashTamiu', 'totalCashUsaha', 'totalCashAll',
             'totalOnlineTamiu', 'totalOnlineUsaha', 'totalOnlineAll',
-            'riwayat', 'alokasiHistory', 'totalSetorDiterima', 'totalPending'
+            'riwayat', 'alokasiHistory', 'alokasiHistoryTamiu', 'alokasiHistoryUsaha',
+            'activeAlokasiTab', 'totalSetorDiterima', 'totalPending'
         ));
+    }
+
+    public function bulkUpdateAlokasiStatus(Request $request)
+    {
+        $request->validate([
+            'riwayat_ids' => 'required|array|min:1',
+            'riwayat_ids.*' => 'integer',
+            'jenis_punia_tab' => 'required|in:tamiu,usaha',
+            'bulk_status_action' => 'required|in:follow_global_pending,follow_global_selesai',
+        ]);
+
+        $targetStatus = $request->bulk_status_action === 'follow_global_selesai' ? 'selesai' : 'pending';
+
+        $rows = RiwayatBagiHasil::where('aktif', 1)
+            ->where('jenis_punia', $request->jenis_punia_tab)
+            ->whereIn('id_riwayat', $request->riwayat_ids)
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return $this->redirectToIndex($request)->with('error', 'Tidak ada riwayat alokasi yang dipilih.');
+        }
+
+        $updated = 0;
+        foreach ($rows as $row) {
+            $statusColumn = self::resolveGlobalStatusColumn($row->metode_pembayaran);
+
+            if (!$statusColumn) {
+                continue;
+            }
+
+            $row->update([$statusColumn => $targetStatus]);
+            $updated++;
+        }
+
+        if ($updated === 0) {
+            return $this->redirectToIndex($request)->with('error', 'Tidak ada status riwayat yang berhasil diperbarui.');
+        }
+
+        $message = $targetStatus === 'selesai'
+            ? 'Bulk edit berhasil. Status riwayat terpilih ditandai selesai mengikuti pembagian global.'
+            : 'Bulk edit berhasil. Status riwayat terpilih dikembalikan ke menunggu mengikuti pembagian global.';
+
+        return $this->redirectToIndex($request)->with('success', $message);
     }
 
     public function store(Request $request)
@@ -254,5 +311,32 @@ class SetorPuniaController extends BaseController
         $setor->update(['aktif' => 0]);
 
         return redirect('administrator/setor_punia')->with('success', 'Record berhasil dihapus.');
+    }
+
+    protected static function resolveGlobalStatusColumn(?string $metodePembayaran): string
+    {
+        $method = strtolower(trim((string) $metodePembayaran));
+
+        return in_array($method, ['xendit', 'online', 'qris'], true)
+            ? 'status_setor_banjar'
+            : 'status_setor_desa';
+    }
+
+    protected function redirectToIndex(Request $request)
+    {
+        $query = array_filter([
+            'banjar' => $request->input('filter_banjar'),
+            'jenis' => $request->input('filter_jenis'),
+            'tab' => $request->input('tab', $request->input('jenis_punia_tab', 'tamiu')),
+        ], function ($value) {
+            return $value !== null && $value !== '';
+        });
+
+        $url = url('administrator/setor_punia');
+        if (!empty($query)) {
+            $url .= '?' . http_build_query($query);
+        }
+
+        return redirect($url);
     }
 }

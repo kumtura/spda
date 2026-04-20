@@ -136,10 +136,19 @@ class BagiHasilService
 
     protected static function syncSettlementStatuses(): void
     {
-        RiwayatBagiHasil::where('aktif', 1)->update([
-            'status_setor_desa' => 'pending',
-            'status_setor_banjar' => 'pending',
-        ]);
+        RiwayatBagiHasil::where('aktif', 1)
+            ->where(function ($query) {
+                $query->whereNull('status_setor_desa')
+                    ->orWhere('status_setor_desa', '');
+            })
+            ->update(['status_setor_desa' => 'pending']);
+
+        RiwayatBagiHasil::where('aktif', 1)
+            ->where(function ($query) {
+                $query->whereNull('status_setor_banjar')
+                    ->orWhere('status_setor_banjar', '');
+            })
+            ->update(['status_setor_banjar' => 'pending']);
 
         SetorPunia::where('aktif', 1)
             ->where('status', 'diterima')

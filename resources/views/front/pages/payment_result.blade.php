@@ -8,7 +8,12 @@
 
 <div class="bg-white min-h-screen">
     @php
-        $paidState = $isCompleted ?? in_array($record->status_pembayaran, ['completed', 'lunas'], true);
+        $paidState = $showSuccessState ?? ($isCompleted ?? in_array($record->status_pembayaran, ['completed', 'lunas'], true));
+        $isPendingVerification = $paidState && !($isCompleted ?? false) && (($record->status_verifikasi ?? null) === 'pending');
+        $successTitle = $isPendingVerification ? 'Pembayaran Berhasil Dicatat' : ($paymentContext['title'] ?? 'Pembayaran Berhasil');
+        $successMessage = $isPendingVerification
+            ? 'Pembayaran sudah masuk dan sedang menunggu verifikasi admin.'
+            : ($paymentContext['thank_you'] ?? 'Terima kasih atas kontribusi Anda');
     @endphp
     <!-- Header -->
     <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] px-4 pt-8 pb-12 text-white relative overflow-hidden">
@@ -36,12 +41,12 @@
         <!-- Success View -->
         <div id="successView" class="hidden">
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 text-center space-y-6">
-                <div class="h-20 w-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto">
-                    <i class="bi bi-check-circle-fill text-4xl"></i>
+                <div class="h-20 w-20 {{ $isPendingVerification ? 'bg-amber-50 text-amber-500' : 'bg-emerald-50 text-emerald-500' }} rounded-full flex items-center justify-center mx-auto">
+                    <i class="bi {{ $isPendingVerification ? 'bi-hourglass-split text-4xl text-amber-500' : 'bi-check-circle-fill text-4xl' }}"></i>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-black text-slate-800 mb-2">{{ $paymentContext['title'] ?? 'Pembayaran Berhasil' }}</h2>
-                    <p class="text-xs text-slate-500">{{ $paymentContext['thank_you'] ?? 'Terima kasih atas kontribusi Anda' }}</p>
+                    <h2 class="text-2xl font-black text-slate-800 mb-2">{{ $successTitle }}</h2>
+                    <p class="text-xs text-slate-500">{{ $successMessage }}</p>
                 </div>
                 
                 <div class="bg-slate-50 rounded-2xl p-4 space-y-3">
@@ -67,7 +72,7 @@
                     </div>
                 </div>
 
-                @if($type === 'punia' && $receiptUrl)
+                @if(in_array($type, ['punia', 'punia_pendatang'], true) && $receiptUrl)
                 <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 space-y-3 text-left">
                     <div>
                         <p class="text-[10px] text-blue-600 uppercase tracking-widest font-black mb-1">Receipt Pembayaran</p>
@@ -365,7 +370,7 @@
             return;
         }
 
-        const message = encodeURIComponent('Om Swastyastu,%0A%0ABerikut link receipt pembayaran iuran unit usaha:%0A{{ $receiptUrl }}%0A%0AKode receipt: {{ $receiptCode }}');
+        const message = encodeURIComponent('Om Swastyastu,%0A%0ABerikut link receipt pembayaran punia:%0A{{ $receiptUrl }}%0A%0AKode receipt: {{ $receiptCode }}');
         window.open('https://wa.me/' + waNumber + '?text=' + message, '_blank');
     }
 </script>

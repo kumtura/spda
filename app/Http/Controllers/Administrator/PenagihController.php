@@ -180,20 +180,36 @@ class PenagihController extends BaseController
         $payments = PuniaPendatang::where('id_pendatang', $id)
             ->where('jenis_punia', 'rutin')
             ->where('aktif', '1')
-            ->where('status_pembayaran', 'lunas')
             ->where(function($q) use ($selectedYear) {
                 $q->where('bulan_tahun', 'LIKE', $selectedYear . '-%')
                   ->orWhereRaw("YEAR(STR_TO_DATE(bulan_tahun, '%m/%Y')) = ?", [$selectedYear]);
             })
             ->get()
-            ->keyBy(function($item) {
+            ->groupBy(function($item) {
                 if (strpos($item->bulan_tahun, '/') !== false) {
                     return (int) substr($item->bulan_tahun, 0, 2);
                 }
                 return (int) substr($item->bulan_tahun, 5, 2);
+            })
+            ->map(function ($items) {
+                return $items
+                    ->sortByDesc(function ($item) {
+                        return sprintf(
+                            '%s|%s|%s',
+                            optional($item->tanggal_bayar)->format('Y-m-d H:i:s') ?? '0000-00-00 00:00:00',
+                            optional($item->updated_at)->format('Y-m-d H:i:s') ?? '0000-00-00 00:00:00',
+                            $item->id_punia_pendatang
+                        );
+                    })
+                    ->first();
             });
 
-        $totalKontribusi = $payments->sum('nominal');
+        $totalKontribusi = $payments
+            ->filter(function ($item) {
+                return in_array($item->status_pembayaran, ['lunas', 'completed'], true)
+                    || $item->status_verifikasi === 'approved';
+            })
+            ->sum('nominal');
         $currentDateFormatted = now()->translatedFormat('d M');
 
         return view('backend.penagih.pendatang_kartu_punia', compact('pendatang', 'payments', 'selectedYear', 'totalKontribusi', 'currentDateFormatted', 'banjar'));
@@ -205,7 +221,9 @@ class PenagihController extends BaseController
             'id_pendatang' => 'required|exists:tb_pendatang,id_pendatang',
             'bulan' => 'required|integer|min:1|max:12',
             'tahun' => 'required|integer',
-            'metode_pembayaran' => 'required|in:cash',
+            'metode_pembayaran' => 'required|in:cash,transfer',
+            'tanggal_bayar' => 'required|date',
+            'bukti_transfer' => 'required_if:metode_pembayaran,transfer|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         $pendatang = Pendatang::findOrFail($request->id_pendatang);
@@ -222,24 +240,44 @@ class PenagihController extends BaseController
             return redirect()->back()->with('error', 'Nominal iuran belum diatur. Periksa setting global atau nominal khusus pendatang ini.');
         }
 
+        $buktiTransfer = $punia->bukti_transfer;
+        if ($request->metode_pembayaran === 'transfer' && $request->hasFile('bukti_transfer')) {
+            $file = $request->file('bukti_transfer');
+
+            if (!file_exists(public_path('bukti_pembayaran'))) {
+                mkdir(public_path('bukti_pembayaran'), 0777, true);
+            }
+
+            $buktiTransfer = 'tamiu_' . time() . '_' . $request->id_pendatang . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('bukti_pembayaran'), $buktiTransfer);
+        }
+
+        $isCash = $request->metode_pembayaran === 'cash';
+
         $punia->update([
-            'status_pembayaran' => 'lunas',
+            'status_pembayaran' => $isCash ? 'lunas' : 'belum_bayar',
             'metode_pembayaran' => $request->metode_pembayaran,
-            'tanggal_bayar' => now(),
+            'tanggal_bayar' => $request->tanggal_bayar,
             'petugas_id' => Auth::id(),
+            'bukti_transfer' => $buktiTransfer,
+            'status_verifikasi' => $isCash ? 'approved' : 'pending',
         ]);
 
-        // Split bagi hasil
-        BagiHasilService::splitPayment(
-            'tamiu',
-            $punia->id_punia_pendatang,
-            $pendatang->id_data_banjar,
-            $punia->nominal,
-            $request->metode_pembayaran,
-            now()->toDateString()
-        );
+        if ($isCash) {
+            BagiHasilService::splitPayment(
+                'tamiu',
+                $punia->id_punia_pendatang,
+                $pendatang->id_data_banjar,
+                $punia->nominal,
+                $request->metode_pembayaran,
+                $request->tanggal_bayar
+            );
+        }
 
-        return redirect()->back()->with('success', 'Pembayaran berhasil dicatat');
+        return redirect()->route('public.payment_result', [
+            'order_id' => 'TM-' . $punia->id_punia_pendatang,
+            'type' => 'punia_pendatang',
+        ]);
     }
 
     public function initiateKartuPuniaOnline(Request $request)
@@ -485,9 +523,10 @@ class PenagihController extends BaseController
             );
         }
 
-        $receiptCode = 'PN-' . str_pad($danapunia->id_dana_punia, 6, '0', STR_PAD_LEFT);
-
-        return redirect()->route('public.punia.receipt', ['code' => $receiptCode]);
+        return redirect()->route('public.payment_result', [
+            'order_id' => 'PN-' . $danapunia->id_dana_punia,
+            'type' => 'punia',
+        ]);
     }
 
     public function usahaInitiateOnline(Request $request)

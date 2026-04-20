@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Danapunia;
+use App\Models\PuniaPendatang;
 use App\Models\Usaha;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -36,6 +37,34 @@ class PuniaReceiptController extends Controller
         return $pdf->download('receipt-' . strtolower($receiptCode) . '.pdf');
     }
 
+    public function showPendatang(string $code)
+    {
+        [$payment, $pendatang, $receiptCode, $bulanName, $village] = $this->resolvePendatangReceiptData($code);
+
+        return view('front.pages.punia_pendatang_receipt', compact(
+            'payment',
+            'pendatang',
+            'receiptCode',
+            'bulanName',
+            'village'
+        ));
+    }
+
+    public function downloadPendatang(string $code)
+    {
+        [$payment, $pendatang, $receiptCode, $bulanName, $village] = $this->resolvePendatangReceiptData($code);
+
+        $pdf = Pdf::loadView('pdf.receipt_punia_pendatang', compact(
+            'payment',
+            'pendatang',
+            'receiptCode',
+            'bulanName',
+            'village'
+        ));
+
+        return $pdf->download('receipt-' . strtolower($receiptCode) . '.pdf');
+    }
+
     protected function resolveReceiptData(string $code): array
     {
         $numericId = $this->extractReceiptId($code);
@@ -48,6 +77,20 @@ class PuniaReceiptController extends Controller
         $village = $this->getVillageData();
 
         return [$payment, $usaha, $receiptCode, $bulanName, $village];
+    }
+
+    protected function resolvePendatangReceiptData(string $code): array
+    {
+        $numericId = $this->extractPendatangReceiptId($code);
+        abort_if(!$numericId, 404);
+
+        $payment = PuniaPendatang::with('pendatang.banjar')->findOrFail($numericId);
+        $pendatang = $payment->pendatang;
+        $receiptCode = $this->formatPendatangReceiptCode($payment->id_punia_pendatang);
+        $bulanName = $this->resolvePendatangMonthName((string) $payment->bulan_tahun);
+        $village = $this->getVillageData();
+
+        return [$payment, $pendatang, $receiptCode, $bulanName, $village];
     }
 
     protected function extractReceiptId(string $code): ?int
@@ -64,6 +107,20 @@ class PuniaReceiptController extends Controller
         return 'PN-' . str_pad((string) $id, 6, '0', STR_PAD_LEFT);
     }
 
+    protected function extractPendatangReceiptId(string $code): ?int
+    {
+        if (!preg_match('/^TM-(\d+)$/i', trim($code), $matches)) {
+            return null;
+        }
+
+        return (int) $matches[1];
+    }
+
+    protected function formatPendatangReceiptCode(int $id): string
+    {
+        return 'TM-' . str_pad((string) $id, 6, '0', STR_PAD_LEFT);
+    }
+
     protected function resolveMonthName(int $month): string
     {
         $months = [
@@ -73,6 +130,19 @@ class PuniaReceiptController extends Controller
         ];
 
         return $months[$month] ?? '-';
+    }
+
+    protected function resolvePendatangMonthName(string $bulanTahun): string
+    {
+        if (preg_match('/^(\d{4})-(\d{2})$/', $bulanTahun, $matches)) {
+            return $this->resolveMonthName((int) $matches[2]) . ' ' . $matches[1];
+        }
+
+        if (preg_match('/^(\d{2})\/(\d{4})$/', $bulanTahun, $matches)) {
+            return $this->resolveMonthName((int) $matches[1]) . ' ' . $matches[2];
+        }
+
+        return $bulanTahun ?: '-';
     }
 
     protected function getVillageData(): array

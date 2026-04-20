@@ -11,6 +11,8 @@
     ];
     
     $paidThisMonth = $payments[$currentMonth] ?? null;
+    $paidThisMonthSettled = $paidThisMonth && (in_array($paidThisMonth->status_pembayaran, ['lunas', 'completed'], true) || $paidThisMonth->status_verifikasi === 'approved');
+    $paidThisMonthPendingVerification = $paidThisMonth && !$paidThisMonthSettled && $paidThisMonth->status_verifikasi === 'pending';
 @endphp
 
 <div class="bg-white px-4 pt-8 pb-24 space-y-6" x-data="{ 
@@ -22,7 +24,9 @@
     deleteId: null,
     deleteMonthName: '',
     deleteCatatan: '',
-    processing: false
+    processing: false,
+    payMethod: 'cash',
+    payDate: '{{ date('Y-m-d') }}'
 }">
     <!-- Back + Header -->
     <div>
@@ -81,7 +85,9 @@
             <div class="flex items-center justify-between text-xs pt-3 border-t border-white/20">
                 <div>
                     <p class="text-white/60 text-[9px] mb-0.5">Bulan Ini</p>
-                    <p class="font-bold">{{ $paidThisMonth ? 'Lunas' : 'Belum Bayar' }}</p>
+                    <p class="font-bold">
+                        {{ $paidThisMonthSettled ? 'Lunas' : ($paidThisMonthPendingVerification ? 'Verifikasi' : ($paidThisMonth ? 'Menunggu' : 'Belum Bayar')) }}
+                    </p>
                 </div>
                 <div class="text-right">
                     <p class="text-[11px] font-bold text-white/80 opacity-60">{{ $currentDateFormatted }}</p>
@@ -107,12 +113,22 @@
                 @php
                     $payment = $payments[$num] ?? null;
                     $isPaid = !!$payment;
+                    $isSettled = $payment && (in_array($payment->status_pembayaran, ['lunas', 'completed'], true) || $payment->status_verifikasi === 'approved');
+                    $isPendingVerification = $payment && !$isSettled && $payment->status_verifikasi === 'pending';
+                    $isPendingPayment = $payment && !$isSettled && !$isPendingVerification;
+                    $rowStatusLabel = $isSettled ? 'Lunas' : ($isPendingVerification ? 'Verifikasi' : ($isPendingPayment ? 'Menunggu' : null));
+                    $rowStatusClass = $isSettled
+                        ? 'text-emerald-600 bg-emerald-50'
+                        : ($isPendingVerification ? 'text-amber-700 bg-amber-50' : 'text-sky-700 bg-sky-50');
                     $isPast = ($selectedYear < $currentYear) || ($selectedYear == $currentYear && $num < $currentMonth);
                 @endphp
                 <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors {{ !$isPaid && $isPast ? 'bg-rose-50/30' : '' }}">
                     <td class="px-4 py-3.5">
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                             <span class="text-xs font-bold text-slate-800">{{ $name }}</span>
+                            @if($rowStatusLabel)
+                            <span class="text-[7px] font-bold px-1.5 py-0.5 rounded uppercase {{ $rowStatusClass }}">{{ $rowStatusLabel }}</span>
+                            @endif
                             @if(!$isPaid && $isPast)
                             <span class="text-[7px] font-bold text-rose-500 bg-rose-100 px-1.5 py-0.5 rounded uppercase">Terlewat</span>
                             @endif
@@ -135,15 +151,25 @@
                     <td class="px-4 py-3.5">
                         <div class="flex items-center justify-center gap-1.5">
                             @if($isPaid)
-                            <button class="h-7 px-2.5 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center gap-1 border border-slate-200 hover:bg-[#00a6eb] hover:text-white hover:border-[#00a6eb] transition-all text-[10px] font-bold">
-                                <i class="bi bi-eye text-xs"></i>
-                            </button>
+                            @php
+                                $receiptCode = 'TM-' . str_pad((string) $payment->id_punia_pendatang, 6, '0', STR_PAD_LEFT);
+                            @endphp
+                            <a href="{{ route('public.punia.pendatang.receipt', ['code' => $receiptCode]) }}" target="_blank" rel="noopener"
+                               class="h-7 w-7 bg-slate-50 text-slate-500 rounded-lg inline-flex items-center justify-center border border-slate-100 hover:bg-slate-100 hover:text-[#00a6eb] transition-all"
+                               title="Lihat Receipt">
+                                <i class="bi bi-receipt text-[10px]"></i>
+                            </a>
+                            <a href="{{ route('public.punia.pendatang.receipt.download', ['code' => $receiptCode]) }}" target="_blank" rel="noopener"
+                               class="h-7 w-7 bg-slate-50 text-slate-500 rounded-lg inline-flex items-center justify-center border border-slate-100 hover:bg-slate-100 hover:text-[#00a6eb] transition-all"
+                               title="Download Receipt">
+                                <i class="bi bi-download text-[10px]"></i>
+                            </a>
                             <button @click="deleteId = {{ $payment->id_punia_pendatang }}; deleteMonthName = '{{ $name }}'; deleteCatatan = ''; showDeleteModal = true"
                                     class="h-7 px-2.5 bg-rose-50 text-rose-400 rounded-lg flex items-center justify-center gap-1 border border-rose-200 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all text-[10px] font-bold">
                                 <i class="bi bi-trash text-xs"></i>
                             </button>
                             @else
-                            <button @click="selectedMonth = {{ $num }}; selectedMonthName = '{{ $name }}'; showPaymentModal = true" 
+                            <button @click="selectedMonth = {{ $num }}; selectedMonthName = '{{ $name }}'; payMethod = 'cash'; payDate = '{{ date('Y-m-d') }}'; processing = false; showPaymentModal = true" 
                                     class="h-7 px-2.5 bg-[#00a6eb] text-white rounded-lg flex items-center justify-center gap-1 hover:bg-[#0090d0] transition-all shadow-sm text-[10px] font-bold">
                                 <i class="bi bi-wallet2 text-xs"></i> Bayar
                             </button>
@@ -187,40 +213,65 @@
 
             <div class="space-y-4">
                 <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Metode Pembayaran</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" @click="payMethod = 'cash'"
+                                    :class="payMethod === 'cash' ? 'border-[#00a6eb] bg-blue-50 text-[#00a6eb]' : 'border-slate-200 text-slate-500 bg-white'"
+                                    class="rounded-xl border px-3 py-2 text-[10px] font-bold transition-all">
+                                Tunai
+                            </button>
+                            <button type="button" @click="payMethod = 'transfer'"
+                                    :class="payMethod === 'transfer' ? 'border-[#00a6eb] bg-blue-50 text-[#00a6eb]' : 'border-slate-200 text-slate-500 bg-white'"
+                                    class="rounded-xl border px-3 py-2 text-[10px] font-bold transition-all">
+                                Transfer
+                            </button>
+                            <button type="button" @click="payMethod = 'online'"
+                                    :class="payMethod === 'online' ? 'border-[#00a6eb] bg-blue-50 text-[#00a6eb]' : 'border-slate-200 text-slate-500 bg-white'"
+                                    class="rounded-xl border px-3 py-2 text-[10px] font-bold transition-all">
+                                Online
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="flex items-center justify-between">
                         <span class="text-[10px] font-bold text-slate-500 uppercase">Nominal</span>
                         <span class="text-sm font-bold text-slate-800">Rp {{ number_format($pendatang->effective_punia_nominal, 0, ',', '.') }}</span>
                     </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Tanggal Pembayaran</label>
+                        <input type="date" x-model="payDate"
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none bg-white">
+                    </div>
+
+                    <div x-show="payMethod === 'transfer'" x-cloak>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Upload Bukti Transfer</label>
+                        <input type="file" name="bukti_transfer" accept=".jpg,.jpeg,.png,.pdf"
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"
+                               :required="payMethod === 'transfer'"
+                               form="pendatangManualForm">
+                        <p class="text-[10px] text-slate-400 mt-1">Wajib upload bukti pembayaran untuk transfer bank.</p>
+                    </div>
                 </div>
 
-                <!-- Tunai -->
-                <button type="button" @click="processing = true; $refs.paymentForm.metode_pembayaran.value = 'cash'; $refs.paymentForm.submit()"
-                   class="w-full text-left bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:bg-slate-50/50 transition-all group">
-                    <div class="flex items-center gap-4">
-                        <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
-                            <i class="bi bi-cash-coin text-slate-400 text-xl group-hover:text-white"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Tunai</h4>
-                            <p class="text-[10px] text-slate-400">Catat pembayaran manual</p>
-                        </div>
-                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-transform group-hover:translate-x-1"></i>
-                    </div>
-                </button>
-
-                <!-- Online Payment -->
-                <button type="button" @click="processing = true; $refs.onlinePaymentForm.submit()"
+                <button type="button" x-show="payMethod === 'online'" @click="processing = true; $refs.onlinePaymentForm.submit()"
                    class="w-full text-left bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:bg-slate-50/50 transition-all group">
                     <div class="flex items-center gap-4">
                         <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
                             <i class="bi bi-phone text-slate-400 text-xl group-hover:text-white"></i>
                         </div>
                         <div class="flex-1">
-                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Online Payment</h4>
-                            <p class="text-[10px] text-slate-400">Lanjut ke metode pembayaran Xendit</p>
+                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Pembayaran Online</h4>
+                            <p class="text-[10px] text-slate-400">Lanjut ke metode pembayaran digital</p>
                         </div>
                         <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-transform group-hover:translate-x-1"></i>
                     </div>
+                </button>
+
+                <button type="submit" form="pendatangManualForm" x-show="payMethod !== 'online'"
+                        class="w-full bg-[#00a6eb] text-white rounded-2xl py-3.5 text-sm font-black shadow-lg shadow-blue-100/70 hover:bg-[#0090d0] transition-all">
+                    Lanjutkan
                 </button>
 
                 <!-- Loading -->
@@ -231,12 +282,13 @@
             </div>
 
             <!-- Hidden Form -->
-            <form x-ref="paymentForm" action="{{ url('administrator/penagih/pendatang/kartu-punia/bayar') }}" method="POST" style="display:none">
+            <form id="pendatangManualForm" x-ref="paymentForm" action="{{ url('administrator/penagih/pendatang/kartu-punia/bayar') }}" method="POST" enctype="multipart/form-data" style="display:none">
                 @csrf
                 <input type="hidden" name="id_pendatang" value="{{ $pendatang->id_pendatang }}">
                 <input type="hidden" name="bulan" x-model="selectedMonth">
                 <input type="hidden" name="tahun" x-model="selectedYear">
-                <input type="hidden" name="metode_pembayaran">
+                <input type="hidden" name="metode_pembayaran" :value="payMethod">
+                <input type="hidden" name="tanggal_bayar" :value="payDate">
             </form>
 
             <form x-ref="onlinePaymentForm" action="{{ url('administrator/penagih/pendatang/kartu-punia/online') }}" method="POST" style="display:none">

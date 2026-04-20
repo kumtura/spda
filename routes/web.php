@@ -47,6 +47,8 @@ Route::post('/pembayaran/simulate', [\App\Http\Controllers\PaymentController::cl
 Route::get('/pembayaran/status/{order_id}', [\App\Http\Controllers\PaymentController::class, 'checkStatus'])->name('public.payment_status');
 Route::get('/receipt/punia/{code}', [\App\Http\Controllers\PuniaReceiptController::class, 'show'])->name('public.punia.receipt');
 Route::get('/receipt/punia/{code}/download', [\App\Http\Controllers\PuniaReceiptController::class, 'download'])->name('public.punia.receipt.download');
+Route::get('/receipt/punia-pendatang/{code}', [\App\Http\Controllers\PuniaReceiptController::class, 'showPendatang'])->name('public.punia.pendatang.receipt');
+Route::get('/receipt/punia-pendatang/{code}/download', [\App\Http\Controllers\PuniaReceiptController::class, 'downloadPendatang'])->name('public.punia.pendatang.receipt.download');
 Route::get('/unit-usaha', [LandingController::class, 'unit_usaha'])->name('public.unit_usaha')->middleware('public.redirect');
 Route::get('/loker', [LandingController::class, 'loker'])->name('public.loker')->middleware('public.redirect');
 Route::get('/loker/{id}', [LandingController::class, 'loker_detail'])->name('public.loker.detail')->middleware('public.redirect');

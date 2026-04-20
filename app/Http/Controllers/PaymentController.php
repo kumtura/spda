@@ -171,7 +171,7 @@ public function initiate(Request $request)
         $type = $request->type;
         $record = $this->paymentOrders->resolveRecord($type, $order_id);
 
-        if (!$record || !$record->payment_data) {
+        if (!$record) {
             return redirect()->route('public.home')->with('error', 'Transaksi tidak ditemukan.');
         }
 
@@ -179,6 +179,8 @@ public function initiate(Request $request)
         $method = $this->paymentOrders->extractMethodCode($record, $payment_data) ?? ($record->metode ?? $record->metode_pembayaran);
         $is_sandbox = $this->xendit->isSandbox();
         $isCompleted = in_array($record->status_pembayaran, ['completed', 'lunas'], true);
+        $isManualFlow = in_array(strtolower((string) $method), ['cash', 'tunai', 'transfer', 'transfer_manual'], true);
+        $showSuccessState = $isCompleted || $isManualFlow;
         $paymentContext = $this->paymentOrders->buildContext($type, $record);
         $receiptCode = null;
         $receiptUrl = null;
@@ -188,6 +190,10 @@ public function initiate(Request $request)
             $receiptCode = 'PN-' . str_pad((string) $record->id_dana_punia, 6, '0', STR_PAD_LEFT);
             $receiptUrl = route('public.punia.receipt', ['code' => $receiptCode]);
             $receiptDownloadUrl = route('public.punia.receipt.download', ['code' => $receiptCode]);
+        } elseif ($type === 'punia_pendatang' && $record) {
+            $receiptCode = 'TM-' . str_pad((string) $record->id_punia_pendatang, 6, '0', STR_PAD_LEFT);
+            $receiptUrl = route('public.punia.pendatang.receipt', ['code' => $receiptCode]);
+            $receiptDownloadUrl = route('public.punia.pendatang.receipt.download', ['code' => $receiptCode]);
         }
         
         // Get village data
@@ -200,7 +206,7 @@ public function initiate(Request $request)
         // Get payment channel info from database
         $channel = \App\Models\PaymentChannel::where('code', $method)->first();
 
-        return view('front.pages.payment_result', compact('record', 'payment_data', 'method', 'village', 'order_id', 'type', 'is_sandbox', 'channel', 'isCompleted', 'paymentContext', 'receiptCode', 'receiptUrl', 'receiptDownloadUrl'));
+        return view('front.pages.payment_result', compact('record', 'payment_data', 'method', 'village', 'order_id', 'type', 'is_sandbox', 'channel', 'isCompleted', 'showSuccessState', 'paymentContext', 'receiptCode', 'receiptUrl', 'receiptDownloadUrl'));
     }
 
     public function checkStatus($order_id)

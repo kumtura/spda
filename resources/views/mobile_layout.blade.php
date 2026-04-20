@@ -22,6 +22,17 @@
     </style>
 </head>
 <body class="antialiased font-sans text-gray-900 bg-white">
+    @php
+        $currentUser = auth()->user();
+        $currentLevel = (string) (session('level') ?? $currentUser?->id_level ?? '');
+        $roleLabel = $currentLevel === '2'
+            ? 'Kelian'
+            : ($currentLevel === '3'
+                ? 'Usaha'
+                : ($currentLevel === '5'
+                    ? 'Counter'
+                    : ($currentLevel === '7' ? 'Penagih' : 'Admin')));
+    @endphp
     <div class="mobile-container overflow-x-hidden pt-16">
         <!-- Branded Header Mobile -->
         <header class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] h-16 bg-[#00a6eb] flex items-center justify-between px-6 z-50 shadow-md">
@@ -39,9 +50,6 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                @php
-                    $roleLabel = Session::get('level') == '2' ? 'Kelian' : (Session::get('level') == '3' ? 'Usaha' : (Session::get('level') == '5' ? 'Counter' : (Session::get('level') == '7' ? 'Penagih' : 'Admin')));
-                @endphp
                 <span class="bg-white/20 backdrop-blur-md text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">{{ $roleLabel }}</span>
             </div>
         </header>
@@ -49,18 +57,18 @@
         @yield('isi_menu')
 
         <!-- Bottom Navigation (Minimalist KitaBisa Style) -->
-        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around items-center h-[70px] z-50 px-2 pb-[env(safe-area-inset-bottom)]">
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around items-center h-[70px] z-40 px-2 pb-[env(safe-area-inset-bottom)]">
             @php
                 $homeActiveColor = 'text-[#00a6eb]';
             @endphp
-            @if(Session::get('level') != "2" && Session::get('level') != "5")
+            @if(!in_array($currentLevel, ['2', '5', '7'], true))
             <a href="{{ url('administrator/') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator') ? $homeActiveColor : 'text-gray-400' }}">
                 <i class="bi bi-house-door{{ Request::is('administrator') ? '-fill' : '' }} text-xl"></i>
                 <span class="text-[10px] font-semibold">Home</span>
             </a>
             @endif
             
-            @if(Session::get('level') == "3")
+            @if($currentLevel == '3')
                 <!-- Business Unit Features -->
                 <a href="{{ url('administrator/usaha/punia') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/usaha/punia*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
                     <i class="bi bi-wallet2 text-xl"></i>
@@ -72,7 +80,7 @@
                 </a>
             @endif
 
-            @if(Session::get('level') == "2")
+            @if($currentLevel == '2')
                 <!-- Kelian Adat Features -->
                 <a href="{{ url('administrator/') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator') && !Request::is('administrator/*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
                     <i class="bi bi-house-door{{ Request::is('administrator') && !Request::is('administrator/*') ? '-fill' : '' }} text-xl"></i>
@@ -92,7 +100,7 @@
                 </a>
             @endif
 
-            @if(Session::get('level') == "5")
+            @if($currentLevel == '5')
                 <!-- Ticket Counter Features -->
                 <a href="{{ url('administrator/ticketcounter') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/ticketcounter') && !Request::is('administrator/ticketcounter/*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
                     <i class="bi bi-house-door{{ Request::is('administrator/ticketcounter') && !Request::is('administrator/ticketcounter/*') ? '-fill' : '' }} text-xl"></i>
@@ -112,7 +120,7 @@
                 </a>
             @endif
 
-            @if(Session::get('level') == "7")
+            @if($currentLevel == '7')
                 <!-- Penagih Iuran Features -->
                 <a href="{{ url('administrator/penagih') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/penagih') && !Request::is('administrator/penagih/*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
                     <i class="bi bi-house-door{{ Request::is('administrator/penagih') && !Request::is('administrator/penagih/*') ? '-fill' : '' }} text-xl"></i>

@@ -5,7 +5,7 @@
     <!-- Welcome Text -->
     <div>
         <h1 class="text-2xl font-black tracking-tight text-slate-800 leading-none mb-1">Rahajeng,</h1>
-        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{{ Session::get('namapt') }} <span class="text-[#00a6eb]">| Penagih Iuran</span></p>
+        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{{ session('namapt') ?: auth()->user()?->name ?: '-' }} <span class="text-[#00a6eb]">| Penagih Iuran</span></p>
     </div>
 
     <!-- Status Banjar Card -->

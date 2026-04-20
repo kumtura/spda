@@ -348,9 +348,21 @@
     </div>
 
     <!-- Payment Modal -->
-    <div x-show="showPayModal" x-cloak class="fixed inset-0 z-50 flex items-end justify-center">
-        <div class="absolute inset-0 bg-black/40" @click="showPayModal = false"></div>
-        <div class="relative bg-white rounded-t-2xl w-full max-w-[480px] max-h-[85vh] overflow-y-auto p-5 pb-8 shadow-xl" @click.stop>
+    <div x-show="showPayModal"
+         x-cloak
+         x-transition.opacity
+         class="fixed inset-0 z-[90] flex items-end justify-center"
+         style="display: none;">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-[1px]" @click="showPayModal = false"></div>
+        <div x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="translate-y-full"
+             x-transition:enter-end="translate-y-0"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="translate-y-0"
+             x-transition:leave-end="translate-y-full"
+             class="relative bg-white rounded-t-[28px] w-full max-w-[480px] max-h-[calc(100vh-5rem)] overflow-y-auto p-5 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-2xl"
+             @click.stop>
+            <div class="w-14 h-1.5 bg-slate-200 rounded-full mx-auto mb-4"></div>
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-black text-slate-800">Pembayaran Iuran - <span x-text="payMonthName"></span> {{ $selectedYear }}</h3>
                 <button @click="showPayModal = false" class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">

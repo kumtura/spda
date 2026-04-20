@@ -159,32 +159,35 @@
     <!-- Payment Modal -->
     <div x-show="showPaymentModal" 
          x-cloak
-         class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm shadow-2xl"
+         x-transition.opacity
+         class="fixed inset-0 z-[90] flex items-end justify-center"
          style="display: none;">
-        
-        <div @click.away="showPaymentModal = false"
-             x-transition:enter="transition ease-out duration-300 transform"
-             x-transition:enter-start="opacity-0 scale-95 translate-y-8"
-             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-             class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden">
-            
-            <!-- Modal Header -->
-            <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] p-6 text-white relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                <button @click="showPaymentModal = false" type="button" class="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors z-10">
-                    <i class="bi bi-x text-xl"></i>
-                </button>
-                <div class="relative">
-                    <h3 class="text-xl font-black">Bayar Iuran</h3>
-                    <p class="text-white/80 text-xs font-medium mt-1" x-text="'Bulan ' + selectedMonthName + ' ' + selectedYear"></p>
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px]" @click="showPaymentModal = false"></div>
+
+        <div x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="translate-y-full"
+             x-transition:enter-end="translate-y-0"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="translate-y-0"
+             x-transition:leave-end="translate-y-full"
+             class="relative bg-white rounded-t-[28px] shadow-2xl w-full max-w-[480px] max-h-[calc(100vh-5rem)] overflow-y-auto p-5 pb-[calc(2rem+env(safe-area-inset-bottom))]"
+             @click.stop>
+            <div class="w-14 h-1.5 bg-slate-200 rounded-full mx-auto mb-4"></div>
+
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-sm font-black text-slate-800">Pembayaran Iuran</h3>
+                    <p class="text-slate-400 text-[10px] mt-1" x-text="selectedMonthName + ' ' + selectedYear"></p>
                 </div>
+                <button @click="showPaymentModal = false" type="button" class="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
+                    <i class="bi bi-x-lg text-xs text-slate-500"></i>
+                </button>
             </div>
 
-            <!-- Choice Content -->
-            <div class="p-6 space-y-3">
-                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-2">
+            <div class="space-y-4">
+                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-[10px] text-slate-400">Nominal</span>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">Nominal</span>
                         <span class="text-sm font-bold text-slate-800">Rp {{ number_format($pendatang->effective_punia_nominal, 0, ',', '.') }}</span>
                     </div>
                 </div>
@@ -241,11 +244,6 @@
                 <input type="hidden" name="bulan" x-model="selectedMonth">
                 <input type="hidden" name="tahun" x-model="selectedYear">
             </form>
-
-            <!-- Footer -->
-            <div class="px-6 pb-6 pt-2 text-center">
-                <button @click="showPaymentModal = false" class="text-[10px] font-bold text-slate-300 uppercase tracking-widest hover:text-slate-500 transition-colors">Batal</button>
-            </div>
         </div>
     </div>
 

@@ -1,18 +1,10 @@
 @extends('mobile_layout')
 
 @section('isi_menu')
-<div class="bg-white px-4 pt-8 pb-24 space-y-6" x-data="{ 
+<div class="bg-white px-4 pt-8 pb-24 space-y-6" x-data="{
+    activeBanjar: '{{ $banjar ? $banjar->id_data_banjar : 'semua' }}',
     search: '',
-    get filteredPendatang() {
-        if (!this.search) return document.querySelectorAll('[data-pendatang-item]');
-        const q = this.search.toLowerCase();
-        document.querySelectorAll('[data-pendatang-item]').forEach(el => {
-            const name = el.dataset.nama.toLowerCase();
-            const hp = el.dataset.hp.toLowerCase();
-            el.style.display = (name.includes(q) || hp.includes(q)) ? '' : 'none';
-        });
-        return [];
-    }
+    filter: 'semua',
 }">
     <div class="flex items-center justify-between">
         <div>
@@ -21,7 +13,7 @@
                 <span class="text-[10px] font-bold">Kembali</span>
             </a>
             <h1 class="text-xl font-black text-slate-800 tracking-tight">Data Pendatang</h1>
-            <p class="text-slate-400 text-[10px] mt-1">Kelola data krama tamiu &middot; Banjar {{ $banjar ? $banjar->nama_banjar : '-' }}</p>
+            <p class="text-slate-400 text-[10px] mt-1">Kelola data krama tamiu semua banjar</p>
         </div>
     </div>
 
@@ -75,6 +67,7 @@
     <div>
         <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-bold text-slate-800">Iuran Masuk Terbaru</h3>
+            <a href="{{ url('administrator/penagih/pendatang') }}?tab=log" class="text-[10px] font-bold text-[#00a6eb] hover:underline">Lihat Semua</a>
         </div>
         <div class="space-y-1.5">
             @foreach($recentPayments as $payment)
@@ -104,43 +97,45 @@
     </div>
     @endif
 
-    <!-- Search -->
+    <!-- Banjar Tabs (Slider) -->
     <div>
+        <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 no-scrollbar">
+            <button type="button" @click="activeBanjar = 'semua'"
+                    :class="activeBanjar === 'semua' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
+                    class="shrink-0 px-4 py-2 rounded-full text-[10px] font-bold border transition-all">
+                Semua <span class="ml-1">({{ $pendatangList->count() }})</span>
+            </button>
+            @foreach($banjarList as $b)
+            @php $countBanjar = $pendatangList->where('id_data_banjar', $b->id_data_banjar)->count(); @endphp
+            <button type="button" @click="activeBanjar = '{{ $b->id_data_banjar }}'"
+                    :class="activeBanjar === '{{ $b->id_data_banjar }}' ? 'bg-[#00a6eb] text-white border-[#00a6eb]' : 'bg-white text-slate-500 border-slate-200'"
+                    class="shrink-0 px-4 py-2 rounded-full text-[10px] font-bold border transition-all">
+                {{ $b->nama_banjar }} <span class="ml-1">({{ $countBanjar }})</span>
+            </button>
+            @endforeach
+        </div>
+    </div>
+
+    <!-- Filter + Search -->
+    <div class="space-y-3">
+        <div class="flex gap-2">
+            <button type="button" @click="filter = 'semua'"
+                    :class="filter === 'semua' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'"
+                    class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all">Semua</button>
+            <button type="button" @click="filter = 'belum_bayar'"
+                    :class="filter === 'belum_bayar' ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-500'"
+                    class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all">Belum Bayar</button>
+            <button type="button" @click="filter = 'sudah_bayar'"
+                    :class="filter === 'sudah_bayar' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'"
+                    class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all">Sudah Bayar</button>
+        </div>
         <div class="relative">
             <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-            <input type="text" x-model="search" @input="filteredPendatang"
+            <input type="text" x-model="search"
                    class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-4 focus:ring-[#00a6eb]/10 transition-all"
                    placeholder="Cari nama atau nomor HP...">
         </div>
     </div>
-
-    <!-- Kartu Iuran Shortcuts -->
-    @php
-        $pendatangBelumBayar = $pendatangList->filter(function($p) {
-            return $p->puniaPendatang->where('status_pembayaran', 'belum_bayar')->where('aktif', '1')->count() > 0;
-        });
-    @endphp
-    @if($pendatangBelumBayar->count() > 0)
-    <div>
-        <h3 class="text-sm font-bold text-slate-800 mb-3">Kartu Iuran — Belum Bayar</h3>
-        <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 snap-x">
-            @foreach($pendatangBelumBayar->take(10) as $p)
-            @php
-                $jumlahBelum = $p->puniaPendatang->where('status_pembayaran', 'belum_bayar')->where('aktif', '1')->count();
-                $totalTerutang = $p->puniaPendatang->where('status_pembayaran', 'belum_bayar')->where('aktif', '1')->sum('nominal');
-            @endphp
-            <a href="{{ url('administrator/penagih/pendatang/kartu-punia/'.$p->id_pendatang) }}" 
-               class="flex-shrink-0 w-40 bg-white border border-slate-100 rounded-xl p-3 snap-start hover:bg-slate-50 transition-colors">
-                <div class="h-8 w-8 bg-rose-50 rounded-lg flex items-center justify-center mb-2">
-                    <span class="text-[10px] font-bold text-rose-600">{{ $jumlahBelum }}</span>
-                </div>
-                <p class="text-xs font-bold text-slate-800 truncate">{{ $p->nama }}</p>
-                <p class="text-[10px] text-rose-500 font-medium mt-0.5">Rp {{ number_format($totalTerutang, 0, ',', '.') }}</p>
-            </a>
-            @endforeach
-        </div>
-    </div>
-    @endif
 
     <!-- Pendatang List -->
     <div>
@@ -148,9 +143,15 @@
         @if($pendatangList->count() > 0)
         <div class="space-y-2">
             @foreach($pendatangList as $pendatang)
+            @php
+                $belumBayar = $pendatang->puniaPendatang->where('status_pembayaran', 'belum_bayar')->where('aktif', '1')->count();
+                $sudahBayar = $pendatang->puniaPendatang->where('status_pembayaran', 'lunas')->where('aktif', '1')->count();
+                $hasBelumBayar = $belumBayar > 0;
+                $allPaid = $belumBayar === 0 && $sudahBayar > 0;
+            @endphp
             <a href="{{ url('administrator/penagih/pendatang/detail/'.$pendatang->id_pendatang) }}" 
                class="block bg-white border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors"
-               data-pendatang-item data-nama="{{ $pendatang->nama }}" data-hp="{{ $pendatang->no_hp }}">
+               x-show="(activeBanjar === 'semua' || activeBanjar === '{{ $pendatang->id_data_banjar }}') && (filter === 'semua' || (filter === 'belum_bayar' && {{ $hasBelumBayar ? 'true' : 'false' }}) || (filter === 'sudah_bayar' && {{ $allPaid ? 'true' : 'false' }})) && (search === '' || '{{ strtolower(e($pendatang->nama)) }}'.includes(search.toLowerCase()) || '{{ strtolower(e($pendatang->no_hp)) }}'.includes(search.toLowerCase()))">
                 <div class="flex items-center gap-3 px-3 py-2.5">
                     <div class="h-9 w-9 bg-slate-100 rounded-lg flex items-center justify-center shrink-0 text-slate-500 text-[11px] font-medium">
                         {{ strtoupper(substr($pendatang->nama, 0, 2)) }}
@@ -171,7 +172,6 @@
                         @endif
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        @php $belumBayar = $pendatang->puniaPendatang->where('status_pembayaran', 'belum_bayar')->where('aktif', '1')->count(); @endphp
                         @if($belumBayar > 0)
                         <span class="text-[9px] text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">{{ $belumBayar }}</span>
                         @endif
@@ -183,9 +183,14 @@
         </div>
         @else
         <div class="bg-slate-50 rounded-xl border border-slate-100 border-dashed p-6 text-center">
-            <p class="text-xs text-slate-400">Belum ada data pendatang di banjar ini</p>
+            <p class="text-xs text-slate-400">Belum ada data pendatang</p>
         </div>
         @endif
     </div>
 </div>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
 @endsection

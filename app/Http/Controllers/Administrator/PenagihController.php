@@ -122,45 +122,32 @@ class PenagihController extends BaseController
     public function pendatang()
     {
         $banjar = $this->getPenagihBanjar();
-        $pendatangList = collect([]);
         $acaraList = AcaraPunia::where('aktif', '1')->orderBy('created_at', 'desc')->get();
 
-        if ($banjar) {
-            $pendatangList = Pendatang::with(['banjar', 'puniaPendatang' => function ($q) {
-                $q->where('aktif', '1');
-            }])
-                ->where('id_data_banjar', $banjar->id_data_banjar)
-                ->where('aktif', '1')
-                ->orderBy('created_at', 'desc')
-                ->get();
-        }
+        $banjarList = Banjar::where('aktif', '1')->orderBy('nama_banjar')->get();
 
-        $recentPayments = collect([]);
-        if ($banjar) {
-            $pendatangIds = Pendatang::where('id_data_banjar', $banjar->id_data_banjar)
-                ->where('aktif', '1')->pluck('id_pendatang');
-            $recentPayments = PuniaPendatang::with('pendatang')
-                ->whereIn('id_pendatang', $pendatangIds)
-                ->where('status_pembayaran', 'lunas')
-                ->where('aktif', '1')
-                ->orderBy('tanggal_bayar', 'desc')
-                ->limit(10)->get();
-        }
+        $pendatangList = Pendatang::with(['banjar', 'puniaPendatang' => function ($q) {
+            $q->where('aktif', '1');
+        }])
+            ->where('aktif', '1')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return view('backend.penagih.pendatang', compact('banjar', 'pendatangList', 'acaraList', 'recentPayments'));
+        $recentPayments = PuniaPendatang::with('pendatang')
+            ->where('status_pembayaran', 'lunas')
+            ->where('aktif', '1')
+            ->orderBy('tanggal_bayar', 'desc')
+            ->limit(3)->get();
+
+        return view('backend.penagih.pendatang', compact('banjar', 'banjarList', 'pendatangList', 'acaraList', 'recentPayments'));
     }
 
     public function pendatangDetail($id)
     {
         $banjar = $this->getPenagihBanjar();
-        $pendatang = Pendatang::with(['puniaPendatang' => function ($q) {
+        $pendatang = Pendatang::with(['banjar', 'puniaPendatang' => function ($q) {
             $q->orderBy('created_at', 'desc');
         }])->findOrFail($id);
-
-        // Security: only allow viewing pendatang from penagih's banjar
-        if ($banjar && $pendatang->id_data_banjar != $banjar->id_data_banjar) {
-            abort(403);
-        }
 
         return view('backend.penagih.pendatang_detail', compact('pendatang', 'banjar'));
     }

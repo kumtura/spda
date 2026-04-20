@@ -238,9 +238,6 @@ class SetorPuniaController extends BaseController
             return $this->redirectToIndex($request)->with('error', 'Tidak ada status riwayat yang berhasil diperbarui.');
         }
 
-        // Re-sync all data (split new payments, rebuild saldo) to reflect status changes
-        BagiHasilService::synchronizeHistoricalData();
-
         $message = $targetStatus === 'selesai'
             ? 'Bulk edit berhasil. Status riwayat terpilih ditandai selesai mengikuti pembagian global.'
             : 'Bulk edit berhasil. Status riwayat terpilih dikembalikan ke menunggu mengikuti pembagian global.';

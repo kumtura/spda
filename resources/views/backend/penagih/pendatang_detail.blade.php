@@ -18,11 +18,19 @@
                 <div class="flex-1">
                     <div class="flex items-center gap-2 mb-1">
                         <h1 class="text-lg font-black">{{ $pendatang->nama }}</h1>
-                        @if($pendatang->status === 'aktif')
-                        <span class="text-[8px] font-bold bg-white/20 px-2 py-0.5 rounded border border-white/20">Aktif</span>
-                        @endif
                     </div>
                     <p class="text-white/80 text-[10px]">NIK: {{ $pendatang->nik }}</p>
+                    <div class="mt-2">
+                        @if($pendatang->status === 'aktif')
+                        <span class="inline-flex items-center gap-1 text-[9px] font-bold bg-emerald-500/30 text-emerald-100 px-2.5 py-1 rounded-full border border-emerald-400/30">
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse"></span> Aktif — Masih Tinggal
+                        </span>
+                        @else
+                        <span class="inline-flex items-center gap-1 text-[9px] font-bold bg-rose-500/30 text-rose-100 px-2.5 py-1 rounded-full border border-rose-400/30">
+                            <span class="h-1.5 w-1.5 rounded-full bg-rose-300"></span> Tidak Aktif — Sudah Tidak Tinggal
+                        </span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>

@@ -25,11 +25,11 @@
             <div class="relative z-10 space-y-4">
                 <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
                     <i class="bi bi-info-circle text-[10px]"></i>
-                    <span class="text-[9px] font-bold uppercase tracking-widest">Tentang Unit Usaha</span>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Tentang Usaha Desa</span>
                 </div>
-                <h2 class="text-lg font-bold leading-tight">Membangun Kemandirian Ekonomi Desa Adat</h2>
+                <h2 class="text-lg font-bold leading-tight">Pelaku Usaha di Lingkungan Desa Adat</h2>
                 <p class="text-[11px] text-blue-50 leading-relaxed font-medium opacity-90">
-                    Program Unit Usaha SPDA adalah wadah kolaborasi ekonomi lokal yang berkontribusi nyata dalam pembangunan dan kesejahteraan Desa Adat melalui partisipasi aktif pelaku usaha.
+                    Halaman ini menampilkan daftar usaha yang menjalankan bisnisnya di wilayah Desa Adat, berlokasi di beberapa banjar adat. Setiap pelaku usaha berkontribusi melalui punia usaha untuk mendukung pembangunan dan kesejahteraan Desa Adat.
                 </p>
             </div>
         </div>

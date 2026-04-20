@@ -23,6 +23,8 @@ class BagiHasilService
             ];
         }
 
+        self::ensureOverrideColumns();
+
         $tamiuSynced = self::syncHistoricalTamiuPayments();
         $usahaSynced = self::syncHistoricalUsahaPayments();
 
@@ -33,6 +35,20 @@ class BagiHasilService
             'tamiu_synced' => $tamiuSynced,
             'usaha_synced' => $usahaSynced,
         ];
+    }
+
+    protected static function ensureOverrideColumns(): void
+    {
+        if (!Schema::hasColumn('tb_riwayat_bagi_hasil', 'override_status_setor_desa')) {
+            Schema::table('tb_riwayat_bagi_hasil', function ($table) {
+                $table->boolean('override_status_setor_desa')->default(false);
+            });
+        }
+        if (!Schema::hasColumn('tb_riwayat_bagi_hasil', 'override_status_setor_banjar')) {
+            Schema::table('tb_riwayat_bagi_hasil', function ($table) {
+                $table->boolean('override_status_setor_banjar')->default(false);
+            });
+        }
     }
 
     protected static function syncHistoricalTamiuPayments(): int

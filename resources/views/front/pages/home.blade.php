@@ -248,7 +248,7 @@
                     <a href="{{ route('public.pura.detail', $pura->id_pura) }}" class="flex-shrink-0 w-56 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all group">
                         <div class="h-32 bg-slate-50 relative flex items-center justify-center overflow-hidden">
                             @if($pura->gambar_pura)
-                                <img src="{{ asset('storage/pura/'.$pura->gambar_pura) }}" class="w-full h-full object-cover" alt="{{ $pura->nama_pura }}">
+                                <img src="{{ asset($pura->gambar_pura) }}" class="w-full h-full object-cover" alt="{{ $pura->nama_pura }}" onerror="this.parentElement.classList.add('flex','items-center','justify-center'); this.outerHTML='<i class=\'bi bi-building text-slate-300 text-3xl\'></i>'">
                             @else
                                 <div class="flex flex-col items-center gap-1 text-slate-200">
                                     <i class="bi bi-building text-3xl"></i>

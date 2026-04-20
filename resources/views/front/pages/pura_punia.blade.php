@@ -32,6 +32,11 @@
         </div>
         @endif
 
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
+            <p class="text-xs font-bold text-blue-700 mb-1">Punia</p>
+            <p class="text-[11px] text-blue-700 leading-relaxed">Punia dilakukan secara online dan akan terverifikasi otomatis setelah pembayaran berhasil.</p>
+        </div>
+
         <form action="{{ route('public.pura.punia.submit') }}" method="POST" class="space-y-4">
             @csrf
             <input type="hidden" name="id_pura" value="{{ $pura->id_pura }}">

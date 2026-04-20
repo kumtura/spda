@@ -68,20 +68,14 @@
         </div>
         @endif
 
-        <!-- Punia Stats -->
-        <div class="bg-gradient-to-br from-[#00a6eb] to-[#0090d0] rounded-2xl p-5 text-white relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-            <div class="relative z-10">
-                <p class="text-[9px] text-white/60 uppercase tracking-widest">Total Punia Terkumpul</p>
-                <h2 class="text-2xl font-black mt-1">Rp {{ number_format($totalPunia, 0, ',', '.') }}</h2>
-            </div>
-        </div>
-
         <!-- Punia Action Buttons -->
         <div class="space-y-2">
             <a href="{{ route('public.pura.punia', $pura->id_pura) }}" class="block w-full bg-gradient-to-r from-[#00a6eb] to-[#0090d0] text-white font-bold text-sm py-3 rounded-xl text-center shadow-md shadow-blue-200/50 hover:shadow-lg transition-all">
-                <i class="bi bi-wallet2 mr-1.5"></i> Punia Online (Xendit)
+                <i class="bi bi-wallet2 mr-1.5"></i> Punia
             </a>
+            <div class="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                <p class="text-[11px] text-blue-700 leading-relaxed">Punia dilakukan secara online dan akan terverifikasi otomatis setelah pembayaran berhasil.</p>
+            </div>
             @if($qris)
             <div class="bg-white rounded-2xl border border-slate-100 p-4 text-center">
                 <p class="text-xs font-bold text-slate-700 mb-3">Scan QRIS BPD Bali</p>
@@ -103,7 +97,7 @@
         <!-- Recent Punia -->
         @if($recentPunia->count() > 0)
         <div>
-            <h3 class="text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Punia Terbaru</h3>
+            <h3 class="text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Log Punia Terakhir</h3>
             <div class="space-y-2">
                 @foreach($recentPunia as $item)
                 <div class="bg-white rounded-xl border border-slate-100 px-4 py-3 flex items-center justify-between">

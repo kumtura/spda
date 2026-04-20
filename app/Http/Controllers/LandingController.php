@@ -1751,12 +1751,6 @@ class LandingController extends Controller
 
         $gallery = \App\Models\GalleryPura::where('id_pura', $id)->where('aktif', '1')->orderBy('urutan')->get();
 
-        $totalPunia = \App\Models\PuniaPura::where('id_pura', $id)
-            ->where('status_pembayaran', 'completed')
-            ->where('aktif', '1')
-            ->where('nominal', '>', 0)
-            ->sum('nominal');
-
         $qris = \App\Models\QrisPura::where('id_pura', $id)->where('is_active', '1')->first();
 
         $recentPunia = \App\Models\PuniaPura::where('id_pura', $id)
@@ -1767,7 +1761,7 @@ class LandingController extends Controller
             ->take(10)
             ->get();
 
-        return view('front.pages.pura_detail', compact('village', 'pura', 'gallery', 'totalPunia', 'qris', 'recentPunia'));
+        return view('front.pages.pura_detail', compact('village', 'pura', 'gallery', 'qris', 'recentPunia'));
     }
 
     public function pura_punia_form($id)

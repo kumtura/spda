@@ -3,8 +3,19 @@
 @section('isi_menu')
 <div class="space-y-6" x-data="{ 
     showModal: false,
+    showDeleteAlokasiModal: false,
     jenisAlur: '',
     activeAlokasiTab: '{{ $activeAlokasiTab }}',
+    deleteAlokasiId: null,
+    deleteAlokasiLabel: '',
+    deleteAlokasiReason: '',
+    openDeleteAlokasi(id, label, tab) {
+        this.deleteAlokasiId = id;
+        this.deleteAlokasiLabel = label;
+        this.deleteAlokasiReason = '';
+        this.activeAlokasiTab = tab;
+        this.showDeleteAlokasiModal = true;
+    },
     filterJenis: '{{ $filterJenis }}',
     filterBanjar: '{{ $filterBanjar }}',
     openModal(alur) {
@@ -16,6 +27,7 @@
         let params = [];
         if(this.filterJenis) params.push('jenis=' + this.filterJenis);
         if(this.filterBanjar) params.push('banjar=' + this.filterBanjar);
+        if(this.activeAlokasiTab) params.push('tab=' + this.activeAlokasiTab);
         if(params.length > 0) url += '?' + params.join('&');
         window.location = url;
     },
@@ -70,6 +82,15 @@
         <div class="flex items-center gap-2">
             <i class="bi bi-exclamation-circle text-rose-500"></i>
             <p class="text-sm text-rose-700 font-medium">{{ session('error') }}</p>
+        </div>
+    </div>
+    @endif
+
+    @if($errors->any())
+    <div class="bg-rose-50 border border-rose-200 rounded-xl p-4">
+        <div class="flex items-start gap-2">
+            <i class="bi bi-exclamation-circle text-rose-500 mt-0.5"></i>
+            <p class="text-sm text-rose-700 font-medium">{{ $errors->first() }}</p>
         </div>
     </div>
     @endif
@@ -195,13 +216,18 @@
                 'items' => $alokasiHistoryUsaha,
                 'activeClass' => 'bg-emerald-50 text-emerald-600 border-emerald-200',
             ],
+            'hapus' => [
+                'title' => 'History Hapus',
+                'items' => $riwayatHapus,
+                'activeClass' => 'bg-rose-50 text-rose-600 border-rose-200',
+            ],
         ];
     @endphp
     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         <div class="p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Riwayat Alokasi Transaksi Punia</h3>
-                <p class="text-[11px] text-slate-400 mt-1">Riwayat dipisahkan per jenis punia agar lebih mudah dicek, dan bulk edit status mengikuti pembagian global.</p>
+                <p class="text-[11px] text-slate-400 mt-1">Riwayat dipisahkan per jenis punia agar lebih mudah dicek, mendukung bulk edit status, dan punya history penghapusan data.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 @foreach($alokasiTabs as $tabKey => $tab)
@@ -217,11 +243,12 @@
         </div>
 
         <div class="px-5 py-4 bg-slate-50/70 border-b border-slate-100">
-            <p class="text-[11px] text-slate-500 font-medium">Opsi bulk edit `Ikuti Pembagian Global` akan otomatis mengubah `Status Setor Desa` untuk pembayaran cash, dan `Status Setor Banjar` untuk pembayaran online.</p>
+            <p class="text-[11px] text-slate-500 font-medium">Bulk edit akan mengubah status global sesuai jalur pembagian. Hapus transaksi akan mengeluarkan data dari riwayat aktif dan perhitungan keuangan aktif.</p>
         </div>
 
-        @foreach($alokasiTabs as $tabKey => $tab)
+        @foreach(['tamiu', 'usaha'] as $tabKey)
         @php
+            $tab = $alokasiTabs[$tabKey];
             $pendingCount = $tab['items']->where('status_global', 'pending')->count();
         @endphp
         <div x-show="activeAlokasiTab === '{{ $tabKey }}'" x-cloak>
@@ -235,7 +262,7 @@
                 <div class="p-5 border-b border-slate-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                     <div>
                         <h4 class="text-sm font-black text-slate-800">Daftar {{ $tab['title'] }}</h4>
-                        <p class="text-[11px] text-slate-400 mt-1">{{ $tab['items']->count() }} transaksi, {{ $pendingCount }} transaksi masih menunggu setor sesuai jalur global.</p>
+                        <p class="text-[11px] text-slate-400 mt-1">{{ $tab['items']->count() }} transaksi, {{ $pendingCount }} transaksi masih menunggu setor sesuai status terbaru yang ditetapkan.</p>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
                         <select name="bulk_status_action" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-primary-light/5 transition-all">
@@ -263,6 +290,7 @@
                                 <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Bagian Desa</th>
                                 <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Bagian Banjar</th>
                                 <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status Global</th>
+                                <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -284,10 +312,15 @@
                                 <td class="px-5 py-4 text-center">
                                     <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg {{ $item->status_global === 'selesai' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600' }}">{{ $item->status_text }}</span>
                                 </td>
+                                <td class="px-5 py-4 text-right">
+                                    <button type="button" @click="openDeleteAlokasi({{ $item->id_riwayat }}, '{{ addslashes($item->subjek_nama) }}', '{{ $tabKey }}')" class="h-8 w-8 inline-flex items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all" title="Hapus transaksi dari perhitungan">
+                                        <i class="bi bi-trash text-[11px]"></i>
+                                    </button>
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-12 text-center">
+                                <td colspan="10" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center gap-2">
                                         <i class="bi bi-diagram-3 text-4xl text-slate-200"></i>
                                         <p class="text-sm text-slate-400 font-medium">Belum ada riwayat alokasi {{ strtolower($tab['title']) }} yang bisa ditampilkan.</p>
@@ -301,6 +334,58 @@
             </form>
         </div>
         @endforeach
+
+        <div x-show="activeAlokasiTab === 'hapus'" x-cloak>
+            <div class="p-5 border-b border-slate-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                <div>
+                    <h4 class="text-sm font-black text-slate-800">History Penghapusan Data Punia</h4>
+                    <p class="text-[11px] text-slate-400 mt-1">Semua transaksi yang dihapus akan tercatat di sini bersama alasan penghapusan dan petugasnya.</p>
+                </div>
+                <div class="text-xs font-bold text-slate-400">{{ $riwayatHapus->count() }} data terhapus</div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/50">
+                            <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tgl Transaksi</th>
+                            <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Jenis</th>
+                            <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama</th>
+                            <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Banjar</th>
+                            <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Nominal</th>
+                            <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Dihapus Pada</th>
+                            <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Dihapus Oleh</th>
+                            <th class="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Alasan</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($riwayatHapus as $item)
+                        <tr class="hover:bg-slate-50/50 transition-colors">
+                            <td class="px-5 py-4 text-xs font-bold text-slate-600">{{ optional($item->tanggal)->format('d M Y H:i') ?: '-' }}</td>
+                            <td class="px-5 py-4">
+                                <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-lg {{ $item->jenis_punia === 'tamiu' ? 'bg-blue-50 text-primary-light border border-blue-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100' }} inline-flex items-center gap-1">{{ $item->subjek_label }}</span>
+                            </td>
+                            <td class="px-5 py-4 text-xs font-bold text-slate-700">{{ $item->subjek_nama }}</td>
+                            <td class="px-5 py-4 text-xs font-medium text-slate-600">{{ $item->banjar->nama_banjar ?? '-' }}</td>
+                            <td class="px-5 py-4 text-right text-xs font-bold text-slate-700">Rp {{ number_format($item->nominal_total, 0, ',', '.') }}</td>
+                            <td class="px-5 py-4 text-xs font-medium text-slate-600">{{ optional($item->tanggal_hapus)->format('d M Y H:i') ?: '-' }}</td>
+                            <td class="px-5 py-4 text-xs font-medium text-slate-600">{{ $item->deleted_by_name }}</td>
+                            <td class="px-5 py-4 text-xs text-slate-600">{{ $item->catatan_hapus }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center gap-2">
+                                    <i class="bi bi-archive text-4xl text-slate-200"></i>
+                                    <p class="text-sm text-slate-400 font-medium">Belum ada histori penghapusan transaksi punia.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Filter -->
@@ -437,6 +522,46 @@
             </table>
         </div>
     </div>
+
+    <template x-teleport="body">
+        <div x-show="showDeleteAlokasiModal" x-cloak
+             class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-md px-4 py-8">
+            <div class="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-slate-200" @click.away="showDeleteAlokasiModal = false">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-rose-50/60">
+                    <div>
+                        <span class="text-[9px] font-black text-rose-500 uppercase tracking-widest block">Hapus Transaksi Punia</span>
+                        <h3 class="text-lg font-black text-slate-800 tracking-tight" x-text="deleteAlokasiLabel || 'Transaksi' "></h3>
+                    </div>
+                    <button @click="showDeleteAlokasiModal = false" class="h-8 w-8 bg-white hover:bg-rose-100 text-slate-400 hover:text-rose-500 rounded-lg flex items-center justify-center transition-all">
+                        <i class="bi bi-x-lg text-sm"></i>
+                    </button>
+                </div>
+
+                <form action="{{ url('administrator/setor_punia/alokasi/hapus') }}" method="POST" class="p-6 space-y-4">
+                    @csrf
+                    <input type="hidden" name="id_riwayat" :value="deleteAlokasiId">
+                    <input type="hidden" name="tab" :value="activeAlokasiTab">
+                    <input type="hidden" name="filter_banjar" value="{{ $filterBanjar }}">
+                    <input type="hidden" name="filter_jenis" value="{{ $filterJenis }}">
+
+                    <div class="bg-rose-50 border border-rose-100 rounded-xl p-4 text-xs text-rose-700">
+                        <i class="bi bi-info-circle mr-1"></i>
+                        Data ini akan dikeluarkan dari transaksi aktif, riwayat alokasi aktif, dan sinkronisasi saldo aktif. Alasan penghapusan wajib dicatat.
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alasan Penghapusan *</label>
+                        <textarea name="catatan_hapus" x-model="deleteAlokasiReason" rows="4" required minlength="5" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-300" placeholder="Contoh: salah input nominal, pembayaran duplikat, transaksi tidak valid"></textarea>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" @click="showDeleteAlokasiModal = false" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all">Batal</button>
+                        <button type="submit" class="px-4 py-2.5 rounded-xl bg-rose-500 text-white text-xs font-black uppercase tracking-widest hover:bg-rose-600 transition-all">Hapus dari Perhitungan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
 
     <!-- Universal Modal -->
     <template x-teleport="body">

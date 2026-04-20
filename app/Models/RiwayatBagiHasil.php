@@ -21,6 +21,8 @@ class RiwayatBagiHasil extends Model
         'metode_pembayaran',
         'status_setor_desa',
         'status_setor_banjar',
+        'override_status_setor_desa',
+        'override_status_setor_banjar',
         'tanggal',
         'aktif',
     ];
@@ -32,6 +34,8 @@ class RiwayatBagiHasil extends Model
         'nominal_banjar' => 'decimal:2',
         'persen_desa' => 'decimal:2',
         'persen_banjar' => 'decimal:2',
+        'override_status_setor_desa' => 'boolean',
+        'override_status_setor_banjar' => 'boolean',
     ];
 
     public function banjar()

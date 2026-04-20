@@ -33,7 +33,10 @@ class Danapunia extends Model
         'status_verifikasi',
         'catatan_verifikasi',
         'bukti_pembayaran',
-        'charge'
+        'charge',
+        'catatan_hapus',
+        'dihapus_oleh',
+        'tanggal_hapus'
     ];
     protected $primaryKey = 'id_dana_punia';
     protected $table='tb_dana_punia';

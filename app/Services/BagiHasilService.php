@@ -136,6 +136,9 @@ class BagiHasilService
 
     protected static function syncSettlementStatuses(): void
     {
+        $hasOverrideDesaColumn = Schema::hasColumn('tb_riwayat_bagi_hasil', 'override_status_setor_desa');
+        $hasOverrideBanjarColumn = Schema::hasColumn('tb_riwayat_bagi_hasil', 'override_status_setor_banjar');
+
         RiwayatBagiHasil::where('aktif', 1)
             ->where(function ($query) {
                 $query->whereNull('status_setor_desa')
@@ -156,13 +159,14 @@ class BagiHasilService
             ->orderBy('tanggal_setor')
             ->orderBy('id_setor_punia')
             ->get()
-            ->each(function ($setor) {
+            ->each(function ($setor) use ($hasOverrideDesaColumn) {
                 self::allocateSettlementToRiwayat(
                     $setor->id_data_banjar,
                     ['cash'],
                     'nominal_desa',
                     'status_setor_desa',
-                    (float) $setor->nominal
+                    (float) $setor->nominal,
+                    $hasOverrideDesaColumn ? 'override_status_setor_desa' : null
                 );
             });
 
@@ -173,18 +177,19 @@ class BagiHasilService
             ->orderBy('tanggal_setor')
             ->orderBy('id_setor_punia')
             ->get()
-            ->each(function ($setor) {
+            ->each(function ($setor) use ($hasOverrideBanjarColumn) {
                 self::allocateSettlementToRiwayat(
                     $setor->id_data_banjar_tujuan,
                     ['xendit', 'online', 'qris'],
                     'nominal_banjar',
                     'status_setor_banjar',
-                    (float) $setor->nominal
+                    (float) $setor->nominal,
+                    $hasOverrideBanjarColumn ? 'override_status_setor_banjar' : null
                 );
             });
     }
 
-    protected static function allocateSettlementToRiwayat(?int $banjarId, array $methods, string $nominalColumn, string $statusColumn, float $nominal): void
+    protected static function allocateSettlementToRiwayat(?int $banjarId, array $methods, string $nominalColumn, string $statusColumn, float $nominal, ?string $overrideColumn = null): void
     {
         if (!$banjarId || $nominal <= 0) {
             return;
@@ -196,6 +201,12 @@ class BagiHasilService
             ->where('id_data_banjar', $banjarId)
             ->whereIn('metode_pembayaran', $methods)
             ->where($statusColumn, 'pending')
+            ->when($overrideColumn, function ($query) use ($overrideColumn) {
+                $query->where(function ($overrideQuery) use ($overrideColumn) {
+                    $overrideQuery->whereNull($overrideColumn)
+                        ->orWhere($overrideColumn, 0);
+                });
+            })
             ->orderBy('tanggal')
             ->orderBy('id_riwayat')
             ->get();
@@ -403,7 +414,7 @@ class BagiHasilService
             $metodePembayaran, $isOnline, $tanggal, $effectiveDate
         ) {
             // 1. Create riwayat record
-            $riwayat = RiwayatBagiHasil::create([
+            $payload = [
                 'jenis_punia' => $jenisPunia,
                 'id_pembayaran' => $idPembayaran,
                 'id_data_banjar' => $idDataBanjar,
@@ -416,7 +427,17 @@ class BagiHasilService
                 'status_setor_desa' => 'pending',
                 'status_setor_banjar' => 'pending',
                 'tanggal' => $effectiveDate,
-            ]);
+            ];
+
+            if (Schema::hasColumn('tb_riwayat_bagi_hasil', 'override_status_setor_desa')) {
+                $payload['override_status_setor_desa'] = false;
+            }
+
+            if (Schema::hasColumn('tb_riwayat_bagi_hasil', 'override_status_setor_banjar')) {
+                $payload['override_status_setor_banjar'] = false;
+            }
+
+            $riwayat = RiwayatBagiHasil::create($payload);
 
             // 2. Update saldo kas
             if ($isOnline) {

@@ -369,6 +369,7 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
             Route::get('/setor_punia', 'Administrator\SetorPuniaController@index');
             Route::post('/setor_punia/store', 'Administrator\SetorPuniaController@store');
             Route::post('/setor_punia/alokasi/bulk-status', 'Administrator\SetorPuniaController@bulkUpdateAlokasiStatus');
+            Route::post('/setor_punia/alokasi/hapus', 'Administrator\SetorPuniaController@deleteAlokasi');
             Route::post('/setor_punia/verify/{id}', 'Administrator\SetorPuniaController@verify');
             Route::get('/setor_punia/hapus/{id}', 'Administrator\SetorPuniaController@destroy');
 

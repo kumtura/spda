@@ -420,15 +420,41 @@ class PenagihController extends BaseController
             'tahun' => 'required|integer',
             'jumlah_dana' => 'required|numeric|min:1000',
             'tanggal_pembayaran' => 'required|date',
-            'metode_pembayaran' => 'required|string|in:tunai,transfer,qris',
+            'metode_pembayaran' => 'required|string|in:tunai,transfer',
+            'bukti_pembayaran' => 'required_if:metode_pembayaran,transfer|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
-        $buktiFile = null;
-        if ($request->hasFile('bukti_pembayaran')) {
+        $banjar = $this->getPenagihBanjar();
+        $rows = Usaha::get_detailUsaha($request->id_usaha);
+
+        if ($banjar && isset($rows->id_banjar) && $rows->id_banjar != $banjar->id_data_banjar) {
+            abort(403);
+        }
+
+        $existing = Danapunia::where('id_usaha', $request->id_usaha)
+            ->where('aktif', '1')
+            ->where('bulan_punia', $request->bulan)
+            ->where('tahun_punia', $request->tahun)
+            ->whereIn('status_pembayaran', ['pending', 'completed'])
+            ->first();
+
+        if ($existing) {
+            return redirect()->back()->with('error', 'Iuran unit usaha untuk periode ini sudah tercatat.');
+        }
+
+        $buktiFile = 'manual_cash';
+        if ($request->metode_pembayaran === 'transfer' && $request->hasFile('bukti_pembayaran')) {
             $file = $request->file('bukti_pembayaran');
+
+            if (!file_exists(public_path('bukti_pembayaran'))) {
+                mkdir(public_path('bukti_pembayaran'), 0777, true);
+            }
+
             $buktiFile = 'penagih_' . time() . '_' . $request->id_usaha . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('bukti_pembayaran'), $buktiFile);
         }
+
+        $isCash = $request->metode_pembayaran === 'tunai';
 
         $danapunia = Danapunia::create([
             'id_usaha' => $request->id_usaha,
@@ -441,15 +467,14 @@ class PenagihController extends BaseController
             'metode_pembayaran' => $request->metode_pembayaran,
             'metode' => $request->metode_pembayaran,
             'bukti_pembayaran' => $buktiFile,
-            'status_pembayaran' => 'completed',
-            'status_verifikasi' => 'approved',
+            'status_pembayaran' => $isCash ? 'completed' : 'pending',
+            'status_verifikasi' => $isCash ? 'approved' : 'pending',
             'aktif' => '1',
         ]);
 
-        // Split bagi hasil
         $usaha = Usaha::with('detail')->find($request->id_usaha);
         $idBanjar = $usaha && $usaha->detail ? $usaha->detail->id_banjar : null;
-        if ($idBanjar) {
+        if ($isCash && $idBanjar) {
             BagiHasilService::splitPayment(
                 'usaha',
                 $danapunia->id_dana_punia,
@@ -460,8 +485,9 @@ class PenagihController extends BaseController
             );
         }
 
-        return redirect('administrator/penagih/usaha/detail/' . $request->id_usaha)
-            ->with('success', 'Pembayaran bulan ' . $request->bulan . '/' . $request->tahun . ' berhasil disimpan.');
+        $receiptCode = 'PN-' . str_pad($danapunia->id_dana_punia, 6, '0', STR_PAD_LEFT);
+
+        return redirect()->route('public.punia.receipt', ['code' => $receiptCode]);
     }
 
     public function usahaInitiateOnline(Request $request)

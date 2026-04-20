@@ -61,6 +61,7 @@
     payMonth: null,
     payMonthName: '',
     payProcessing: false,
+    payMethod: 'tunai',
     payAmount: {{ (float) ($rows->minimal_bayar ?? 0) }},
     payDate: '{{ date('Y-m-d') }}'
 }">
@@ -266,9 +267,26 @@
                                 <td class="px-3 py-2.5">
                                     <div class="flex items-center justify-center gap-1">
                                         @if($isPaid)
+                                        @php
+                                            $receiptCode = 'PN-' . str_pad((string) $dana->id_dana_punia, 6, '0', STR_PAD_LEFT);
+                                        @endphp
                                         <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100">Lunas</span>
+                                        <a href="{{ route('public.punia.receipt', ['code' => $receiptCode]) }}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="h-7 w-7 bg-slate-50 text-slate-500 rounded-lg inline-flex items-center justify-center border border-slate-100 hover:bg-slate-100 hover:text-[#00a6eb] transition-all"
+                                           title="Lihat Receipt">
+                                            <i class="bi bi-receipt text-[10px]"></i>
+                                        </a>
+                                        <a href="{{ route('public.punia.receipt.download', ['code' => $receiptCode]) }}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="h-7 w-7 bg-slate-50 text-slate-500 rounded-lg inline-flex items-center justify-center border border-slate-100 hover:bg-slate-100 hover:text-[#00a6eb] transition-all"
+                                           title="Download Receipt">
+                                            <i class="bi bi-download text-[10px]"></i>
+                                        </a>
                                         @else
-                                        <button @click="payMonth = {{ $num }}; payMonthName = '{{ $name }}'; payAmount = {{ (float) ($rows->minimal_bayar ?? 0) }}; payDate = '{{ date('Y-m-d') }}'; showPayModal = true"
+                                        <button @click="payMonth = {{ $num }}; payMonthName = '{{ $name }}'; payAmount = {{ (float) ($rows->minimal_bayar ?? 0) }}; payDate = '{{ date('Y-m-d') }}'; payMethod = 'tunai'; payProcessing = false; showPayModal = true"
                                                 class="h-7 w-7 bg-[#00a6eb] text-white rounded-lg flex items-center justify-center hover:bg-[#0090d0] transition-all" title="Bayar Manual">
                                             <i class="bi bi-wallet2 text-xs"></i>
                                         </button>
@@ -374,48 +392,69 @@
             <div class="space-y-4">
                 <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3">
                     <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nominal (Rp)</label>
-                        <input type="number" x-model="payAmount" min="1000"
-                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Metode Pembayaran</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" @click="payMethod = 'tunai'"
+                                    :class="payMethod === 'tunai' ? 'border-[#00a6eb] bg-blue-50 text-[#00a6eb]' : 'border-slate-200 text-slate-500 bg-white'"
+                                    class="rounded-xl border px-3 py-2 text-[10px] font-bold transition-all">
+                                Tunai
+                            </button>
+                            <button type="button" @click="payMethod = 'transfer'"
+                                    :class="payMethod === 'transfer' ? 'border-[#00a6eb] bg-blue-50 text-[#00a6eb]' : 'border-slate-200 text-slate-500 bg-white'"
+                                    class="rounded-xl border px-3 py-2 text-[10px] font-bold transition-all">
+                                Transfer
+                            </button>
+                            <button type="button" @click="payMethod = 'online'"
+                                    :class="payMethod === 'online' ? 'border-[#00a6eb] bg-blue-50 text-[#00a6eb]' : 'border-slate-200 text-slate-500 bg-white'"
+                                    class="rounded-xl border px-3 py-2 text-[10px] font-bold transition-all">
+                                Online
+                            </button>
+                        </div>
                     </div>
 
                     <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Tanggal Pembayaran Tunai</label>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nominal (Rp)</label>
+                        <input type="number" x-model="payAmount" min="1000"
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none bg-white">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Tanggal Pembayaran</label>
                         <input type="date" x-model="payDate"
-                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none">
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none bg-white">
+                    </div>
+
+                    <div x-show="payMethod === 'transfer'" x-cloak>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Upload Bukti Transfer</label>
+                        <input type="file" name="bukti_pembayaran" accept=".jpg,.jpeg,.png,.pdf"
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"
+                               :required="payMethod === 'transfer'"
+                               form="usahaManualForm">
+                        <p class="text-[10px] text-slate-400 mt-1">Wajib upload bukti pembayaran untuk transfer bank.</p>
                     </div>
                 </div>
 
-                <button type="button" @click="payProcessing = true; $refs.usahaCashForm.submit()"
-                        class="w-full text-left bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:bg-slate-50/50 transition-all group">
-                    <div class="flex items-center gap-4">
-                        <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
-                            <i class="bi bi-cash-coin text-slate-400 text-xl group-hover:text-white"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Tunai</h4>
-                            <p class="text-[10px] text-slate-400">Catat pembayaran tunai langsung</p>
-                        </div>
-                        <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-transform group-hover:translate-x-1"></i>
-                    </div>
-                </button>
-
-                <button type="button" @click="payProcessing = true; $refs.usahaOnlineForm.submit()"
+                <button type="button" x-show="payMethod === 'online'" @click="payProcessing = true; $refs.usahaOnlineForm.submit()"
                         class="w-full text-left bg-white border-2 border-slate-100 rounded-2xl p-5 hover:border-[#00a6eb]/30 hover:bg-slate-50/50 transition-all group">
                     <div class="flex items-center gap-4">
                         <div class="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 transition-colors group-hover:bg-[#00a6eb] group-hover:border-[#00a6eb]">
                             <i class="bi bi-phone text-slate-400 text-xl group-hover:text-white"></i>
                         </div>
                         <div class="flex-1">
-                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Online Payment</h4>
-                            <p class="text-[10px] text-slate-400">Lanjut ke metode pembayaran Xendit</p>
+                            <h4 class="text-sm font-bold text-slate-800 mb-0.5">Pembayaran Online</h4>
+                            <p class="text-[10px] text-slate-400">Lanjut ke metode pembayaran digital</p>
                         </div>
                         <i class="bi bi-chevron-right text-slate-300 group-hover:text-[#00a6eb] transition-transform group-hover:translate-x-1"></i>
                     </div>
                 </button>
+
+                <button type="submit" form="usahaManualForm" x-show="payMethod !== 'online'"
+                        class="w-full bg-[#00a6eb] text-white rounded-2xl py-3.5 text-sm font-black shadow-lg shadow-blue-100/70 hover:bg-[#0090d0] transition-all">
+                    <span x-text="payMethod === 'tunai' ? 'Simpan Pembayaran Tunai' : 'Kirim Bukti Transfer' "></span>
+                </button>
             </div>
 
-            <form x-ref="usahaCashForm" action="{{ url('administrator/penagih/usaha/bayar-manual') }}" method="POST" style="display:none"
+            <form id="usahaManualForm" x-ref="usahaManualForm" action="{{ url('administrator/penagih/usaha/bayar-manual') }}" method="POST" enctype="multipart/form-data" style="display:none"
                   @submit="payProcessing = true">
                 @csrf
                 <input type="hidden" name="id_usaha" value="{{ $rows->id_usaha }}">
@@ -423,7 +462,7 @@
                 <input type="hidden" :name="'bulan'" :value="payMonth">
                 <input type="hidden" name="jumlah_dana" :value="payAmount">
                 <input type="hidden" name="tanggal_pembayaran" :value="payDate">
-                <input type="hidden" name="metode_pembayaran" value="tunai">
+                <input type="hidden" name="metode_pembayaran" :value="payMethod">
             </form>
 
             <form x-ref="usahaOnlineForm" action="{{ url('administrator/penagih/usaha/bayar-online') }}" method="POST" style="display:none">

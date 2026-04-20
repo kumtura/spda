@@ -110,14 +110,20 @@
         }
         .status-badge {
             display: inline-block;
-            background: #d4edda;
-            color: #155724;
             padding: 3px 12px;
             font-size: 9px;
             font-weight: 700;
             border-radius: 3px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+        .status-badge.status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-badge.status-pending {
+            background: #fef3c7;
+            color: #92400e;
         }
         .divider {
             border: none;
@@ -143,6 +149,12 @@
     </style>
 </head>
 <body>
+    @php
+        $receiptNumber = $receiptCode ?? ('PN-' . str_pad($payment->id_dana_punia, 6, '0', STR_PAD_LEFT));
+        $isCompleted = $payment->status_pembayaran === 'completed';
+        $statusText = $isCompleted ? 'Lunas' : 'Menunggu Verifikasi';
+        $statusClass = $isCompleted ? 'status-completed' : 'status-pending';
+    @endphp
     <div class="receipt-box">
         <!-- Header -->
         <div class="header">
@@ -155,7 +167,7 @@
         <div class="body-content">
             <div class="receipt-id">
                 No. Referensi
-                <strong>#PN-{{ str_pad($payment->id_dana_punia, 6, '0', STR_PAD_LEFT) }}</strong>
+                <strong>#{{ $receiptNumber }}</strong>
             </div>
 
             <div class="info-row">
@@ -180,7 +192,7 @@
             </div>
             <div class="info-row">
                 <span class="info-label">Status</span>
-                <span class="info-value"><span class="status-badge">Lunas</span></span>
+                <span class="info-value"><span class="status-badge {{ $statusClass }}">{{ $statusText }}</span></span>
             </div>
 
             <div class="amount-box">

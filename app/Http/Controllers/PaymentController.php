@@ -180,6 +180,15 @@ public function initiate(Request $request)
         $is_sandbox = $this->xendit->isSandbox();
         $isCompleted = in_array($record->status_pembayaran, ['completed', 'lunas'], true);
         $paymentContext = $this->paymentOrders->buildContext($type, $record);
+        $receiptCode = null;
+        $receiptUrl = null;
+        $receiptDownloadUrl = null;
+
+        if ($type === 'punia' && $record) {
+            $receiptCode = 'PN-' . str_pad((string) $record->id_dana_punia, 6, '0', STR_PAD_LEFT);
+            $receiptUrl = route('public.punia.receipt', ['code' => $receiptCode]);
+            $receiptDownloadUrl = route('public.punia.receipt.download', ['code' => $receiptCode]);
+        }
         
         // Get village data
         $settingsPath = storage_path('app/settings.json');
@@ -191,7 +200,7 @@ public function initiate(Request $request)
         // Get payment channel info from database
         $channel = \App\Models\PaymentChannel::where('code', $method)->first();
 
-        return view('front.pages.payment_result', compact('record', 'payment_data', 'method', 'village', 'order_id', 'type', 'is_sandbox', 'channel', 'isCompleted', 'paymentContext'));
+        return view('front.pages.payment_result', compact('record', 'payment_data', 'method', 'village', 'order_id', 'type', 'is_sandbox', 'channel', 'isCompleted', 'paymentContext', 'receiptCode', 'receiptUrl', 'receiptDownloadUrl'));
     }
 
     public function checkStatus($order_id)

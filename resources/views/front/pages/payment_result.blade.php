@@ -67,6 +67,36 @@
                     </div>
                 </div>
 
+                @if($type === 'punia' && $receiptUrl)
+                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 space-y-3 text-left">
+                    <div>
+                        <p class="text-[10px] text-blue-600 uppercase tracking-widest font-black mb-1">Receipt Pembayaran</p>
+                        <p class="text-xs text-blue-700">Kode receipt: <span class="font-bold">{{ $receiptCode }}</span></p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="{{ $receiptUrl }}" class="block text-center py-3 bg-white border border-blue-200 text-[#00a6eb] rounded-xl font-bold text-xs">
+                            Lihat Receipt
+                        </a>
+                        <a href="{{ $receiptDownloadUrl }}" class="block text-center py-3 bg-white border border-blue-200 text-[#00a6eb] rounded-xl font-bold text-xs">
+                            Download
+                        </a>
+                    </div>
+
+                    <button type="button" onclick="toggleReceiptWhatsAppForm()" class="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold text-xs">
+                        Kirim ke WhatsApp
+                    </button>
+
+                    <div id="receiptWhatsAppForm" class="hidden space-y-2">
+                        <input id="receiptWhatsAppNumber" type="tel" placeholder="Masukkan nomor WhatsApp tujuan" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-[#00a6eb]/10">
+                        <p class="text-[10px] text-slate-500">Jika diawali 0, sistem akan otomatis mengubah ke kode negara 62.</p>
+                        <button type="button" onclick="sendReceiptToWhatsApp()" class="w-full py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-xs">
+                            Buka WhatsApp
+                        </button>
+                    </div>
+                </div>
+                @endif
+
                 <a href="{{ route('public.home') }}" class="block w-full py-4 bg-gradient-to-r from-[#00a6eb] to-[#0090d0] text-white rounded-xl font-bold text-sm shadow-lg">
                     Kembali ke Beranda
                 </a>
@@ -304,6 +334,39 @@
                 btn.prop('disabled', false).text(originalText);
             }
         });
+    }
+
+    function toggleReceiptWhatsAppForm() {
+        const form = document.getElementById('receiptWhatsAppForm');
+        if (form) {
+            form.classList.toggle('hidden');
+        }
+    }
+
+    function normalizeWhatsappNumber(number) {
+        let cleaned = String(number || '').replace(/\D/g, '');
+        if (!cleaned) {
+            return '';
+        }
+        if (cleaned.startsWith('0')) {
+            cleaned = '62' + cleaned.slice(1);
+        } else if (!cleaned.startsWith('62')) {
+            cleaned = '62' + cleaned;
+        }
+        return cleaned;
+    }
+
+    function sendReceiptToWhatsApp() {
+        const input = document.getElementById('receiptWhatsAppNumber');
+        const waNumber = normalizeWhatsappNumber(input ? input.value : '');
+
+        if (!waNumber) {
+            alert('Masukkan nomor WhatsApp tujuan terlebih dahulu.');
+            return;
+        }
+
+        const message = encodeURIComponent('Om Swastyastu,%0A%0ABerikut link receipt pembayaran iuran unit usaha:%0A{{ $receiptUrl }}%0A%0AKode receipt: {{ $receiptCode }}');
+        window.open('https://wa.me/' + waNumber + '?text=' + message, '_blank');
     }
 </script>
 @endsection

@@ -91,6 +91,9 @@ class DashboardController extends BaseController
         } else if ($level == "5") {
             // Ticket Counter redirects to ticket counter dashboard
             return redirect()->to('administrator/ticketcounter');
+        } else if ($level == "6") {
+            // Admin Punia uses the Mobile Dashboard
+            return redirect()->to('administrator/pura/home');
         } else if ($level == "7") {
             // Penagih Iuran redirects to penagih mobile dashboard
             return redirect()->to('administrator/penagih');

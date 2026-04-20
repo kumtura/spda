@@ -136,6 +136,17 @@ Route::group(['prefix' => 'administrator', 'middleware' => 'admin' , 'as' => 'ad
 		Route::get('/userprofile', 'UserController@indexuser')->middleware('role:1,2,3,5,6,7');
         Route::post('update_user', 'UserController@updatepost_profile'); // For profile update
 
+		// Admin Punia Mobile Dashboard (Level 6)
+		Route::group(['middleware' => 'role:6'], function() {
+			Route::get('/pura/home', 'Administrator\AdminPuraController@home');
+			Route::post('/pura/update', 'Administrator\AdminPuraController@updatePura');
+			Route::get('/pura/gallery/delete/{id}', 'Administrator\AdminPuraController@deleteGallery');
+			Route::get('/pura/punia', 'Administrator\AdminPuraController@punia');
+			Route::get('/pura/verifikasi', 'Administrator\AdminPuraController@verifikasi');
+			Route::post('/pura/approve', 'Administrator\AdminPuraController@approve');
+			Route::post('/pura/reject', 'Administrator\AdminPuraController@reject');
+		});
+
 		// Usaha Management
 		Route::get('/download_usaha_pdf', 'Administrator\UsahaController@download_usaha_pdf');
 		Route::post('/post_search_usaha', 'Administrator\UsahaController@post_search_usaha');

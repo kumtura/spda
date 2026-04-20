@@ -31,7 +31,9 @@
                 ? 'Usaha'
                 : ($currentLevel === '5'
                     ? 'Counter'
-                    : ($currentLevel === '7' ? 'Penagih' : 'Admin')));
+                    : ($currentLevel === '6'
+                        ? 'Admin Pura'
+                        : ($currentLevel === '7' ? 'Penagih' : 'Admin'))));
     @endphp
     <div class="mobile-container overflow-x-hidden pt-16">
         <!-- Branded Header Mobile -->
@@ -61,13 +63,29 @@
             @php
                 $homeActiveColor = 'text-[#00a6eb]';
             @endphp
-            @if(!in_array($currentLevel, ['2', '5', '7'], true))
+            @if(!in_array($currentLevel, ['2', '5', '6', '7'], true))
             <a href="{{ url('administrator/') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator') ? $homeActiveColor : 'text-gray-400' }}">
                 <i class="bi bi-house-door{{ Request::is('administrator') ? '-fill' : '' }} text-xl"></i>
                 <span class="text-[10px] font-semibold">Home</span>
             </a>
             @endif
             
+            @if($currentLevel == '6')
+                <!-- Admin Pura Features -->
+                <a href="{{ url('administrator/pura/home') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/pura/home') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-house-door{{ Request::is('administrator/pura/home') ? '-fill' : '' }} text-xl"></i>
+                    <span class="text-[10px] font-semibold">Home</span>
+                </a>
+                <a href="{{ url('administrator/pura/punia') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/pura/punia*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-wallet2 text-xl"></i>
+                    <span class="text-[10px] font-semibold">Punia</span>
+                </a>
+                <a href="{{ url('administrator/pura/verifikasi') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/pura/verifikasi*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">
+                    <i class="bi bi-clipboard-check text-xl"></i>
+                    <span class="text-[10px] font-semibold">Verifikasi</span>
+                </a>
+            @endif
+
             @if($currentLevel == '3')
                 <!-- Business Unit Features -->
                 <a href="{{ url('administrator/usaha/punia') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ Request::is('administrator/usaha/punia*') ? 'text-[#00a6eb]' : 'text-gray-400' }}">

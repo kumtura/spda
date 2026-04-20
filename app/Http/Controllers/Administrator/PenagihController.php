@@ -526,7 +526,11 @@ class PenagihController extends BaseController
                 'tahun_punia' => $request->tahun,
                 'bulan' => $request->bulan,
                 'tahun' => $request->tahun,
+                'metode_pembayaran' => 'xendit',
+                'metode' => 'xendit',
+                'bukti_pembayaran' => 'online_pending',
                 'status_pembayaran' => 'pending',
+                'status_verifikasi' => 'pending',
                 'aktif' => '1',
             ]);
         } elseif ($existing->status_pembayaran !== 'completed') {
@@ -536,6 +540,9 @@ class PenagihController extends BaseController
                 'tahun_punia' => $request->tahun,
                 'bulan' => $request->bulan,
                 'tahun' => $request->tahun,
+                'metode_pembayaran' => 'xendit',
+                'metode' => 'xendit',
+                'bukti_pembayaran' => $existing->bukti_pembayaran ?: 'online_pending',
             ]);
         }
 

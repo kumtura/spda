@@ -41,6 +41,27 @@ class Danapunia extends Model
     protected $primaryKey = 'id_dana_punia';
     protected $table='tb_dana_punia';
 
+    protected static function booted(): void
+    {
+        static::creating(function (Danapunia $danapunia) {
+            if (empty($danapunia->bukti_pembayaran)) {
+                $danapunia->bukti_pembayaran = 'system_generated';
+            }
+
+            if (empty($danapunia->metode_pembayaran) && !empty($danapunia->metode)) {
+                $danapunia->metode_pembayaran = strtolower((string) $danapunia->metode);
+            }
+
+            if (empty($danapunia->metode) && !empty($danapunia->metode_pembayaran)) {
+                $danapunia->metode = strtolower((string) $danapunia->metode_pembayaran);
+            }
+
+            if (empty($danapunia->status_verifikasi) && ($danapunia->status_pembayaran ?? null) === 'completed') {
+                $danapunia->status_verifikasi = 'approved';
+            }
+        });
+    }
+
     public function usaha()
     {
         return $this->belongsTo(Usaha::class, 'id_usaha', 'id_usaha');
